@@ -1,0 +1,18 @@
+[submodule "browser/win11"]
+	path = browser/win11
+	url = https://github.com/thinkonmay/virtualOS-win11
+# [submodule "worker/hid"]
+# 	path = worker/hid
+# 	url = https://github.com/OnePlay-Internet/DevSim
+# [submodule "worker/webrtc"]
+# 	path = worker/webrtc
+# 	url = https://github.com/OnePlay-Internet/webrtc-proxy
+# [submodule "browser/webrtc"]
+# 	path = browser/webrtc
+# 	url = https://github.com/pigeatgarlic/webrtc-browser
+[submodule "worker/hid"]
+	path = worker/hid
+	url = https://github.com/OnePlay-Internet/DevSim
+[submodule "worker/webrtc"]
+	path = worker/webrtc
+	url = https://github.com/OnePlay-Internet/webrtc-proxy
