@@ -1,18 +1,30 @@
 [submodule "browser/win11"]
 	path = browser/win11
 	url = https://github.com/thinkonmay/virtualOS-win11
-# [submodule "worker/hid"]
-# 	path = worker/hid
-# 	url = https://github.com/OnePlay-Internet/DevSim
-# [submodule "worker/webrtc"]
-# 	path = worker/webrtc
-# 	url = https://github.com/OnePlay-Internet/webrtc-proxy
-# [submodule "browser/webrtc"]
-# 	path = browser/webrtc
-# 	url = https://github.com/pigeatgarlic/webrtc-browser
 [submodule "worker/hid"]
 	path = worker/hid
 	url = https://github.com/OnePlay-Internet/DevSim
+[submodule "browser/core"]
+	path = browser/core
+	url = https://github.com/pigeatgarlic/VirtualOS-webcore
+[submodule "worker/adapter"]
+	path = worker/adapter
+	url = https://github.com/pigeatgarlic/VirtualOS-worker-supabase-adapter
+[submodule "worker/manager"]
+	path = worker/manager
+	url = https://github.com/pigeatgarlic/VirtualOS-worker-procman
+[submodule "worker/hub"]
+	path = worker/hub
+	url = https://github.com/pigeatgarlic/VirtualOS-webrtc-hub.git
 [submodule "worker/webrtc"]
 	path = worker/webrtc
 	url = https://github.com/OnePlay-Internet/webrtc-proxy
+[submodule "serverless/worker"]
+	path = serverless/worker
+	url = https://github.com/pigeatgarlic/VirtualOS-serverless-signaling
+[submodule "dashboard/admin"]
+	path = dashboard/admin
+	url = https://github.com/pigeatgarlic/dashboard.git
+[submodule "server/conductor"]
+	path = server/conductor
+	url = https://github.com/pigeatgarlic/conductor
