@@ -25,3 +25,6 @@
 [submodule "server/conductor"]
 	path = server/conductor
 	url = https://github.com/pigeatgarlic/conductor
+[submodule "serverless"]
+	path = serverless
+	url = https://github.com/pigeatgarlic/VirtualOS-edge-function
