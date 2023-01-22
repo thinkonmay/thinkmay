@@ -19,9 +19,6 @@
 [submodule "worker/webrtc"]
 	path = worker/webrtc
 	url = https://github.com/OnePlay-Internet/webrtc-proxy
-[submodule "serverless/worker"]
-	path = serverless/worker
-	url = https://github.com/pigeatgarlic/VirtualOS-serverless-signaling
 [submodule "dashboard/admin"]
 	path = dashboard/admin
 	url = https://github.com/pigeatgarlic/dashboard.git
