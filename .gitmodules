@@ -28,3 +28,6 @@
 [submodule "serverless"]
 	path = serverless
 	url = https://github.com/pigeatgarlic/VirtualOS-edge-function
+[submodule "worker/driver"]
+	path = worker/driver
+	url = https://github.com/pigeatgarlic/virtual-display
