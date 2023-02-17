@@ -55,11 +55,12 @@ create table public.global_mail (
 -- REGIONAL PROXY
 drop table if exists public.regional_proxy;
 create table public.regional_proxy (
-  id            bigint generated always as identity   primary key,
-
+  id            bigint generated always as identity primary key,
   ip            text not null,
 
-  region        text,
+  inserted_at   timestamp with time zone default timezone('utc'::text, now()) not null,
+  last_update   timestamp with time zone default timezone('utc'::text, now()) not null,
+
   metadata      jsonb default '{}'
 );
 comment on table public.regional_proxy   is 'Regional proxy';
