@@ -34,3 +34,6 @@
 [submodule "server/edge-turn"]
 	path = server/edge-turn
 	url = https://github.com/pigeatgarlic/edge-turn
+[submodule "server"]
+	path = server
+	url = https://github.com/pigeatgarlic/edge-conductor

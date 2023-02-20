@@ -2,6 +2,8 @@
 drop table if exists public.regional_proxy;
 create table public.regional_proxy (
   id            bigint generated always as identity primary key,
+  account_id    uuid   not null,
+
   ip            text not null,
 
   inserted_at   timestamp with time zone default timezone('utc'::text, now()) not null,
@@ -42,3 +44,34 @@ begin
     end loop;
 end;
 $$;
+
+
+-- REGIONAL PROXY
+create policy "Allow select access" on public.regional_proxy
+  for insert with check (auth.uid() = account_id);
+create policy "Allow insert access" on public.regional_proxy
+  for update with check (auth.uid() = account_id);
+create policy "Allow individual read access" on public.regional_proxy
+  for select using (true);
+
+
+-- inserts a row into public.users and assigns roles
+create or replace function public.handle_new_user()
+returns trigger as
+$$
+    begin
+        if position('.proxy@thinkmay.net' in new.email) > 0 then
+            insert into public.regional_proxy(account_id) 
+                values (new.id);
+        else
+        end if;
+
+        return new;
+    end;
+$$ language plpgsql security invoker;
+
+-- trigger the function every time a user is created
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute procedure public.handle_new_user();
