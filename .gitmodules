@@ -37,3 +37,6 @@
 [submodule "worker/watcher"]
 	path = worker/watcher
 	url = https://github.com/pigeatgarlic/watcher
+[submodule "server/signaling"]
+	path = server/signaling
+	url = https://github.com/thinkonmay/signaling-server
