@@ -4,9 +4,6 @@
 [submodule "worker/hid"]
 	path = worker/hid
 	url = https://github.com/OnePlay-Internet/DevSim
-[submodule "browser/core"]
-	path = browser/core
-	url = https://github.com/pigeatgarlic/VirtualOS-webcore
 [submodule "worker/adapter"]
 	path = worker/adapter
 	url = https://github.com/pigeatgarlic/VirtualOS-worker-supabase-adapter
