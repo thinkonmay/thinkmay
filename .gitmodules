@@ -40,3 +40,6 @@
 [submodule "server/signaling"]
 	path = server/signaling
 	url = https://github.com/thinkonmay/signaling-server
+[submodule "worker/daemon"]
+	path = worker/daemon
+	url = https://github.com/thinkonmay/thinkshare-daemon
