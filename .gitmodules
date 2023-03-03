@@ -10,9 +10,6 @@
 [submodule "worker/manager"]
 	path = worker/manager
 	url = https://github.com/pigeatgarlic/VirtualOS-worker-procman
-[submodule "worker/hub"]
-	path = worker/hub
-	url = https://github.com/pigeatgarlic/VirtualOS-webrtc-hub.git
 [submodule "worker/webrtc"]
 	path = worker/webrtc
 	url = https://github.com/OnePlay-Internet/webrtc-proxy
@@ -31,6 +28,12 @@
 [submodule "server/edge-turn"]
 	path = server/edge-turn
 	url = https://github.com/pigeatgarlic/edge-turn
-[submodule "server"]
-	path = server
+[submodule "browser/base"]
+	path = browser/base
+	url = https://github.com/thinkonmay/thinkremote-browser
+[submodule "server/turn"]
+	path = server/turn
 	url = https://github.com/pigeatgarlic/edge-conductor
+[submodule "worker/watcher"]
+	path = worker/watcher
+	url = https://github.com/pigeatgarlic/watcher
