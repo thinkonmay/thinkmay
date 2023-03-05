@@ -14,18 +14,6 @@ create table public.regional_proxy (
 comment on table public.regional_proxy   is 'Regional proxy';
 
 
--- WORKER METRIC
-drop table if exists public.worker_metric;
-create table public.worker_metric (
-  id            bigint generated always as identity  primary key,
-
-  worker_id     bigint,
-
-  get_at        timestamp with time zone default timezone('utc'::text, now()) not null,
-  val           jsonb default '{}' not null
-);
-comment on table public.worker_metric is 'Worker metric reported by workers';
-
 
 
 
