@@ -16,9 +16,6 @@
 [submodule "dashboard/admin"]
 	path = dashboard/admin
 	url = https://github.com/pigeatgarlic/dashboard.git
-[submodule "server/conductor"]
-	path = server/conductor
-	url = https://github.com/pigeatgarlic/conductor
 [submodule "serverless"]
 	path = serverless
 	url = https://github.com/pigeatgarlic/VirtualOS-edge-function
@@ -43,3 +40,6 @@
 [submodule "worker/daemon"]
 	path = worker/daemon
 	url = https://github.com/thinkonmay/thinkshare-daemon
+[submodule "server/conductor-v2"]
+	path = server/conductor-v2
+	url = https://github.com/thinkonmay/conductor
