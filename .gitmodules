@@ -22,9 +22,6 @@
 [submodule "worker/driver"]
 	path = worker/driver
 	url = https://github.com/pigeatgarlic/virtual-display
-[submodule "server/edge-turn"]
-	path = server/edge-turn
-	url = https://github.com/pigeatgarlic/edge-turn
 [submodule "browser/base"]
 	path = browser/base
 	url = https://github.com/thinkonmay/thinkremote-browser
