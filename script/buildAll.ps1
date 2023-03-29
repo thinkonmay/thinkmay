@@ -3,17 +3,12 @@ $env:PKG_CONFIG_PATH = "C:\gstreamer\1.22.0\msvc_x86_64\lib\pkgconfig"
 
 git submodule update --init --recursive
 
-# install gstreamer
-# mkdir artifact
-# Invoke-WebRequest -Uri "https://github.com/thinkonmay/thinkremote-rtchub/releases/download/asset-gstreamer-1.22.0/lib.zip" -OutFile artifact/lib.zip 
-# Expand-Archive artifact/lib.zip -DestinationPath  package/hub
-
 
 # build GO 
 go clean --cache
 
 Set-Location .\worker\daemon
-go build -ldflags -H=windowsgui -o daemon.exe
+go build  -o daemon.exe
 Set-Location ../../
 
 Set-Location .\worker\webrtc
@@ -38,4 +33,4 @@ robocopy .\worker\hid\bin package/hid
 robocopy .\worker\daemon\tools .\package\tools thinkremote-svc.exe
 robocopy .\worker\daemon\scripts .\package\scripts 
 
-# Compress-Archive .\package -DestinationPath .\artifact\thinkremote.zip 
+Compress-Archive .\package -DestinationPath .\artifact\thinkremote.zip 
