@@ -8,7 +8,7 @@ git submodule update --init --recursive
 go clean --cache
 
 Set-Location .\worker\daemon
-go build  -o daemon.exe
+go build  -o daemon.exe ./cmd/
 Set-Location ../../
 
 Set-Location .\worker\webrtc
