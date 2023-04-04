@@ -13,9 +13,6 @@
 [submodule "worker/webrtc"]
 	path = worker/webrtc
 	url = https://github.com/OnePlay-Internet/webrtc-proxy
-[submodule "dashboard/admin"]
-	path = dashboard/admin
-	url = https://github.com/pigeatgarlic/dashboard.git
 [submodule "serverless"]
 	path = serverless
 	url = https://github.com/pigeatgarlic/VirtualOS-edge-function
@@ -34,9 +31,12 @@
 [submodule "worker/daemon"]
 	path = worker/daemon
 	url = https://github.com/thinkonmay/thinkshare-daemon
-[submodule "server/conductor-v2"]
-	path = server/conductor-v2
-	url = https://github.com/thinkonmay/conductor
 [submodule "server/turn"]
 	path = server/turn
 	url = https://github.com/pigeatgarlic/edge-turn
+[submodule "browser/dashboard"]
+	path = browser/dashboard
+	url = https://github.com/pigeatgarlic/dashboard
+[submodule "server/conductor"]
+	path = server/conductor
+	url = https://github.com/thinkonmay/conductor
