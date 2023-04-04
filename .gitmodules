@@ -25,9 +25,6 @@
 [submodule "browser/base"]
 	path = browser/base
 	url = https://github.com/thinkonmay/thinkremote-browser
-[submodule "server/turn"]
-	path = server/turn
-	url = https://github.com/pigeatgarlic/edge-conductor
 [submodule "worker/watcher"]
 	path = worker/watcher
 	url = https://github.com/pigeatgarlic/watcher
@@ -40,3 +37,6 @@
 [submodule "server/conductor-v2"]
 	path = server/conductor-v2
 	url = https://github.com/thinkonmay/conductor
+[submodule "server/turn"]
+	path = server/turn
+	url = https://github.com/pigeatgarlic/edge-turn
