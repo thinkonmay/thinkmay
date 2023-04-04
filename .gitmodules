@@ -1,18 +1,12 @@
 [submodule "browser/win11"]
 	path = browser/win11
 	url = https://github.com/thinkonmay/virtualOS-win11
-[submodule "worker/hid"]
-	path = worker/hid
-	url = https://github.com/OnePlay-Internet/DevSim
 [submodule "worker/adapter"]
 	path = worker/adapter
 	url = https://github.com/pigeatgarlic/VirtualOS-worker-supabase-adapter
 [submodule "worker/manager"]
 	path = worker/manager
 	url = https://github.com/pigeatgarlic/VirtualOS-worker-procman
-[submodule "worker/webrtc"]
-	path = worker/webrtc
-	url = https://github.com/OnePlay-Internet/webrtc-proxy
 [submodule "serverless"]
 	path = serverless
 	url = https://github.com/pigeatgarlic/VirtualOS-edge-function
