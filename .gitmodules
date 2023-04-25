@@ -37,3 +37,6 @@
 [submodule "sdk"]
 	path = sdk
 	url = https://github.com/thinkonmay/thinkremote-sdk
+[submodule "data"]
+	path = data
+	url = https://github.com/thinkonmay/datapipeline
