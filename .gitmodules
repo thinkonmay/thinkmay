@@ -40,3 +40,12 @@
 [submodule "data"]
 	path = data
 	url = https://github.com/thinkonmay/datapipeline
+[submodule "datapipeline"]
+	path = datapipeline
+	url = https://github.com/thinkonmay/datapipeline.git
+[submodule "data_warehouse/datapipeline"]
+	path = data_warehouse/datapipeline
+	url = https://github.com/thinkonmay/datapipeline.git
+[submodule "data_warehouse/replication"]
+	path = data_warehouse/replication
+	url = https://github.com/thinkonmay/supabase-js-realtime.git
