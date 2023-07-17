@@ -7,9 +7,6 @@
 [submodule "worker/manager"]
 	path = worker/manager
 	url = https://github.com/pigeatgarlic/VirtualOS-worker-procman
-[submodule "serverless"]
-	path = serverless
-	url = https://github.com/pigeatgarlic/VirtualOS-edge-function
 [submodule "worker/driver"]
 	path = worker/driver
 	url = https://github.com/pigeatgarlic/virtual-display
@@ -49,3 +46,9 @@
 [submodule "data_warehouse/replication"]
 	path = data_warehouse/replication
 	url = https://github.com/thinkonmay/supabase-js-realtime.git
+[submodule "serverless/remote"]
+	path = serverless/remote
+	url = https://github.com/thinkonmay/thinkshare-v2-serverless
+[submodule "serverless/virt"]
+	path = serverless/virt
+	url = https://github.com/thinkonmay/virtless
