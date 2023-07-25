@@ -40,3 +40,6 @@
 [submodule "serverless/virt"]
 	path = serverless/virt
 	url = https://github.com/thinkonmay/virtless
+[submodule "host/daemon"]
+	path = host/daemon
+	url = https://github.com/thinkonmay/virtdaemon
