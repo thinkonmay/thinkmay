@@ -43,3 +43,9 @@
 [submodule "host/daemon"]
 	path = host/daemon
 	url = https://github.com/thinkonmay/virtdaemon
+[submodule "analytics/datapipeline"]
+	path = analytics/datapipeline
+	url = https://github.com/thinkonmay/datapipeline
+[submodule "analytics/realtime"]
+	path = analytics/realtime
+	url = https://github.com/thinkonmay/supabase-js-realtime
