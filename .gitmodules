@@ -49,3 +49,6 @@
 [submodule "analytics/realtime"]
 	path = analytics/realtime
 	url = https://github.com/thinkonmay/supabase-js-realtime
+[submodule "worker/gstreamer"]
+	path = worker/gstreamer
+	url = https://github.com/thinkonmay/gsttm
