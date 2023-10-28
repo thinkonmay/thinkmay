@@ -7,9 +7,6 @@
 [submodule "worker/manager"]
 	path = worker/manager
 	url = https://github.com/pigeatgarlic/VirtualOS-worker-procman
-[submodule "worker/driver"]
-	path = worker/driver
-	url = https://github.com/pigeatgarlic/virtual-display
 [submodule "browser/base"]
 	path = browser/base
 	url = https://github.com/thinkonmay/thinkremote-browser
@@ -52,3 +49,9 @@
 [submodule "serverless/selfhost"]
 	path = serverless/selfhost
 	url = https://github.com/thinkonmay/thinkmay-selfhost.git
+[submodule "worker/display"]
+	path = worker/display
+	url = https://github.com/pigeatgarlic/virtual-display
+[submodule "worker/sunshine"]
+	path = worker/sunshine
+	url = https://github.com/thinkonmay/sunshine-sdk
