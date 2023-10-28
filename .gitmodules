@@ -1,12 +1,6 @@
 [submodule "browser/win11"]
 	path = browser/win11
 	url = https://github.com/thinkonmay/virtualOS-win11
-[submodule "worker/adapter"]
-	path = worker/adapter
-	url = https://github.com/pigeatgarlic/VirtualOS-worker-supabase-adapter
-[submodule "worker/manager"]
-	path = worker/manager
-	url = https://github.com/pigeatgarlic/VirtualOS-worker-procman
 [submodule "browser/base"]
 	path = browser/base
 	url = https://github.com/thinkonmay/thinkremote-browser
@@ -19,15 +13,9 @@
 [submodule "server/turn"]
 	path = server/turn
 	url = https://github.com/pigeatgarlic/edge-turn
-[submodule "browser/dashboard"]
-	path = browser/dashboard
-	url = https://github.com/pigeatgarlic/dashboard
 [submodule "server/conductor"]
 	path = server/conductor
 	url = https://github.com/thinkonmay/conductor
-[submodule "data"]
-	path = data
-	url = https://github.com/thinkonmay/datapipeline
 [submodule "serverless/remote"]
 	path = serverless/remote
 	url = https://github.com/thinkonmay/thinkshare-v2-serverless
@@ -37,12 +25,6 @@
 [submodule "host/daemon"]
 	path = host/daemon
 	url = https://github.com/thinkonmay/virtdaemon
-[submodule "analytics/datapipeline"]
-	path = analytics/datapipeline
-	url = https://github.com/thinkonmay/datapipeline
-[submodule "analytics/realtime"]
-	path = analytics/realtime
-	url = https://github.com/thinkonmay/supabase-js-realtime
 [submodule "worker/gstreamer"]
 	path = worker/gstreamer
 	url = https://github.com/thinkonmay/gsttm
