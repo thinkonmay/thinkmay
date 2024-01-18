@@ -37,3 +37,9 @@
 [submodule "worker/sunshine"]
 	path = worker/sunshine
 	url = https://github.com/thinkonmay/sunshine-sdk
+[submodule "browser/landing"]
+	path = browser/landing
+	url = https://github.com/thinkonmay/landingpage-v2
+[submodule "app/window"]
+	path = app/window
+	url = https://github.com/thinkonmay/window-app
