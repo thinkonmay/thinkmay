@@ -43,3 +43,6 @@
 [submodule "browser/landing-page-v2"]
 	path = browser/landing-page-v2
 	url = https://github.com/thinkonmay/lass-landing-page
+[submodule "app/moonlight"]
+	path = app/moonlight
+	url = https://github.com/thinkonmay/moonlight-desktop
