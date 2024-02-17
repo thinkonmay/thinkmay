@@ -25,9 +25,6 @@
 [submodule "host/daemon"]
 	path = host/daemon
 	url = https://github.com/thinkonmay/virtdaemon
-[submodule "worker/gstreamer"]
-	path = worker/gstreamer
-	url = https://github.com/thinkonmay/gsttm
 [submodule "serverless/selfhost"]
 	path = serverless/selfhost
 	url = https://github.com/thinkonmay/thinkmay-selfhost.git
