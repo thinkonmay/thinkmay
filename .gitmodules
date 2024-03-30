@@ -4,30 +4,9 @@
 [submodule "browser/base"]
 	path = browser/base
 	url = https://github.com/thinkonmay/thinkremote-browser
-[submodule "server/signaling"]
-	path = server/signaling
-	url = https://github.com/thinkonmay/signaling-server
 [submodule "worker/daemon"]
 	path = worker/daemon
 	url = https://github.com/thinkonmay/thinkshare-daemon
-[submodule "server/turn"]
-	path = server/turn
-	url = https://github.com/pigeatgarlic/edge-turn
-[submodule "server/conductor"]
-	path = server/conductor
-	url = https://github.com/thinkonmay/conductor
-[submodule "serverless/remote"]
-	path = serverless/remote
-	url = https://github.com/thinkonmay/thinkshare-v2-serverless
-[submodule "serverless/virt"]
-	path = serverless/virt
-	url = https://github.com/thinkonmay/virtless
-[submodule "host/daemon"]
-	path = host/daemon
-	url = https://github.com/thinkonmay/virtdaemon
-[submodule "serverless/selfhost"]
-	path = serverless/selfhost
-	url = https://github.com/thinkonmay/thinkmay-selfhost.git
 [submodule "worker/display"]
 	path = worker/display
 	url = https://github.com/pigeatgarlic/virtual-display
