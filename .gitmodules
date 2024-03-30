@@ -46,3 +46,6 @@
 [submodule "app/moonlight"]
 	path = app/moonlight
 	url = https://github.com/thinkonmay/moonlight-desktop
+[submodule "worker/package"]
+	path = worker/package
+	url = https://github.com/thinkonmay/binary
