@@ -1,18 +1,12 @@
 [submodule "browser/win11"]
 	path = browser/win11
 	url = https://github.com/thinkonmay/virtualOS-win11
-[submodule "browser/base"]
-	path = browser/base
-	url = https://github.com/thinkonmay/thinkremote-browser
 [submodule "worker/daemon"]
 	path = worker/daemon
 	url = https://github.com/thinkonmay/thinkshare-daemon
 [submodule "worker/sunshine"]
 	path = worker/sunshine
 	url = https://github.com/thinkonmay/sunshine-sdk
-[submodule "browser/landing-page-v2"]
-	path = browser/landing-page-v2
-	url = https://github.com/thinkonmay/lass-landing-page
 [submodule "app/moonlight"]
 	path = app/moonlight
 	url = https://github.com/thinkonmay/moonlight-desktop
@@ -22,3 +16,6 @@
 [submodule "worker/webrtc"]
 	path = worker/webrtc
 	url = https://github.com/thinkonmay/thinkremote-rtchub
+[submodule "browser/landingpage"]
+	path = browser/landingpage
+	url = https://github.com/thinkonmay/lass-landing-page
