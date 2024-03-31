@@ -16,6 +16,9 @@
 [submodule "app/moonlight"]
 	path = app/moonlight
 	url = https://github.com/thinkonmay/moonlight-desktop
-[submodule "worker/package"]
-	path = worker/package
+[submodule "binary"]
+	path = binary
 	url = https://github.com/thinkonmay/binary
+[submodule "worker/webrtc"]
+	path = worker/webrtc
+	url = https://github.com/thinkonmay/thinkremote-rtchub
