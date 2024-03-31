@@ -19,3 +19,6 @@
 [submodule "browser/landingpage"]
 	path = browser/landingpage
 	url = https://github.com/thinkonmay/lass-landing-page
+[submodule "app/demo"]
+	path = app/demo
+	url = https://github.com/thinkonmay/demo-moonlight
