@@ -1,0 +1,1 @@
+docker build . -t thinkmay && docker run -v ./out:/copy thinkmay
