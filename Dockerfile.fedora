@@ -144,10 +144,10 @@ FROM sunshine-base as final
 WORKDIR /final
 COPY --from=webrtc-base /src/hub /final/hub
 COPY --from=daemon-base /src/daemon /final/daemon
-COPY --from=sunshine-build /build/sunshine/build/sunshine /final/sunshine
+COPY --from=sunshine-build /build/sunshine/build/sunshine /final/shmsunshine
 COPY --from=sunshine-build /build/sunshine/build/libparent.so /final/libparent.so
 COPY --from=sunshine-build /build/sunshine/src_assets/linux/assets/shaders/opengl /final/opengl
 
 
 WORKDIR /copy
-CMD rm -rf final && mv -f /final . 
+CMD rm -rf binary && mv /final  ./binary
