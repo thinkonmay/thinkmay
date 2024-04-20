@@ -120,6 +120,8 @@ _MAKE
 RUN ls /build/sunshine/build
 
 FROM golang as webrtc-base
+RUN apt-get update -y
+RUN apt install -y libevdev-dev libx11-dev
 WORKDIR /src
 COPY ./worker/webrtc/go.mod .
 COPY ./worker/webrtc/go.sum .
