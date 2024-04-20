@@ -121,11 +121,21 @@ RUN ls /build/sunshine/build
 
 FROM golang as webrtc-base
 WORKDIR /src
+COPY ./worker/webrtc/go.mod .
+COPY ./worker/webrtc/go.sum .
+
+RUN go mod download
+
 COPY ./worker/webrtc .
 RUN go build -o hub ./cmd
 
 FROM golang as daemon-base
 WORKDIR /src
+COPY ./worker/daemon/go.mod .
+COPY ./worker/daemon/go.sum .
+
+RUN go mod download
+
 COPY ./worker/daemon .
 RUN go build -o daemon ./service/linux
 
@@ -134,9 +144,10 @@ FROM sunshine-base as final
 WORKDIR /final
 COPY --from=webrtc-base /src/hub /final/hub
 COPY --from=daemon-base /src/daemon /final/daemon
-COPY --from=sunshine-build /build/sunshine/build/sunshine /final/sunshine
+COPY --from=sunshine-build /build/sunshine/build/sunshine /final/shmsunshine
 COPY --from=sunshine-build /build/sunshine/build/libparent.so /final/libparent.so
 COPY --from=sunshine-build /build/sunshine/src_assets/linux/assets/shaders/opengl /final/opengl
 
+
 WORKDIR /copy
-CMD cp -r /final .
+CMD rm -rf binary && mv /final  ./binary
