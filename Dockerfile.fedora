@@ -152,4 +152,4 @@ COPY --from=sunshine-build /build/sunshine/src_assets/linux/assets/shaders/openg
 
 
 WORKDIR /copy
-CMD rm -rf binary && mv /final  ./binary
+CMD mv /final  ./out
