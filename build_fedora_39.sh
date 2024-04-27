@@ -1,9 +1,10 @@
-docker build . -f Dockerfile.fedora -t thinkmay && docker run -v .:/copy thinkmay
+docker build . -f Dockerfile.fedora -t thinkmay && docker run -v ./out:/copy thinkmay
+cp -r out/binary/* binary 
 
-# yum install boost-filesystem-1.74.* \
-#             boost-locale-1.74.* \
-#             boost-log-1.74.* \
-#             boost-program-options-1.74.* \
+# yum install boost-filesystem-1.81.0 \
+#             boost-locale-1.81.0 \
+#             boost-log-1.81.0 \
+#             boost-program-options-1.81.0 \
 #             libcap  \
 #             libcurl  \
 #             libdrm   \
