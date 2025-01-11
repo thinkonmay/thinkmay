@@ -7,9 +7,6 @@
 [submodule "worker/sunshine"]
 	path = worker/sunshine
 	url = https://github.com/thinkonmay/sunshine-sdk
-[submodule "app/moonlight"]
-	path = app/moonlight
-	url = https://github.com/thinkonmay/moonlight-desktop
 [submodule "worker/webrtc"]
 	path = worker/webrtc
 	url = https://github.com/thinkonmay/thinkremote-rtchub
