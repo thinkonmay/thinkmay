@@ -82,8 +82,7 @@ jobs:
         shell: msys2 {0}
         run: |
           mkdir -p artifacts
-          # move
-          mv ./worker/sunshine/build/sunshine.exe ../artifacts/shmsunshine.exe
+          cp ./worker/sunshine/build/sunshine.exe ./artifacts/shmsunshine.exe
 
 
       - name: Upload Artifacts
@@ -126,10 +125,41 @@ jobs:
           name: daemon-windows
           path: artifacts/ 
 
+  build_steam:
+    name: Build Steam Login
+    runs-on: windows-2019
+
+
+    steps:
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.GH_TOKEN }}
+
+      
+      - name: Prepare
+        run: mkdir -p ./artifacts
+      - name: Build solution
+        run: |
+          cd worker/steam 
+          dotnet publish --sc true -o ../../artifacts /p:PublishSingleFile=true .
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: steam-windows
+          path: artifacts/ 
+
   build_package: 
     name: Package Win
     runs-on: windows-2019
-    needs: [build_daemon,build_sunshine]
+    needs: [build_daemon,build_sunshine,build_steam]
 
     steps:
       - uses: denoland/setup-deno@v2
@@ -166,6 +196,11 @@ jobs:
         with:
           name: daemon-window
           path: daemon
+      - uses: actions/download-artifact@v4
+        name: download daemon
+        with:
+          name: steam-window
+          path: steam
 
       - name: build
         shell: powershell
@@ -175,6 +210,7 @@ jobs:
           mkdir -p artifacts
           cp daemon/daemon.exe ./assets
           cp sunshine/shmsunshine.exe ./assets
+          cp steam/steam-login.exe ./store
           cp ./src-tauri/target/release/bundle/msi/thinkmay_0.1.0_x64_en-US.msi ./artifacts/
 
       - name: Upload Artifacts
