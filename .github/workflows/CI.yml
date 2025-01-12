@@ -194,12 +194,12 @@ jobs:
       - uses: actions/download-artifact@v4
         name: download daemon
         with:
-          name: daemon-window
+          name: daemon-windows
           path: daemon
       - uses: actions/download-artifact@v4
         name: download daemon
         with:
-          name: steam-window
+          name: steam-windows
           path: steam
 
       - name: build
