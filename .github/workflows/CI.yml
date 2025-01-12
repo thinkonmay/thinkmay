@@ -162,11 +162,9 @@ jobs:
     needs: [build_daemon,build_sunshine,build_steam]
 
     steps:
-      - name: setup node
-        uses: actions/setup-node@v4
+      - uses: denoland/setup-deno@v2
         with:
-            node-version: lts/*
-            cache: 'npm' # Set this to npm, yarn or pnpm.
+          deno-version: "1.8.2"
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -207,12 +205,12 @@ jobs:
       - name: build
         shell: powershell
         run: |
-          npm install
+          deno install
+          deno run tauri build
+          mkdir -p artifacts
           cp daemon/daemon.exe ./assets
           cp sunshine/shmsunshine.exe ./assets
           cp steam/steam-login.exe ./assets/store
-
-          npm run tauri build
           cp ./src-tauri/target/release/bundle/msi/thinkmay_0.1.0_x64_en-US.msi ./artifacts/
 
       - name: Upload Artifacts
