@@ -13,3 +13,6 @@
 [submodule "worker/steam"]
 	path = worker/steam
 	url = https://github.com/thinkonmay/steam-login
+[submodule "assets"]
+	path = assets
+	url = https://github.com/thinkonmay/assets
