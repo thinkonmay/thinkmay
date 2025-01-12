@@ -164,7 +164,7 @@ jobs:
     steps:
       - uses: denoland/setup-deno@v2
         with:
-          deno-version: "1.8.2"
+          deno-version: "2.1.5"
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -206,11 +206,12 @@ jobs:
         shell: powershell
         run: |
           deno install
-          deno run tauri build
+
           mkdir -p artifacts
           cp daemon/daemon.exe ./assets
           cp sunshine/shmsunshine.exe ./assets
           cp steam/steam-login.exe ./assets/store
+          deno run tauri build
           cp ./src-tauri/target/release/bundle/msi/thinkmay_0.1.0_x64_en-US.msi ./artifacts/
 
       - name: Upload Artifacts
