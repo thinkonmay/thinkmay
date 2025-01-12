@@ -5,3 +5,5 @@ out/
 node_modules/
 deno.lock
 dist/
+statik.go
+public/

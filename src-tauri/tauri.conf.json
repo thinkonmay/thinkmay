@@ -31,6 +31,18 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],    
+    "resources": {
+      "../assets/*.exe": "bin/",
+      "../assets/*.dll": "bin/",
+      "../assets/display/*": "bin/display/",
+      "../assets/audio/*": "bin/audio/",
+      "../assets/gamepad/*": "bin/gamepad/",
+      "../assets/service/*": "bin/service/",
+      "../assets/storage/*": "bin/storage/",
+      "../assets/store/*": "bin/store/",
+      "../assets/directx/*": "bin/directx/",
+      "../assets/directx/include/*": "bin/directx/include/"
+    }
   }
 }

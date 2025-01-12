@@ -1,0 +1,182 @@
+---
+name: CI
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  github_env:
+    name: GitHub Env Debug
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Dump github context
+        run: echo "$GITHUB_CONTEXT"
+        shell: bash
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+
+
+  build_sunshine:
+    name: Windows
+    runs-on: windows-2019
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Dependencies Windows
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: mingw64
+          update: true
+          install: >-
+            wget
+
+      - name: Update Windows dependencies
+        shell: msys2 {0}
+        run: |
+          # download working curl
+          wget https://repo.msys2.org/mingw/mingw64/mingw-w64-x86_64-curl-8.8.0-1-any.pkg.tar.zst
+
+          # install dependencies
+          pacman -U --noconfirm mingw-w64-x86_64-curl-8.8.0-1-any.pkg.tar.zst
+          pacman -Syu --noconfirm \
+            --ignore=mingw-w64-x86_64-curl \
+            git \
+            mingw-w64-x86_64-boost \
+            mingw-w64-x86_64-cmake \
+            mingw-w64-x86_64-cppwinrt \
+            mingw-w64-x86_64-graphviz \
+            mingw-w64-x86_64-miniupnpc \
+            mingw-w64-x86_64-nlohmann-json \
+            mingw-w64-x86_64-nodejs \
+            mingw-w64-x86_64-nsis \
+            mingw-w64-x86_64-onevpl \
+            mingw-w64-x86_64-openssl \
+            mingw-w64-x86_64-opus \
+            mingw-w64-x86_64-toolchain
+
+      - name: Build Windows
+        shell: msys2 {0}
+        run: |
+          cd ./worker/sunshine
+          mkdir build
+          cd build
+          cmake \
+            -DCMAKE_BUILD_TYPE=Release \
+            -G "Ninja" \
+            ..
+          ninja
+
+      - name: Package Windows
+        shell: msys2 {0}
+        run: |
+          mkdir -p artifacts
+          cd build
+
+          # move
+          mv ./worker/sunshine/build/sunshine.exe ../artifacts/shmsunshine.exe
+
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: sunshine-windows
+          path: artifacts
+
+  build_daemon:
+    name: Windows
+    runs-on: windows-2019
+
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.23
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: build
+        run: |
+          cd ./worker/daemon
+          go mod download
+          go build -o daemon.exe -buildvcs=false ./service/window/
+
+
+      - name: Package Windows
+        run: |
+          mkdir -p artifacts
+          cp ./worker/daemon/daemon.exe ./artifacts/daemon.exe
+
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: daemon-windows
+          path: artifacts/ 
+
+  build_package: 
+    name: Windows
+    runs-on: windows-2019
+    needs: [build_daemon,build_sunshine]
+
+    steps:
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: "1.8.2"
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+        # webkitgtk 4.0 is for Tauri v1 - webkitgtk 4.1 is for Tauri v2.
+        # You can remove the one that doesn't apply to your app to speed up the workflow a bit.
+
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/download-artifact@v4
+        name: download sunshine
+        with:
+          name: sunshine-window
+          path: sunshine
+      - uses: actions/download-artifact@v4
+        name: download daemon
+        with:
+          name: daemon-window
+          path: daemon
+
+      - name: build
+        shell: powershell
+        run: |
+          deno install
+          deno run tauri build
+          mkdir -p artifacts
+          cp daemon/daemon.exe ./assets
+          cp sunshine/shmsunshine.exe ./assets
+          cp ./src-tauri/target/release/bundle/msi/thinkmay_0.1.0_x64_en-US.msi ./artifacts/
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: sunshine-windows
+          path: artifacts
