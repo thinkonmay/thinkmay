@@ -5,7 +5,7 @@ go build -o ../../binary/hub.exe -buildvcs=false ./cmd/
 cd ..
 
 cd daemon
-go build -o ../../binary/daemon.exe -buildvcs=false ./service/window/
+go build -o ../../binary/daemon.exe -buildvcs=false ./cmd/
 cd ..
 
 cd sunshine/build
