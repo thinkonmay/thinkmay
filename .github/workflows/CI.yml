@@ -189,7 +189,7 @@ jobs:
       - uses: actions/download-artifact@v4
         name: download sunshine
         with:
-          name: sunshine-window
+          name: sunshine-windows
           path: sunshine
       - uses: actions/download-artifact@v4
         name: download daemon
@@ -210,11 +210,11 @@ jobs:
           mkdir -p artifacts
           cp daemon/daemon.exe ./assets
           cp sunshine/shmsunshine.exe ./assets
-          cp steam/steam-login.exe ./store
+          cp steam/steam-login.exe ./assets/store
           cp ./src-tauri/target/release/bundle/msi/thinkmay_0.1.0_x64_en-US.msi ./artifacts/
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: sunshine-windows
+          name: msi-windows
           path: artifacts
