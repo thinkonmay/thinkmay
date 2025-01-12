@@ -24,7 +24,7 @@ jobs:
 
 
   build_sunshine:
-    name: Windows
+    name: Sunshine Win
     runs-on: windows-2019
 
     steps:
@@ -82,8 +82,6 @@ jobs:
         shell: msys2 {0}
         run: |
           mkdir -p artifacts
-          cd build
-
           # move
           mv ./worker/sunshine/build/sunshine.exe ../artifacts/shmsunshine.exe
 
@@ -95,7 +93,7 @@ jobs:
           path: artifacts
 
   build_daemon:
-    name: Windows
+    name: Daemon Win
     runs-on: windows-2019
 
     steps:
@@ -129,7 +127,7 @@ jobs:
           path: artifacts/ 
 
   build_package: 
-    name: Windows
+    name: Package Win
     runs-on: windows-2019
     needs: [build_daemon,build_sunshine]
 
