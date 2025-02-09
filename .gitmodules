@@ -16,3 +16,6 @@
 [submodule "assets"]
 	path = assets
 	url = https://github.com/thinkonmay/assets
+[submodule "browser/webapp"]
+	path = browser/webapp
+	url = https://github.com/thinkonmay/VirtualOS-Win11
