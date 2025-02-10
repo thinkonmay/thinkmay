@@ -125,6 +125,40 @@ jobs:
           name: daemon-windows
           path: artifacts/ 
 
+  build_proxy:
+    name: Daemon Win
+    runs-on: windows-2019
+
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.23
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: build
+        run: |
+          cd ./webrtc/
+          go mod download
+          go build -o proxy.exe -buildvcs=false ./cmd/
+
+
+      - name: Package Windows
+        run: |
+          mkdir -p artifacts
+          cp ./worker/webrtc/proxy.exe ./artifacts/proxy.exe
+
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: proxy-windows
+          path: artifacts/ 
+
   build_steam:
     name: Build Steam Login
     runs-on: windows-2019
@@ -197,6 +231,11 @@ jobs:
           name: daemon-windows
           path: daemon
       - uses: actions/download-artifact@v4
+        name: download proxy
+        with:
+          name: proxy-windows
+          path: proxy
+      - uses: actions/download-artifact@v4
         name: download daemon
         with:
           name: steam-windows
@@ -209,6 +248,7 @@ jobs:
 
           mkdir -p artifacts
           cp daemon/daemon.exe ./assets
+          cp proxy/proxy.exe ./assets
           cp sunshine/shmsunshine.exe ./assets
           cp steam/steam-login.exe ./assets/store
           deno run tauri build
