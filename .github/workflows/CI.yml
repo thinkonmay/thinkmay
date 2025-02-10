@@ -126,7 +126,7 @@ jobs:
           path: artifacts/ 
 
   build_proxy:
-    name: Daemon Win
+    name: Proxy Win
     runs-on: windows-2019
 
     steps:
