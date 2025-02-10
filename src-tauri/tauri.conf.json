@@ -33,16 +33,18 @@
       "icons/icon.ico"
     ],    
     "resources": {
-      "../assets/*.exe": "bin/",
-      "../assets/*.dll": "bin/",
-      "../assets/display/*": "bin/display/",
-      "../assets/audio/*": "bin/audio/",
-      "../assets/gamepad/*": "bin/gamepad/",
-      "../assets/service/*": "bin/service/",
-      "../assets/storage/*": "bin/storage/",
-      "../assets/store/*": "bin/store/",
-      "../assets/directx/*": "bin/directx/",
-      "../assets/directx/include/*": "bin/directx/include/"
+      "../assets/*.exe": "binary/",
+      "../assets/*.dll": "binary/",
+      "../assets/display/*": "binary/display/",
+      "../assets/audio/*": "binary/audio/",
+      "../assets/gamepad/*": "binary/gamepad/",
+      "../assets/service/*": "binary/service/",
+      "../assets/storage/*": "binary/storage/",
+      "../assets/store/*": "binary/store/",
+      "../assets/directx/*": "binary/directx/",
+      "../assets/directx/include/*": "binary/directx/include/",
+      "../assets/cluster.yaml": "binary/cluster.yaml",
+      "../assets/turn.json": "binary/turn.json"
     }
   }
 }
