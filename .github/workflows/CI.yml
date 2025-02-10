@@ -193,7 +193,7 @@ jobs:
   build_package: 
     name: Package Win
     runs-on: windows-2019
-    needs: [build_daemon,build_sunshine,build_steam]
+    needs: [build_daemon,build_sunshine,build_steam,build_proxy]
 
     steps:
       - uses: denoland/setup-deno@v2
