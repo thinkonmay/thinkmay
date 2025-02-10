@@ -142,7 +142,7 @@ jobs:
 
       - name: build
         run: |
-          cd ./webrtc/
+          cd ./worker/webrtc/
           go mod download
           go build -o proxy.exe -buildvcs=false ./cmd/
 
