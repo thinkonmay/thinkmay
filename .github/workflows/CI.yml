@@ -271,10 +271,6 @@ jobs:
         with:
           name: msi-windows
           path: artifacts
-      - name: setup
-        shell: bash
-        run: >-
-          apt install -y curl
       - name: upload
         shell: bash
         run: >-
