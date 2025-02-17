@@ -111,12 +111,14 @@ jobs:
           cd ./worker/daemon
           go mod download
           go build -o daemon.exe -buildvcs=false ./cmd/
+          go build -o pb.exe -buildvcs=false ./pocketbase/cmd/
 
 
       - name: Package Windows
         run: |
           mkdir -p artifacts
           cp ./worker/daemon/daemon.exe ./artifacts/daemon.exe
+          cp ./worker/daemon/pb.exe ./artifacts/pb.exe
 
 
       - name: Upload Artifacts
@@ -248,6 +250,7 @@ jobs:
 
           mkdir -p artifacts
           cp daemon/daemon.exe ./assets
+          cp daemon/pb.exe ./assets
           cp proxy/proxy.exe ./assets
           cp sunshine/shmsunshine.exe ./assets
           cp steam/steam-login.exe ./assets/store
