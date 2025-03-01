@@ -111,9 +111,10 @@ jobs:
 
       - name: build
         run: |
+          git clone https://github.com/thinkonmay/assets -b linux
+
           sudo apt install -y zip
           mkdir -p artifacts
-          mkdir -p assets
           cp daemon/daemon ./assets
           cp daemon/pb ./assets
           cp proxy/proxy ./assets
