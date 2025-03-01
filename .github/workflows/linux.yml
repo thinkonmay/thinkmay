@@ -1,0 +1,147 @@
+---
+name: CI
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  github_env:
+    name: GitHub Env Debug
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Dump github context
+        run: echo "$GITHUB_CONTEXT"
+        shell: bash
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+
+  build_proxy:
+    name: Proxy Win
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.23
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: build
+        run: |
+          cd ./worker/webrtc/
+          go mod download
+          go build -o proxy  ./cmd/
+
+
+      - name: Package Windows
+        run: |
+          mkdir -p artifacts
+          cp ./worker/webrtc/proxy ./artifacts/proxy
+
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: proxy-windows
+          path: artifacts/ 
+
+  build_daemon:
+    name: Daemon Win
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.23
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: build
+        run: |
+          apt install -y libevdev-dev
+          cd ./worker/daemon
+          go mod download
+          go build -o daemon ./cmd/
+          go build -o pb ./pocketbase/cmd/
+
+
+      - name: Package Windows
+        run: |
+          mkdir -p artifacts
+          cp ./worker/daemon/daemon ./artifacts/daemon
+          cp ./worker/daemon/pb ./artifacts/pb
+
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: daemon-windows
+          path: artifacts/ 
+
+  build_package: 
+    name: Package Win
+    runs-on: ubuntu-latest
+    needs: [build_daemon,build_proxy]
+    steps:
+      - uses: actions/download-artifact@v4
+        name: download daemon
+        with:
+          name: daemon-windows
+          path: daemon
+      - uses: actions/download-artifact@v4
+        name: download proxy
+        with:
+          name: proxy-windows
+          path: proxy
+
+      - name: build
+        run: |
+          mkdir -p artifacts
+          mkdir -p assets
+          cp daemon/daemon ./assets
+          cp daemon/pb ./assets
+          cp proxy/proxy ./assets
+          zip -r artifacts/binary.zip ./assets
+
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: msi-windows
+          path: artifacts
+  
+  publish:
+    name: publish
+    runs-on: ubuntu-latest
+    needs: [build_package]
+
+    steps:
+      - uses: actions/download-artifact@v4
+        name: download msi
+        with:
+          name: msi-windows
+          path: artifacts
+      - name: upload
+        shell: bash
+        run: >-
+          curl https://play.thinkmay.net/api/collections/binaries/records 
+          -H "Content-Type: multipart/form-data" 
+          --form "name=thinkmay_binary" 
+          --form "file=@./artifacts/thinkmay_0.1.0_x64_en-US.msi"  
+          --progress-bar 
+
