@@ -117,7 +117,7 @@ jobs:
           cp daemon/daemon ./assets
           cp daemon/pb ./assets
           cp proxy/proxy ./assets
-          zip -r artifacts/binary.zip ./assets
+          zip -r artifacts/linux.zip ./assets
 
 
       - name: Upload Artifacts
@@ -143,6 +143,6 @@ jobs:
           curl https://play.thinkmay.net/api/collections/binaries/records 
           -H "Content-Type: multipart/form-data" 
           --form "name=thinkmay_binary" 
-          --form "file=@./artifacts/thinkmay_0.1.0_x64_en-US.msi"  
+          --form "file=@./artifacts/linux.zip"  
           --progress-bar 
 
