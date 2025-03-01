@@ -118,6 +118,7 @@ jobs:
           cp daemon/daemon ./assets
           cp daemon/pb ./assets
           cp proxy/proxy ./assets
+          chmod 777 -R ./assets
           zip -r artifacts/linux.zip ./assets
 
 
