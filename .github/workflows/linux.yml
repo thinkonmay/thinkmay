@@ -111,7 +111,7 @@ jobs:
 
       - name: build
         run: |
-          git clone https://github.com/thinkonmay/assets -b linux
+          git clone https://github.com/thinkonmay/assets -b ubuntu
 
           sudo apt install -y zip
           mkdir -p artifacts
