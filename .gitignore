@@ -7,3 +7,4 @@ deno.lock
 dist/
 statik.go
 public/
+.vscode/
