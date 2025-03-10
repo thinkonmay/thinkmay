@@ -279,7 +279,7 @@ jobs:
         run: >-
           curl https://play.thinkmay.net/api/collections/binaries/records 
           -H "Content-Type: multipart/form-data" 
-          --form "name=thinkmay_binary" 
+          --form "name=thinkmay_binary_window" 
           --form "file=@./artifacts/thinkmay_0.1.0_x64_en-US.msi"  
           --progress-bar 
 
