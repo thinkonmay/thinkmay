@@ -19,3 +19,6 @@
 [submodule "browser/webapp"]
 	path = browser/webapp
 	url = https://github.com/thinkonmay/VirtualOS-Win11
+[submodule "data"]
+	path = data
+	url = https://github.com/thinkonmay/manage
