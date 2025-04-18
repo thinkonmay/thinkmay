@@ -7,18 +7,15 @@
 [submodule "worker/webrtc"]
 	path = worker/webrtc
 	url = https://github.com/thinkonmay/thinkremote-rtchub
-[submodule "browser/landingpage"]
-	path = browser/landingpage
-	url = https://github.com/thinkonmay/lass-landing-page
 [submodule "worker/steam"]
 	path = worker/steam
 	url = https://github.com/thinkonmay/steam-login
 [submodule "assets"]
 	path = assets
 	url = https://github.com/thinkonmay/assets
-[submodule "browser/webapp"]
-	path = browser/webapp
-	url = https://github.com/thinkonmay/VirtualOS-Win11
 [submodule "data"]
 	path = data
 	url = https://github.com/thinkonmay/manage
+[submodule "website"]
+	path = website
+	url = https://github.com/thinkonmay/landing-page-v2
