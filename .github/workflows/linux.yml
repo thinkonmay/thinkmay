@@ -127,9 +127,50 @@ jobs:
         with:
           name: msi-windows
           path: artifacts
-  
+          
   publish:
     name: publish
+    runs-on: ubuntu-latest
+    needs: [build_package]
+    steps:
+    
+      # Generate date-based version number
+      - name: Generate version number
+        id: version
+        run: |
+          echo "VERSION=$(date +'v%Y.%m.%d.%H%M')" >> $GITHUB_OUTPUT
+          echo "Generated version: $(date +'v%Y.%m.%d.%H%M')"
+      
+      # Add changelog based on commit messages
+      - name: Checkout for changelog
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 10
+      
+      - name: Generate changelog
+        id: changelog
+        run: |
+          echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+          echo "## Changes in this release" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          git log -5 --pretty=format:"* %s" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      
+      # Create GitHub Release
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ./artifacts/linux.zip
+          tag_name: ${{ steps.version.outputs.VERSION }}
+          name: Release ${{ steps.version.outputs.VERSION }}
+          body: ${{ steps.changelog.outputs.CHANGELOG }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+  publish_pb:
+    name: publish_pb
     runs-on: ubuntu-latest
     needs: [build_package]
 
@@ -147,4 +188,3 @@ jobs:
           --form "name=thinkmay_binary" 
           --form "file=@./artifacts/linux.zip"  
           --progress-bar 
-
