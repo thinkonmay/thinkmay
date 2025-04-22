@@ -1,9 +1,6 @@
 [submodule "worker/daemon"]
 	path = worker/daemon
 	url = https://github.com/thinkonmay/thinkshare-daemon
-[submodule "worker/sunshine"]
-	path = worker/sunshine
-	url = https://github.com/thinkonmay/sunshine-sdk
 [submodule "worker/webrtc"]
 	path = worker/webrtc
 	url = https://github.com/thinkonmay/thinkremote-rtchub
