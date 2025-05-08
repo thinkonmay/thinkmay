@@ -16,3 +16,6 @@
 [submodule "website"]
 	path = website
 	url = https://github.com/thinkonmay/landing-page-v2
+[submodule "worker/sunshine"]
+	path = worker/sunshine
+	url = https://github.com/thinkonmay/sunshine-sdk
