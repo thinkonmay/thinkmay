@@ -240,11 +240,11 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
 
 
-      - uses: actions/download-artifact@v4
-        name: download sunshine
-        with:
-          name: sunshine-windows
-          path: sunshine
+#      - uses: actions/download-artifact@v4
+#        name: download sunshine
+#        with:
+#          name: sunshine-windows
+#          path: sunshine
       - uses: actions/download-artifact@v4
         name: download daemon
         with:
@@ -270,7 +270,7 @@ jobs:
           cp daemon/daemon.exe ./assets
           cp daemon/pb.exe ./assets
           cp proxy/proxy.exe ./assets
-          cp sunshine/shmsunshine.exe ./assets
+          # cp sunshine/shmsunshine.exe ./assets
           cp steam/steam-login.exe ./assets/store
           deno run tauri build
           cp ./src-tauri/target/release/bundle/msi/thinkmay_0.1.0_x64_en-US.msi ./artifacts/
