@@ -8,3 +8,4 @@ dist/
 statik.go
 public/
 .vscode/
+installer.exe
