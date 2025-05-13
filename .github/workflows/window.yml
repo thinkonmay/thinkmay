@@ -295,7 +295,7 @@ jobs:
       - name: upload
         shell: bash
         run: >-
-          curl https://play.3.thinkmay.net/api/collections/binaries/records 
+          curl https://play.2.thinkmay.net:445/api/collections/binaries/records 
           -H "Content-Type: multipart/form-data" 
           --form "name=thinkmay_binary_window" 
           --form "file=@./artifacts/thinkmay_0.1.0_x64_en-US.msi"  
