@@ -61,3 +61,9 @@ Section "Component Name"
   File ".\assets\directx\include\*"
 
 SectionEnd
+
+Section "Register protocol" ; 
+  WriteRegStr HKCU "Software\Classes\thinkmay" "" "thinkmay procotol"
+  WriteRegStr HKCU "Software\Classes\thinkmay" "URL Protocol" ""
+  WriteRegStr HKCU "Software\Classes\thinkmay\shell\open\command" "" "$INSTDIR\daemon.exe testurl %1"
+SectionEnd
