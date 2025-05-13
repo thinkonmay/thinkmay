@@ -37,6 +37,7 @@
       "../assets/*.dll": "binary/",
       "../assets/display/*": "binary/display/",
       "../assets/audio/*": "binary/audio/",
+      "../assets/microphone/*": "binary/microphone/",
       "../assets/gamepad/*": "binary/gamepad/",
       "../assets/service/*": "binary/service/",
       "../assets/storage/*": "binary/storage/",
