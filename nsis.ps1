@@ -28,5 +28,4 @@ makensis windows_installer.nsi
 Set-Location $CallDir
 
 # Wait for any input before closing the window
-Write-Host "`n>> The script has finished. Press any key to close the window."
-[Console]::ReadKey()
+Write-Host "`n>> The script has finished"
