@@ -43,7 +43,7 @@ Section "Component Name"
   File ".\assets\microphone\*"
 
   SetOutPath "$INSTDIR\gamepad"
-  File "..\assets\gamepad\*"
+  File ".\assets\gamepad\*"
 
   SetOutPath "$INSTDIR\service"
   File ".\assets\service\*"
