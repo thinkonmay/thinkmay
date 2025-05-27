@@ -19,3 +19,6 @@
 [submodule "worker/sunshine"]
 	path = worker/sunshine
 	url = https://github.com/thinkonmay/sunshine-sdk
+[submodule "worker/storage"]
+	path = worker/storage
+	url = https://github.com/thinkonmay/cluster-block-storage
