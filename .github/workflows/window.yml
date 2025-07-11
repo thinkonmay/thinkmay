@@ -25,7 +25,7 @@ jobs:
 
   # build_sunshine:
   #   name: Sunshine Win
-  #   runs-on: windows-2020
+  #   runs-on: windows-2022
 
   #   steps:
   #     - name: Checkout
@@ -93,7 +93,7 @@ jobs:
 
   build_daemon:
     name: Daemon Win
-    runs-on: windows-2020
+    runs-on: windows-2022
 
     steps:
       - name: Setup Go
@@ -129,7 +129,7 @@ jobs:
 
   build_proxy:
     name: Proxy Win
-    runs-on: windows-2020
+    runs-on: windows-2022
 
     steps:
       - name: Setup Go
@@ -163,7 +163,7 @@ jobs:
 
   build_steam:
     name: Build Steam Login
-    runs-on: windows-2020
+    runs-on: windows-2022
 
 
     steps:
@@ -194,7 +194,7 @@ jobs:
 
   build_package: 
     name: Package Win
-    runs-on: windows-2020
+    runs-on: windows-2022
     needs: [build_daemon,build_steam,build_proxy]
 
     steps:
