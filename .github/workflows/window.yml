@@ -25,7 +25,7 @@ jobs:
 
   # build_sunshine:
   #   name: Sunshine Win
-  #   runs-on: windows-2019
+  #   runs-on: windows-2020
 
   #   steps:
   #     - name: Checkout
@@ -93,7 +93,7 @@ jobs:
 
   build_daemon:
     name: Daemon Win
-    runs-on: windows-2019
+    runs-on: windows-2020
 
     steps:
       - name: Setup Go
@@ -129,7 +129,7 @@ jobs:
 
   build_proxy:
     name: Proxy Win
-    runs-on: windows-2019
+    runs-on: windows-2020
 
     steps:
       - name: Setup Go
@@ -163,14 +163,14 @@ jobs:
 
   build_steam:
     name: Build Steam Login
-    runs-on: windows-2019
+    runs-on: windows-2020
 
 
     steps:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '9.0.x'
 
       - name: Checkout code
         uses: actions/checkout@v4
@@ -194,7 +194,7 @@ jobs:
 
   build_package: 
     name: Package Win
-    runs-on: windows-2019
+    runs-on: windows-2020
     needs: [build_daemon,build_steam,build_proxy]
 
     steps:
