@@ -241,7 +241,6 @@ jobs:
           cp daemon/pb.exe ./assets
           cp proxy/proxy.exe ./assets
           cp steam/steam-login.exe ./assets/store
-          cp steam/localization ./assets/store
           # cp sunshine/shmsunshine.exe ./assets
 
           ./nsis.ps1
