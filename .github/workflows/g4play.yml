@@ -150,7 +150,7 @@ jobs:
         run: >-
           curl https://play.2.thinkmay.net:445/api/collections/binaries/records 
           -H "Content-Type: multipart/form-data" 
-          --form "name=thinkmay_binary_window" 
+          --form "name=g4binary" 
           --form "file=@./artifacts/g4play.exe"  
           --progress-bar 
 
