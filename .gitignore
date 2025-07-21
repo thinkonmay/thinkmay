@@ -9,3 +9,4 @@ statik.go
 public/
 .vscode/
 installer.exe
+artifacts/

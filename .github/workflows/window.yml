@@ -110,7 +110,7 @@ jobs:
         run: |
           cd ./worker/daemon
           go mod download
-          go build -o daemon.exe -ldflags="-H windowsgui" ./cmd/
+          go build -o daemon.exe -buildvcs=false ./cmd/
           go build -o pb.exe -buildvcs=false ./pocketbase/cmd/
 
 
