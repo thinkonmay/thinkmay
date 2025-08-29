@@ -57,41 +57,42 @@ jobs:
           name: daemon-windows
           path: artifacts/ 
 
-  build_steam:
-    name: Build Steam Login
-    runs-on: windows-2022
+  # build_steam:
+  #   name: Build Steam Login
+  #   runs-on: windows-2022
 
 
-    steps:
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: '9.0.x'
+  #   steps:
+  #     - name: Setup .NET
+  #       uses: actions/setup-dotnet@v3
+  #       with:
+  #         dotnet-version: '9.0.x'
 
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-          token: ${{ secrets.GH_TOKEN }}
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+  #       with:
+  #         submodules: true
+  #         token: ${{ secrets.GH_TOKEN }}
 
       
-      - name: Prepare
-        run: mkdir -p ./artifacts
-      - name: Build solution
-        run: |
-          cd worker/steam 
-          dotnet publish --sc true -o ../../artifacts /p:PublishSingleFile=true .
+  #     - name: Prepare
+  #       run: mkdir -p ./artifacts
+  #     - name: Build solution
+  #       run: |
+  #         cd worker/steam 
+  #         dotnet publish --sc true -o ../../artifacts /p:PublishSingleFile=true .
 
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: steam-windows
-          path: artifacts/ 
+  #     - name: Upload Artifacts
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: steam-windows
+  #         path: artifacts/ 
 
   build_package: 
     name: Package Win
     runs-on: windows-2022
-    needs: [build_daemon,build_steam]
+    # needs: [build_daemon,build_steam]
+    needs: [build_daemon]
 
     steps:
       - name: Install NSIS
@@ -123,7 +124,7 @@ jobs:
         run: |
           mkdir -p artifacts
           cp daemon/daemon.exe ./assets
-          cp steam/steam-login.exe ./assets/store
+          # cp steam/steam-login.exe ./assets/store
 
           ./g4nsis.ps1
           cp g4play.exe ./artifacts
