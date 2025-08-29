@@ -113,11 +113,11 @@ jobs:
         with:
           name: daemon-windows
           path: daemon
-      - uses: actions/download-artifact@v4
-        name: download daemon
-        with:
-          name: steam-windows
-          path: steam
+      # - uses: actions/download-artifact@v4
+      #   name: download daemon
+      #   with:
+      #     name: steam-windows
+      #     path: steam
 
       - name: build
         shell: powershell
