@@ -43,9 +43,6 @@ Section "Component Name"
   SetOutPath "$INSTDIR\store"
   File ".\assets\store\*"
 
-  SetOutPath "$INSTDIR\store\localization"
-  File ".\assets\store\localization\*"
-
 SectionEnd
 
 Section "Register protocol" ; 
