@@ -141,6 +141,9 @@ jobs:
           scoop update
           scoop bucket add extras
           scoop install nsis
+      - name: Add Scoop shims to PATH
+        run: echo "$env:USERPROFILE\scoop\shims" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        shell: pwsh
 
       - uses: actions/checkout@v4
         with:

@@ -77,7 +77,7 @@ jobs:
           cd ./worker/daemon
           go mod download
           go build -o daemon ./cmd/
-          go build -o pb ./pocketbase/cmd/
+          go build -o pb     ./cmd/pocketbase/
 
 
       - name: Package Windows
