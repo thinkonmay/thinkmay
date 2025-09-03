@@ -39,15 +39,13 @@ jobs:
 
       - name: build
         run: |
-          cd ./worker/webrtc/
+          cd ./worker/proxy/
           go mod download
           go build -o proxy  ./cmd/
-
-
       - name: Package Windows
         run: |
           mkdir -p artifacts
-          cp ./worker/webrtc/proxy ./artifacts/proxy
+          cp ./worker/proxy/proxy ./artifacts/proxy
 
 
       - name: Upload Artifacts

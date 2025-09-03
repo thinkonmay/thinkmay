@@ -1,9 +1,6 @@
 [submodule "worker/daemon"]
 	path = worker/daemon
 	url = https://github.com/thinkonmay/thinkshare-daemon
-[submodule "worker/webrtc"]
-	path = worker/webrtc
-	url = https://github.com/thinkonmay/thinkremote-rtchub
 [submodule "assets"]
 	path = assets
 	url = https://github.com/thinkonmay/assets
@@ -22,3 +19,6 @@
 [submodule "mobile"]
 	path = mobile
 	url = https://github.com/thinkonmay/flutter_app
+[submodule "worker/proxy"]
+	path = worker/proxy
+	url = https://github.com/thinkonmay/thinkremote-rtchub
