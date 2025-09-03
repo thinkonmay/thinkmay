@@ -135,16 +135,7 @@ jobs:
 
     steps:
       - name: Install NSIS
-        run: |
-          iwr -useb get.scoop.sh -outfile 'install.ps1'
-          .\install.ps1 -RunAsAdmin
-          scoop update
-          scoop bucket add extras
-          scoop install nsis
-      - name: Add Scoop shims to PATH
-        run: echo "$env:USERPROFILE\scoop\shims" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-        shell: pwsh
-
+        uses: repolevedavaj/install-nsis@v1.0.3 # Use the install-nsis action
       - uses: actions/checkout@v4
         with:
           submodules: true

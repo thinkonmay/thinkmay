@@ -39,10 +39,6 @@ Section "Component Name"
 
   SetOutPath "$INSTDIR\storage"
   File ".\assets\storage\*"
-
-  SetOutPath "$INSTDIR\store"
-  File ".\assets\store\*"
-
 SectionEnd
 
 Section "Register protocol" ; 
