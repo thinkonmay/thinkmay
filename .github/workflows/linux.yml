@@ -37,9 +37,20 @@ jobs:
           submodules: recursive
           token: ${{ secrets.GH_TOKEN }}
 
+      - name: build-srt
+        run: |
+          git clone https://github.com/Haivision/srt
+          cd srt
+
+          sudo apt-get update
+          sudo apt-get upgrade
+          sudo apt-get install tclsh pkg-config cmake libssl-dev build-essential
+          ./configure
+          make
+          make install
+
       - name: build
         run: |
-          sudo apt install libsrt
           cd ./worker/proxy/
           go mod download
           go build -o proxy  ./cmd/
