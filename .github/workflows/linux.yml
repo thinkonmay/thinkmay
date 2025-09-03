@@ -39,6 +39,7 @@ jobs:
 
       - name: build
         run: |
+          sudo apt install libsrt
           cd ./worker/proxy/
           go mod download
           go build -o proxy  ./cmd/
