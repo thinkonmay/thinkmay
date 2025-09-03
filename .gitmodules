@@ -4,9 +4,6 @@
 [submodule "worker/webrtc"]
 	path = worker/webrtc
 	url = https://github.com/thinkonmay/thinkremote-rtchub
-[submodule "worker/steam"]
-	path = worker/steam
-	url = https://github.com/thinkonmay/steam-login
 [submodule "assets"]
 	path = assets
 	url = https://github.com/thinkonmay/assets
@@ -22,3 +19,6 @@
 [submodule "worker/storage"]
 	path = worker/storage
 	url = https://github.com/thinkonmay/cluster-block-storage
+[submodule "mobile"]
+	path = mobile
+	url = https://github.com/thinkonmay/flutter_app

@@ -23,77 +23,77 @@ jobs:
           GITHUB_CONTEXT: ${{ toJson(github) }}
 
 
-  # build_sunshine:
-  #   name: Sunshine Win
-  #   runs-on: windows-2022
+  build_sunshine:
+    name: Sunshine Win
+    runs-on: windows-2025
 
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
-  #       with:
-  #         submodules: recursive
-  #         token: ${{ secrets.GH_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.GH_TOKEN }}
 
-  #     - name: Setup Dependencies Windows
-  #       uses: msys2/setup-msys2@v2
-  #       with:
-  #         msystem: mingw64
-  #         update: true
-  #         install: >-
-  #           wget
+      - name: Setup Dependencies Windows
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: mingw64
+          update: true
+          install: >-
+            wget
 
-  #     - name: Update Windows dependencies
-  #       shell: msys2 {0}
-  #       run: |
-  #         # download working curl
-  #         wget https://repo.msys2.org/mingw/mingw64/mingw-w64-x86_64-curl-8.8.0-1-any.pkg.tar.zst
+      - name: Update Windows dependencies
+        shell: msys2 {0}
+        run: |
+          # download working curl
+          wget https://repo.msys2.org/mingw/mingw64/mingw-w64-x86_64-curl-8.8.0-1-any.pkg.tar.zst
 
-  #         # install dependencies
-  #         pacman -U --noconfirm mingw-w64-x86_64-curl-8.8.0-1-any.pkg.tar.zst
-  #         pacman -Syu --noconfirm \
-  #           --ignore=mingw-w64-x86_64-curl \
-  #           git \
-  #           mingw-w64-x86_64-boost \
-  #           mingw-w64-x86_64-cmake \
-  #           mingw-w64-x86_64-cppwinrt \
-  #           mingw-w64-x86_64-graphviz \
-  #           mingw-w64-x86_64-miniupnpc \
-  #           mingw-w64-x86_64-nlohmann-json \
-  #           mingw-w64-x86_64-nodejs \
-  #           mingw-w64-x86_64-nsis \
-  #           mingw-w64-x86_64-onevpl \
-  #           mingw-w64-x86_64-openssl \
-  #           mingw-w64-x86_64-opus \
-  #           mingw-w64-x86_64-toolchain
+          # install dependencies
+          pacman -U --noconfirm mingw-w64-x86_64-curl-8.8.0-1-any.pkg.tar.zst
+          pacman -Syu --noconfirm \
+            --ignore=mingw-w64-x86_64-curl \
+            git \
+            mingw-w64-x86_64-boost \
+            mingw-w64-x86_64-cmake \
+            mingw-w64-x86_64-cppwinrt \
+            mingw-w64-x86_64-graphviz \
+            mingw-w64-x86_64-miniupnpc \
+            mingw-w64-x86_64-nlohmann-json \
+            mingw-w64-x86_64-nodejs \
+            mingw-w64-x86_64-nsis \
+            mingw-w64-x86_64-onevpl \
+            mingw-w64-x86_64-openssl \
+            mingw-w64-x86_64-opus \
+            mingw-w64-x86_64-toolchain
 
-  #     - name: Build Windows
-  #       shell: msys2 {0}
-  #       run: |
-  #         cd ./worker/sunshine
-  #         mkdir build
-  #         cd build
-  #         cmake \
-  #           -DCMAKE_BUILD_TYPE=Release \
-  #           -G "Ninja" \
-  #           ..
-  #         ninja
+      - name: Build Windows
+        shell: msys2 {0}
+        run: |
+          cd ./worker/sunshine
+          mkdir build
+          cd build
+          cmake \
+            -DCMAKE_BUILD_TYPE=Release \
+            -G "Ninja" \
+            ..
+          ninja
 
-  #     - name: Package Windows
-  #       shell: msys2 {0}
-  #       run: |
-  #         mkdir -p artifacts
-  #         cp ./worker/sunshine/build/sunshine.exe ./artifacts/shmsunshine.exe
+      - name: Package Windows
+        shell: msys2 {0}
+        run: |
+          mkdir -p artifacts
+          cp ./worker/sunshine/build/sunshine.exe ./artifacts/shmsunshine.exe
 
 
-  #     - name: Upload Artifacts
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: sunshine-windows
-  #         path: artifacts
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: sunshine-windows
+          path: artifacts
 
   build_daemon:
     name: Daemon Win
-    runs-on: windows-2022
+    runs-on: windows-2025
 
     steps:
       - name: Setup Go
@@ -127,75 +127,11 @@ jobs:
           name: daemon-windows
           path: artifacts/ 
 
-  build_proxy:
-    name: Proxy Win
-    runs-on: windows-2022
-
-    steps:
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: 1.23
-
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
-          token: ${{ secrets.GH_TOKEN }}
-
-      - name: build
-        run: |
-          cd ./worker/webrtc/
-          go mod download
-          go build -o proxy.exe -buildvcs=false ./cmd/
-
-
-      - name: Package Windows
-        run: |
-          mkdir -p artifacts
-          cp ./worker/webrtc/proxy.exe ./artifacts/proxy.exe
-
-
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: proxy-windows
-          path: artifacts/ 
-
-  build_steam:
-    name: Build Steam Login
-    runs-on: windows-2022
-
-
-    steps:
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: '9.0.x'
-
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-          token: ${{ secrets.GH_TOKEN }}
-
-      
-      - name: Prepare
-        run: mkdir -p ./artifacts
-      - name: Build solution
-        run: |
-          cd worker/steam 
-          dotnet publish --sc true -o ../../artifacts /p:PublishSingleFile=true .
-
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: steam-windows
-          path: artifacts/ 
 
   build_package: 
     name: Package Win
-    runs-on: windows-2022
-    needs: [build_daemon,build_steam,build_proxy]
+    runs-on: windows-2025
+    needs: [build_daemon,build_sunshine]
 
     steps:
       - name: Install NSIS
@@ -211,42 +147,25 @@ jobs:
           submodules: true
           token: ${{ secrets.GH_TOKEN }}
 
-
-#      - uses: actions/download-artifact@v4
-#        name: download sunshine
-#        with:
-#          name: sunshine-windows
-#          path: sunshine
+      - uses: actions/download-artifact@v4
+        name: download sunshine
+        with:
+          name: sunshine-windows
+          path: sunshine
       - uses: actions/download-artifact@v4
         name: download daemon
         with:
           name: daemon-windows
           path: daemon
-      - uses: actions/download-artifact@v4
-        name: download proxy
-        with:
-          name: proxy-windows
-          path: proxy
-      - uses: actions/download-artifact@v4
-        name: download daemon
-        with:
-          name: steam-windows
-          path: steam
-
       - name: build
         shell: powershell
         run: |
           mkdir -p artifacts
           cp daemon/daemon.exe ./assets
-          cp daemon/pb.exe ./assets
-          cp proxy/proxy.exe ./assets
-          cp steam/steam-login.exe ./assets/store
-          # cp sunshine/shmsunshine.exe ./assets
+          cp sunshine/shmsunshine.exe ./assets
 
           ./nsis.ps1
           cp installer.exe ./artifacts
-
-
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
