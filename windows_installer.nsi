@@ -36,6 +36,9 @@ Section "Component Name"
   SetOutPath "$INSTDIR\display"
   File ".\assets\display\*"
 
+  SetOutPath "$INSTDIR\ivshmem"
+  File ".\assets\ivshmem\*"
+
   SetOutPath "$INSTDIR\audio"
   File ".\assets\audio\*"
 
