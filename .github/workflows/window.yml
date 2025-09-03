@@ -134,12 +134,12 @@ jobs:
     needs: [build_daemon,build_sunshine]
 
     steps:
-      - name: Install NSIS
-        uses: repolevedavaj/install-nsis@v1.0.3 # Use the install-nsis action
       - uses: actions/checkout@v4
         with:
           submodules: true
           token: ${{ secrets.GH_TOKEN }}
+      - name: Install NSIS
+        uses: repolevedavaj/install-nsis@v1.0.3 # Use the install-nsis action
 
       - uses: actions/download-artifact@v4
         name: download sunshine
