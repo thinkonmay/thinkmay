@@ -159,6 +159,12 @@ jobs:
         with:
           name: daemon-windows
           path: daemon
+      - name: download-ivshmem
+        shell: powershell
+        run: |
+          curl -o ivshmem.tar.gz https://dl.quantum2.xyz/ivshmem.tar.gz
+          tar -xf ivshmem.tar.gz -C ./assets
+          rm ivshmem.tar.gz
       - name: build
         shell: powershell
         run: |
