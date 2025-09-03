@@ -111,7 +111,7 @@ jobs:
           cd ./worker/daemon
           go mod download
           go build -o daemon.exe -buildvcs=false ./cmd/
-          go build -o pb.exe -buildvcs=false ./pocketbase/cmd/
+          go build -o pb.exe     -buildvcs=false ./cmd/pocketbase/
 
 
       - name: Package Windows
