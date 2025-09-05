@@ -57,6 +57,8 @@ jobs:
         run: |
           mkdir -p artifacts
           cp ./worker/proxy/proxy ./artifacts/proxy
+          mkdir ./artifacts/srt
+          cp /usr/local/lib/libsrt* ./artifacts/srt
 
 
       - name: Upload Artifacts
@@ -127,6 +129,7 @@ jobs:
           cp daemon/daemon ./assets
           cp daemon/pb ./assets
           cp proxy/proxy ./assets
+          cp -r proxy/srt ./assets/srt
           chmod 777 -R ./assets
           zip -r artifacts/linux.zip ./assets
 
