@@ -40,7 +40,6 @@ jobs:
       - name: clone
         run: |
           git clone https://github.com/qemu/qemu -b stable-10.0
-          cd qemu && git submodule update --init --recursive
       - name: build
         run: |
           cd qemu
