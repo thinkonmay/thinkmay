@@ -99,7 +99,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: 1.23
+          go-version: 1.25
 
       - uses: actions/checkout@v4
         with:
@@ -110,8 +110,8 @@ jobs:
         run: |
           cd ./worker/daemon
           go mod download
-          go build -o daemon.exe -buildvcs=false ./cmd/
-          go build -o pb.exe     -buildvcs=false ./cmd/pocketbase/
+          GOEXPERIMENT=greenteagc go build -o daemon.exe  ./cmd/
+          GOEXPERIMENT=greenteagc go build -o pb.exe      ./cmd/pocketbase/
 
 
       - name: Package Windows

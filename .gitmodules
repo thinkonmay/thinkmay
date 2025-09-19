@@ -4,21 +4,21 @@
 [submodule "assets"]
 	path = assets
 	url = https://github.com/thinkonmay/assets
-[submodule "data"]
-	path = data
-	url = https://github.com/thinkonmay/manage
 [submodule "website"]
 	path = website
 	url = https://github.com/thinkonmay/landing-page-v2
 [submodule "worker/sunshine"]
 	path = worker/sunshine
 	url = https://github.com/thinkonmay/sunshine-sdk
-[submodule "worker/storage"]
-	path = worker/storage
-	url = https://github.com/thinkonmay/cluster-block-storage
 [submodule "mobile"]
 	path = mobile
 	url = https://github.com/thinkonmay/flutter_app
 [submodule "worker/proxy"]
 	path = worker/proxy
 	url = https://github.com/thinkonmay/thinkremote-rtchub
+[submodule "global/proxy"]
+	path = global/proxy
+	url = https://github.com/thinkonmay/global-proxy
+[submodule "global/data"]
+	path = global/data
+	url = https://github.com/thinkonmay/manage

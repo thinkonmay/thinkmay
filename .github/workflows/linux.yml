@@ -30,7 +30,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: 1.23
+          go-version: 1.25
 
       - uses: actions/checkout@v4
         with:
@@ -52,7 +52,7 @@ jobs:
         run: |
           cd ./worker/proxy/
           go mod download
-          go build -o proxy  ./cmd/
+          GOEXPERIMENT=greenteagc go build -o proxy  ./cmd/
       - name: Package Windows
         run: |
           mkdir -p artifacts
@@ -75,7 +75,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: 1.23
+          go-version: 1.25
 
       - uses: actions/checkout@v4
         with:
@@ -87,8 +87,8 @@ jobs:
           sudo apt install -y libevdev-dev
           cd ./worker/daemon
           go mod download
-          go build -o daemon ./cmd/
-          go build -o pb     ./cmd/pocketbase/
+          GOEXPERIMENT=greenteagc go build -o daemon ./cmd/
+          GOEXPERIMENT=greenteagc go build -o pb     ./cmd/pocketbase/
 
 
       - name: Package Windows
