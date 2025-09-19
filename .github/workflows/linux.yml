@@ -27,26 +27,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: install
-        run: |
+        run: >-
           sudo apt-get install -y libglib2.0-dev libfdt-dev libpixman-1-dev zlib1g-dev ninja-build 
-          sudo apt-get install -y libaio-dev libbluetooth-dev libcapstone-dev libbrlapi-dev libbz2-dev
-          sudo apt-get install -y libcap-ng-dev libcurl4-gnutls-dev libgtk-3-dev
-          sudo apt-get install -y libibverbs-dev libjpeg8-dev libncurses5-dev libnuma-dev
-          sudo apt-get install -y librbd-dev librdmacm-dev
-          sudo apt-get install -y libsasl2-dev libsdl2-dev libseccomp-dev libsnappy-dev libssh-dev
-          sudo apt-get install -y libvde-dev libvdeplug-dev libvte-2.91-dev libxen-dev liblzo2-dev
-          sudo apt-get install -y valgrind xfslibs-dev 
-          sudo apt-get install -y libnfs-dev libiscsi-dev
+            libaio-dev libbluetooth-dev libcapstone-dev libbrlapi-dev libbz2-dev
+            libcap-ng-dev libcurl4-gnutls-dev libgtk-3-dev
+            libibverbs-dev libjpeg8-dev libncurses5-dev libnuma-dev
+            librbd-dev librdmacm-dev
+            libsasl2-dev libsdl2-dev libseccomp-dev libsnappy-dev libssh-dev
+            libvde-dev libvdeplug-dev libvte-2.91-dev libxen-dev liblzo2-dev
+            valgrind xfslibs-dev 
+            libnfs-dev libiscsi-dev
       - name: clone
         run: |
           git clone https://github.com/qemu/qemu -b stable-10.0
       - name: build
         run: |
           cd qemu
-          mkdir $HOME/artifacts
-          ./configure --target-list=x86_64-softmmu  --enable-kvm --prefix=$HOME/artifacts
+          mkdir $HOME/prefix
+          ./configure --target-list=x86_64-softmmu  --enable-kvm --prefix=$HOME/prefix
           make -j$(nproc)
           make install
+      - name: copy binary
+        run: |
+          mkdir -p artifacts
+          cp -r $HOME/prefix artifacts
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
