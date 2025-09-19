@@ -110,8 +110,9 @@ jobs:
         run: |
           cd ./worker/daemon
           go mod download
-          GOEXPERIMENT=greenteagc go build -o daemon.exe  ./cmd/
-          GOEXPERIMENT=greenteagc go build -o pb.exe      ./cmd/pocketbase/
+          $env:GOEXPERIMENT = "greenteagc"
+          go build -o daemon.exe  ./cmd/
+          go build -o pb.exe      ./cmd/pocketbase/
 
 
       - name: Package Windows
