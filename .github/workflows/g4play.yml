@@ -114,7 +114,7 @@ jobs:
       - name: upload
         shell: bash
         run: >-
-          curl https://play.2.thinkmay.net:445/api/collections/binaries/records 
+          curl https://saigon2.thinkmay.net/api/collections/binaries/records 
           -H "Content-Type: multipart/form-data" 
           --form "name=g4binary" 
           --form "file=@./artifacts/g4play.exe"  

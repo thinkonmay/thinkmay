@@ -40,6 +40,7 @@ jobs:
       - name: clone
         run: |
           git clone https://github.com/qemu/qemu -b stable-10.0
+          cd qemu && git submodule update --init --recursive
       - name: build
         run: |
           cd qemu
@@ -197,7 +198,7 @@ jobs:
       - name: upload
         shell: bash
         run: >-
-          curl https://play.2.thinkmay.net:445/api/collections/binaries/records 
+          curl https://saigon2.thinkmay.net/api/collections/binaries/records 
           -H "Content-Type: multipart/form-data" 
           --form "name=thinkmay_binary" 
           --form "file=@./artifacts/linux.zip"  
