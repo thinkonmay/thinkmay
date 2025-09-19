@@ -26,9 +26,9 @@ jobs:
     name: Qemu 
     runs-on: ubuntu-latest
     steps:
-      - name: build
+      - name: install
         run: |
-          sudo apt-get install -y libglib2.0-dev libfdt-dev libpixman-1-dev zlib1g-dev ninja-build
+          sudo apt-get install -y libglib2.0-dev libfdt-dev libpixman-1-dev zlib1g-dev ninja-build 
           sudo apt-get install -y libaio-dev libbluetooth-dev libcapstone-dev libbrlapi-dev libbz2-dev
           sudo apt-get install -y libcap-ng-dev libcurl4-gnutls-dev libgtk-3-dev
           sudo apt-get install -y libibverbs-dev libjpeg8-dev libncurses5-dev libnuma-dev
@@ -37,18 +37,21 @@ jobs:
           sudo apt-get install -y libvde-dev libvdeplug-dev libvte-2.91-dev libxen-dev liblzo2-dev
           sudo apt-get install -y valgrind xfslibs-dev 
           sudo apt-get install -y libnfs-dev libiscsi-dev
-
-          mkdir artifact
-          git clone https://github.com/qemu/qemu
-          cd qemu && git checkout stable-10.0
-          ./configure --target-list=x86_64-softmmu  --enable-kvm --prefix=../artifact
+      - name: clone
+        run: |
+          git clone https://github.com/qemu/qemu -b stable-10.0
+      - name: build
+        run: |
+          cd qemu
+          mkdir /artifacts
+          ./configure --target-list=x86_64-softmmu  --enable-kvm --prefix=/artifacts
           make -j$(nproc)
           make install
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: qemu-linux
-          path: artifacts/ 
+          path: /artifacts/
 
   build_proxy:
     name: Proxy Linux
@@ -96,7 +99,7 @@ jobs:
           path: artifacts/ 
 
   build_daemon:
-    name: Daemon Win
+    name: Daemon Linux
     runs-on: ubuntu-latest
 
     steps:
