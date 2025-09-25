@@ -10,9 +10,6 @@
 [submodule "worker/sunshine"]
 	path = worker/sunshine
 	url = https://github.com/thinkonmay/sunshine-sdk
-[submodule "mobile"]
-	path = mobile
-	url = https://github.com/thinkonmay/flutter_app
 [submodule "worker/proxy"]
 	path = worker/proxy
 	url = https://github.com/thinkonmay/thinkremote-rtchub
@@ -22,3 +19,9 @@
 [submodule "global/data"]
 	path = global/data
 	url = https://github.com/thinkonmay/manage
+[submodule "native/mobile"]
+	path = native/mobile
+	url = https://github.com/thinkonmay/think_may_mobile
+[submodule "native/moonlight"]
+	path = native/moonlight
+	url = https://github.com/thinkonmay/moonlight-android
