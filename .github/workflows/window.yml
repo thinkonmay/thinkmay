@@ -173,20 +173,7 @@ jobs:
           cp daemon/daemon.exe ./assets
           cp sunshine/shmsunshine.exe ./assets
 
-          Write-Host "makensis:"
-          $makensisWasFound = [bool] (Get-Command -ErrorAction Ignore -Type Application makensis)
-          if ($makensisWasFound) {
-              makensis -VERSION
-              Write-Host ""
-          } else {
-              throw "WARNING: makensis was not found, Windows installer can not be created"
-          }
-
-          $CallDir = $pwd
-          Set-Location $PSScriptRoot
-          makensis windows_installer.nsi
-          Set-Location $CallDir
-
+          ./nsis.ps1
           cp installer.exe ./artifacts
 
       - name: Upload Artifacts
