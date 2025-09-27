@@ -135,6 +135,7 @@ jobs:
     needs: [build_daemon,build_sunshine]
 
     steps:
+      - uses: actions/checkout@v4
       - name: Install NSIS
         run: |
           iwr -useb get.scoop.sh -outfile 'install.ps1'
