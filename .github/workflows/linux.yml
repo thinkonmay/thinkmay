@@ -165,7 +165,8 @@ jobs:
 
           sudo apt install -y zip
           mkdir -p artifacts
-          # mkdir -p assets/qemu
+          mkdir -p assets/qemu22
+          mkdir -p assets/qemu24
 
           cp daemon/daemon ./assets
           cp daemon/pb ./assets
