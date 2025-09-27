@@ -218,7 +218,6 @@ jobs:
           curl https://saigon2.thinkmay.net/api/collections/binaries/records 
           -H "Content-Type: multipart/form-data" 
           --form "name=pb_binary" 
-          --form "md5sum=${md5sum "./artifacts/pb" | cut -d ' ' -f 1}" 
           --form "md5sum=${MD5_CHECKSUM}" 
           --progress-bar 
       - name: upload daemon
