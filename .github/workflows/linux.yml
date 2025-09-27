@@ -159,7 +159,7 @@ jobs:
           name: qemu22-linux
           path: qemu22
 
-      - name: build
+      - name: build assets
         run: |
           git clone https://github.com/thinkonmay/assets -b ubuntu
 
@@ -175,7 +175,13 @@ jobs:
           cp -r qemu22/* ./assets/qemu22
           cp -r proxy/srt ./assets/srt
           chmod 777 -R ./assets
+
+      - name: copy to artifacts folder
+        run: |
           zip -r artifacts/linux.zip ./assets
+          cp daemon/daemon ./artifacts
+          cp daemon/pb ./artifacts
+          cp proxy/proxy ./artifacts
 
 
       - name: Upload Artifacts
@@ -201,4 +207,29 @@ jobs:
           -H "Content-Type: multipart/form-data" 
           --form "name=thinkmay_binary" 
           --form "file=@./artifacts/linux.zip"  
+          --progress-bar 
+
+      - name: upload pb
+        shell: bash
+        run: >-
+          curl https://saigon2.thinkmay.net/api/collections/binaries/records 
+          -H "Content-Type: multipart/form-data" 
+          --form "name=pb_binary" 
+          --form "file=@./artifacts/pb"  
+          --progress-bar 
+      - name: upload daemon
+        shell: bash
+        run: >-
+          curl https://saigon2.thinkmay.net/api/collections/binaries/records 
+          -H "Content-Type: multipart/form-data" 
+          --form "name=daemon_binary" 
+          --form "file=@./artifacts/daemon"  
+          --progress-bar 
+      - name: upload proxy
+        shell: bash
+        run: >-
+          curl https://saigon2.thinkmay.net/api/collections/binaries/records 
+          -H "Content-Type: multipart/form-data" 
+          --form "name=proxy_binary" 
+          --form "file=@./artifacts/proxy"  
           --progress-bar 
