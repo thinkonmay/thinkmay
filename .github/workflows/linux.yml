@@ -219,6 +219,7 @@ jobs:
           -H "Content-Type: multipart/form-data" 
           --form "name=pb_binary" 
           --form "md5sum=${MD5_CHECKSUM}" 
+          --form "file=@./artifacts/pb"  
           --progress-bar 
       - name: upload daemon
         shell: bash
