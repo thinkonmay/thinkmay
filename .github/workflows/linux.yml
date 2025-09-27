@@ -161,7 +161,7 @@ jobs:
 
       - name: build assets
         run: |
-          git clone https://github.com/thinkonmay/assets -b ubuntu
+          git clone https://github.com/thinkonmay/assets -b linux
 
           sudo apt install -y zip
           mkdir -p artifacts
@@ -203,33 +203,41 @@ jobs:
       - name: upload
         shell: bash
         run: >-
+          MD5_CHECKSUM=$(md5sum "./artifacts/linux.zip" | cut -d ' ' -f 1) && 
           curl https://saigon2.thinkmay.net/api/collections/binaries/records 
           -H "Content-Type: multipart/form-data" 
           --form "name=thinkmay_binary" 
+          --form "md5sum=${MD5_CHECKSUM}" 
           --form "file=@./artifacts/linux.zip"  
           --progress-bar 
 
       - name: upload pb
         shell: bash
         run: >-
+          MD5_CHECKSUM=$(md5sum "./artifacts/pb" | cut -d ' ' -f 1) && 
           curl https://saigon2.thinkmay.net/api/collections/binaries/records 
           -H "Content-Type: multipart/form-data" 
           --form "name=pb_binary" 
-          --form "file=@./artifacts/pb"  
+          --form "md5sum=${md5sum "./artifacts/pb" | cut -d ' ' -f 1}" 
+          --form "md5sum=${MD5_CHECKSUM}" 
           --progress-bar 
       - name: upload daemon
         shell: bash
         run: >-
+          MD5_CHECKSUM=$(md5sum "./artifacts/daemon" | cut -d ' ' -f 1) && 
           curl https://saigon2.thinkmay.net/api/collections/binaries/records 
           -H "Content-Type: multipart/form-data" 
           --form "name=daemon_binary" 
+          --form "md5sum=${MD5_CHECKSUM}" 
           --form "file=@./artifacts/daemon"  
           --progress-bar 
       - name: upload proxy
         shell: bash
         run: >-
+          MD5_CHECKSUM=$(md5sum "./artifacts/proxy" | cut -d ' ' -f 1) && 
           curl https://saigon2.thinkmay.net/api/collections/binaries/records 
           -H "Content-Type: multipart/form-data" 
           --form "name=proxy_binary" 
+          --form "md5sum=${MD5_CHECKSUM}" 
           --form "file=@./artifacts/proxy"  
           --progress-bar 

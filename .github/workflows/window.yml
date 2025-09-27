@@ -135,10 +135,6 @@ jobs:
     needs: [build_daemon,build_sunshine]
 
     steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
-          token: ${{ secrets.GH_TOKEN }}
       - name: Install NSIS
         run: |
           iwr -useb get.scoop.sh -outfile 'install.ps1'
@@ -160,6 +156,10 @@ jobs:
         with:
           name: daemon-windows
           path: daemon
+
+      - name: build assets
+        run: |
+          git clone https://github.com/thinkonmay/assets -b win
       - name: download-ivshmem
         shell: powershell
         run: |
@@ -196,9 +196,11 @@ jobs:
       - name: upload
         shell: bash
         run: >-
+          MD5_CHECKSUM=$(md5sum "./artifacts/installer.exe" | cut -d ' ' -f 1) && 
           curl https://saigon2.thinkmay.net/api/collections/binaries/records 
           -H "Content-Type: multipart/form-data" 
           --form "name=thinkmay_binary_window" 
+          --form "md5sum=${MD5_CHECKSUM}" 
           --form "file=@./artifacts/installer.exe"  
           --progress-bar 
 
