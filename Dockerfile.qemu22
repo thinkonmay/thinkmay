@@ -11,7 +11,8 @@ RUN apt-get install -y libglib2.0-dev libfdt-dev libpixman-1-dev zlib1g-dev ninj
           libvde-dev libvdeplug-dev libvte-2.91-dev libxen-dev liblzo2-dev \
           valgrind xfslibs-dev \
           libnfs-dev libiscsi-dev
-RUN apt-get install -y git
+RUN apt-get install -y git build-essential python3-venv python3-pip
+RUN pip install tomli
 
 WORKDIR /prefix
 
@@ -19,7 +20,6 @@ WORKDIR /
 RUN git clone https://github.com/qemu/qemu -b stable-10.0 
 WORKDIR /qemu
 
-RUN apt-get install -y build-essential python3-venv
 RUN ./configure --target-list=x86_64-softmmu  --enable-kvm --prefix=/prefix
 RUN make -j$(nproc)
 RUN make install
