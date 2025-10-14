@@ -211,16 +211,17 @@ jobs:
           --form "file=@./artifacts/linux.zip"  
           --progress-bar 
 
-      - name: upload pb
-        shell: bash
-        run: >-
-          MD5_CHECKSUM=$(md5sum "./artifacts/pb" | cut -d ' ' -f 1) && 
-          curl https://saigon2.thinkmay.net/api/collections/binaries/records 
-          -H "Content-Type: multipart/form-data" 
-          --form "name=pb_binary" 
-          --form "md5sum=${MD5_CHECKSUM}" 
-          --form "file=@./artifacts/pb"  
-          --progress-bar 
+  publish-daemon:
+    name: publish
+    runs-on: ubuntu-latest
+    needs: [build_daemon]
+
+    steps:
+      - uses: actions/download-artifact@v4
+        name: download daemon
+        with:
+          name: daemon-linux
+          path: artifacts
       - name: upload daemon
         shell: bash
         run: >-
@@ -231,6 +232,26 @@ jobs:
           --form "md5sum=${MD5_CHECKSUM}" 
           --form "file=@./artifacts/daemon"  
           --progress-bar 
+      - name: upload pb
+        shell: bash
+        run: >-
+          MD5_CHECKSUM=$(md5sum "./artifacts/pb" | cut -d ' ' -f 1) && 
+          curl https://saigon2.thinkmay.net/api/collections/binaries/records 
+          -H "Content-Type: multipart/form-data" 
+          --form "name=pb_binary" 
+          --form "md5sum=${MD5_CHECKSUM}" 
+          --form "file=@./artifacts/pb"  
+          --progress-bar 
+  publish-proxy:
+    name: publish
+    runs-on: ubuntu-latest
+    needs: [build_proxy]
+    steps:
+      - uses: actions/download-artifact@v4
+        name: download proxy
+        with:
+          name: proxy-linux
+          path: artifacts
       - name: upload proxy
         shell: bash
         run: >-
