@@ -1,0 +1,56 @@
+x-restart-policy: &restart-policy "no"
+services:
+  dns:
+    image: lancachenet/lancache-dns:latest
+    env_file: .env
+    restart: *restart-policy
+    environment:
+      TZ: 'Europe/London'
+      UPSTREAM_DNS: '172.24.0.102'
+    ports:
+      - 127.0.0.1:5353:53/tcp
+      - 127.0.0.1:5353:53/udp
+    networks:
+      dns-net:
+        ipv4_address: 172.24.0.100 
+  monolithic:
+    image: lancachenet/monolithic:latest
+    env_file: .env
+    restart: *restart-policy
+    ports:
+      - 127.0.0.1:4433:443
+      - 127.0.0.1:8800:80
+    volumes:
+      - ./lancache/cache:/data/cache
+      - ./lancache/logs:/data/logs
+    networks:
+      dns-net:
+        ipv4_address: 172.24.0.101 
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    ports:
+      - "127.0.0.1:8888:80/tcp"
+    environment:
+      TZ: 'Europe/London'
+      FTLCONF_webserver_api_password: 'correct horse battery staple'
+      FTLCONF_dns_listeningMode: 'ALL'
+    volumes:
+      - './etc-pihole:/etc/pihole'
+    cap_add:
+      - NET_ADMIN
+      - SYS_TIME
+      - SYS_NICE
+    restart: unless-stopped
+    networks:
+      dns-net:
+        ipv4_address: 172.24.0.102 
+
+networks:
+  dns-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.24.0.0/24
+          gateway: 172.24.0.1
+
