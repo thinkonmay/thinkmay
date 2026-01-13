@@ -118,13 +118,15 @@ jobs:
           go mod download
           GOEXPERIMENT=greenteagc go build -o daemon ./cmd/
           GOEXPERIMENT=greenteagc go build -o pb     ./cmd/pocketbase/
+          GOEXPERIMENT=greenteagc go build -o mgmt   ./cmd/mgmt/
 
 
       - name: copy binary
         run: |
           mkdir -p artifacts
           cp ./worker/daemon/daemon ./artifacts/daemon
-          cp ./worker/daemon/pb ./artifacts/pb
+          cp ./worker/daemon/pb     ./artifacts/pb
+          cp ./worker/daemon/mgmt   ./artifacts/mgmt
 
 
       - name: Upload Artifacts
@@ -170,6 +172,7 @@ jobs:
 
           cp daemon/daemon ./assets
           cp daemon/pb ./assets
+          cp daemon/mgmt ./assets
           cp proxy/proxy ./assets
           cp -r qemu24/* ./assets/qemu24
           cp -r qemu22/* ./assets/qemu22
@@ -181,6 +184,7 @@ jobs:
           zip -r artifacts/linux.zip ./assets
           cp daemon/daemon ./artifacts
           cp daemon/pb ./artifacts
+          cp daemon/mgmt ./artifacts
           cp proxy/proxy ./artifacts
 
 
@@ -241,6 +245,16 @@ jobs:
           --form "name=pb_binary" 
           --form "md5sum=${MD5_CHECKSUM}" 
           --form "file=@./artifacts/pb"  
+          --progress-bar 
+      - name: upload mgmt
+        shell: bash
+        run: >-
+          MD5_CHECKSUM=$(md5sum "./artifacts/mgmt" | cut -d ' ' -f 1) && 
+          curl https://saigon2.thinkmay.net/api/collections/binaries/records 
+          -H "Content-Type: multipart/form-data" 
+          --form "name=mgmt_binary" 
+          --form "md5sum=${MD5_CHECKSUM}" 
+          --form "file=@./artifacts/mgmt"  
           --progress-bar 
   publish-proxy:
     name: publish
