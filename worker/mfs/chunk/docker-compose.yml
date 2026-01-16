@@ -1,0 +1,23 @@
+services:
+  mfschunkserver:
+    image: moosefs/chunkserver:4.58.3
+    container_name: mfschunkserver
+    restart: unless-stopped
+    network_mode: "host" 
+    privileged: true
+    cap_add:
+      - SYS_RESOURCE
+      - SYS_NICE
+    ulimits:
+      rtprio: 99
+      memlock: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    oom_score_adj: -1000
+    volumes:
+      - ./mfschunkserver.cfg:/etc/mfs/mfschunkserver.cfg:ro
+      - ./mfshdd.cfg:/etc/mfs/mfshdd.cfg:ro
+      # - /disk/md0/cs4/hdd0:/mnt/hdd0
+      # - /disk/md0/cs4/meta:/var/lib/mfs
+

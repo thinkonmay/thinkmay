@@ -1,0 +1,50 @@
+services:
+  mfsmaster:
+    image: moosefs/master:4.58.3
+    container_name: "mfsmaster"
+    restart: unless-stopped
+    networks:
+      moosefsnet:
+        ipv4_address: "172.20.0.2"
+    ports:
+      - 9419:9419
+      - 9420:9420
+      - 9421:9421
+    volumes:
+      - ./data/master/meta:/var/lib/mfs
+    hostname: mfsmaster
+    environment:
+      - MFS_ENV=PROD
+
+  mfsgui:
+    image: moosefs/gui:4.58.3
+    container_name: "mfsgui"
+    restart: unless-stopped
+    networks:
+      moosefsnet:
+        ipv4_address: "172.20.0.3"
+    ports:
+      - 127.0.0.1:9425:9425
+    depends_on:
+      - mfsmaster
+
+  mfsmetalogger:
+    image: moosefs/metalogger:4.58.3
+    container_name: "mfsmetalogger"
+    restart: unless-stopped
+    networks:
+      moosefsnet:
+        ipv4_address: "172.20.0.4"
+    volumes:
+      - ./data/metalogger/meta:/var/lib/mfs
+    environment:
+      - MFS_ENV=PROD
+    depends_on:
+      - mfsmaster
+
+networks:
+  moosefsnet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
