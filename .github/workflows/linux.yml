@@ -59,7 +59,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: 1.25
+          go-version: 1.26
 
       - uses: actions/checkout@v4
         with:
@@ -81,7 +81,7 @@ jobs:
         run: |
           cd ./worker/proxy/
           go mod download
-          GOEXPERIMENT=greenteagc go build -o proxy  ./cmd/
+          go build -o proxy  ./cmd/
       - name: copy binary
         run: |
           mkdir -p artifacts
@@ -104,7 +104,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: 1.25
+          go-version: 1.26
 
       - uses: actions/checkout@v4
         with:
@@ -116,9 +116,9 @@ jobs:
           sudo apt install -y libevdev-dev
           cd ./worker/daemon
           go mod download
-          GOEXPERIMENT=greenteagc go build -o daemon ./cmd/
-          GOEXPERIMENT=greenteagc go build -o pb     ./cmd/pocketbase/
-          GOEXPERIMENT=greenteagc go build -o mgmt   ./cmd/mgmt/
+          go build -o daemon ./cmd/
+          go build -o pb     ./cmd/pocketbase/
+          go build -o mgmt   ./cmd/mgmt/
 
 
       - name: copy binary
