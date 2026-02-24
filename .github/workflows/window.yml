@@ -45,13 +45,7 @@ jobs:
       - name: Update Windows dependencies
         shell: msys2 {0}
         run: |
-          # download working curl
-          wget https://repo.msys2.org/mingw/mingw64/mingw-w64-x86_64-curl-8.8.0-1-any.pkg.tar.zst
-
-          # install dependencies
-          pacman -U --noconfirm mingw-w64-x86_64-curl-8.8.0-1-any.pkg.tar.zst
           pacman -Syu --noconfirm \
-            --ignore=mingw-w64-x86_64-curl \
             git \
             mingw-w64-x86_64-boost \
             mingw-w64-x86_64-cmake \
