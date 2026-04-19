@@ -66,17 +66,6 @@ jobs:
           submodules: recursive
           token: ${{ secrets.GH_TOKEN }}
 
-      - name: build-srt
-        run: |
-          git clone https://github.com/Haivision/srt
-          cd srt
-
-          sudo apt-get update
-          sudo apt-get upgrade
-          sudo apt-get install tclsh pkg-config cmake libssl-dev build-essential
-          ./configure && make
-          sudo make install
-
       - name: build
         run: |
           cd ./worker/proxy/
@@ -86,8 +75,6 @@ jobs:
         run: |
           mkdir -p artifacts
           cp ./worker/proxy/proxy ./artifacts/proxy
-          mkdir ./artifacts/srt
-          cp /usr/local/lib/libsrt* ./artifacts/srt
 
 
       - name: Upload Artifacts
@@ -176,7 +163,6 @@ jobs:
           cp proxy/proxy ./assets
           cp -r qemu24/* ./assets/qemu24
           cp -r qemu22/* ./assets/qemu22
-          cp -r proxy/srt ./assets/srt
           chmod 777 -R ./assets
 
       - name: copy to artifacts folder
