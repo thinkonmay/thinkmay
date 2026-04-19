@@ -70,3 +70,13 @@ Gamers are naturally skeptical of "Cloud Gaming" lag. Win their trust by flexing
 * **Color Schemes**: Lean heavily into our application's dark mode schema: Deep Emeralds (`#112E29`), Cyber Greens (`#29D69F`), dark carbon UI backing, and glowing neon UI elements mapped directly from our React frontend. It should feel like a premium hacker/gaming terminal without being unapproachable.
 * **The Typography**: Emulate clean, sleek, and structural sans-serif tracking. 
 * **CTA Buttoning**: Design stark, highly contrasting CTA bars stating **"Join the Community & Play Free"** or **"Play Now Without Downloads"**.
+
+---
+
+## 4. Trust & Data Privacy Messaging
+
+When communicating with users about data collection, we must heavily emphasize our commitment to data rights to build trust:
+
+* **Focus on High-Intent Tracking Only**: Emphasize that we don't watch everything they do. Our telemetry automatically blocks and ignores system applications, personal tools, and utility software. We only parse gaming and heavy-app loads to build anonymous profiles.
+* **Actionable Use of Data**: The data we collect isn't sold to advertisers; it's fed back into the platform to supercharge their experience (e.g. suggesting relevant games and managing hardware availability).
+* **Anonymized Clustering**: Remind users that identities are grouped by generalized behaviors (Personas) rather than strict personal tracking, ensuring an ecosystem driven by generic archetypes rather than invasive tracking.

@@ -173,6 +173,9 @@ Your data is exclusively yours! Our backend servers orchestrate CloudPCs using s
 **My connection feels laggy. What can I do?**
 We offer a unique "Multi-Routing" feature. Even if your server is in HCM, you can manually select a different data route (like HP) in the settings. This lets your connection hop on our fast internal network, bypassing potential local internet bottlenecks!
 
+**How is my gameplay and usage data handled?**
+Thinkmay takes your data privacy extremely seriously. We use a strictly blacklisted analytics engine that actively ignores your system-level processes, personal utilities, and background tasks. Our backend AI (Rybbit) uses anonymous high-intent app usage and playtimes strictly to personalize your *User Persona*—improving your game recommendations and estimating queue availability. We ensure no manual staff tracking of your gameplay, and we never sell your telemetry to advertisers.
+
 **Can I transfer files to the CloudPC?**
 Absolutely! While your browser video stream exclusively acts like a monitor, we provide a dedicated **Storage Tab** in your user dashboard! Here, you can rapidly upload massive files, install zips, or download your game saves independently via ultra-rapid decentralized edge nodes (without interrupting your game). Furthermore, your local **text clipboard** natively synchronizes through the browser so you can effortlessly push copy/paste commands across the cloud!
 

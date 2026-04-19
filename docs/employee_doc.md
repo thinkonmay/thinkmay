@@ -63,6 +63,7 @@ If a customer asks how we achieve such low latency, or if you are debugging a pr
 * **Boot Times**: When a customer starts their CloudPC, it takes between 2 to 5 minutes to boot Windows 11. Heavy server load or GPU checks may extend this.
 * **Authentication**: Customers can log in via Google OAuth2, Email/Password, or Email OTP.
 * **Customer Support Channels**: All official technical support is handled via **Email** and **Discord**.
+* **Data Privacy & Analytics (Rybbit)**: Support staff must inform users that our telemetry and persona systems (Rybbit) strictly filter out personal system processes and applications. We only log high-intent behaviors (gaming/browsing) anonymously to generate recommendations via AI routing. Tell users their specific usage logs are never sold to advertisers or tracked manually.
 * **Current Service Regions**: Servers are located in Ho Chi Minh City (HCM) and Hai Phong (HP).
 
 ## Cluster Configuration (`cluster.yaml`) — For Ops
