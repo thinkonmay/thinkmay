@@ -8,7 +8,7 @@ This document is strictly tailored for the Thinkmay Marketing, SEO, and Graphic 
 Thinkmay isn't just a cloud provider; we are democratizing high-end computing. Ensure all marketing materials reflect our **Core Brand Pillars**:
 1. **Community-Oriented**: We don't just have "users"; we have a vibrant tribe. Emphasize Discord hangouts, co-op gaming, and sharing custom setups. Speak *with* our users, not *at* them.
 2. **Tech-Savvy**: Let the impressive engineering shine through without being overly intimidating. We proudly flex our "WebRTC Sub-Millisecond Magic" and "Dedicated RTX allocations", showing power users and casuals alike that we speak their language. 
-3. **Consumer Friendly (Access for Everyone)**: AAA gaming or heavy 3D rendering shouldn't require a $2,000 rig. Our message is pure accessibility: *Play Cyberpunk 2077 flawlessly on your 5-year-old MacBook or your daily school laptop.*
+3. **Consumer Friendly (Mobile-First Accessibility)**: With 70% of our gamers playing on phones and tablets, we don't just democratize PCs; we democratize *mobility*. Our message: *Play heavy co-op games like GTA V FiveM flawlessly on the couch with your smartphone, then seamlessly continue on your laptop without losing progress.*
 
 ---
 
@@ -31,7 +31,7 @@ Users typically find us via Google through our heavily indexed public routes:
 ### Step 3: Trial vs Monetization Hook (The `hour1` tier)
 * Once authenticated, users enter the `/(app)` dashboard.
 * **The Hook**: Drive new users towards the **3-Hour Free Trial (`hour1` tier)**. This lets them test-drive our tech-savvy architecture entirely risk-free. Give them the "Aha!" moment of feeling zero lag.
-* **The Conversion event**: Upon the 3-hour expiration, our system safely locks their session and introduces our transparent **Wallet System**. Follow-up emails should feel like community updates rather than bills. We tell them: *Top up your wallet via local gateways like VietQR/PayOS, Dana, or Stripe to keep your rig alive and keep playing with the squad.*
+* **The Conversion event (Monetizing Persistence)**: Upon the 3-hour expiration, they realize they need persistent storage to keep their save files and installed mods. This emotional hook is our primary conversion driver. We introduce the transparent **Wallet System** allowing granular micro-transactions. We tell them: *Top up your wallet via local gateways like VietQR, Dana, or PayOS to securely save your GTA V mods forever.*
 
 ---
 
@@ -56,8 +56,8 @@ Our Next.js architecture heavily separates our organically crawled public SEO co
 When creating visual assets (Posters, Social Media Ads, Discord Banners, Event Backdrops), strictly adhere to our platform aesthetics:
 
 ### 1. The Identity & Core Imagery
-* **Target Audience Focus**: Gamers (Esports/AAA titles) and creators who feel unfortunately priced out of modern hardware.
-* **Key Visual Layouts**: Show an incredibly high-end AAA game running flawlessly on a dented, sticker-covered college laptop or a standard MacBook. This instantly validates our core pillar: **Accessibility for Everyone**. Put our community front and center—show friends playing together via browser tabs.
+* **Target Audience Focus**: Mobile-first players natively jumping into deep multiplayer ecosystems (like GTA V FiveM roleplay clans), and gamers priced out of hardware.
+* **Key Visual Layouts**: Show an incredibly high-end AAA game running flawlessly on a mobile phone using Thinkmay's virtual onscreen gamepad, or a user instantly swapping gameplay from their tablet to their college laptop. Validate the core pillar: **Accessibility on Any Device**. Put our community front and center—showing friends streaming their cloud gameplay directly into Discord.
 
 ### 2. Core Technical Badges (Trust Builders)
 Gamers are naturally skeptical of "Cloud Gaming" lag. Win their trust by flexing our tech-savviness right on the posters:

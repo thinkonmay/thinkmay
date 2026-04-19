@@ -10,7 +10,7 @@ No downloads required!
 
 1. Log in using your Google Account, Email & Password, or an Email OTP.
 2. **Browsers**: We officially support Chrome and Safari.
-3. **Mobile Users**: For an app-like experience, open the website on your phone and tap "Add to Home Screen".
+3. **Mobile-First Experience**: With 70% of our community playing gracefully on smartphones and tablets, we feature a fully customizable **Virtual On-Screen Gamepad** and Keyboard. Open the website on your phone and tap "Add to Home Screen" for a native feel!
 
 ### Browser Feature Support Matrix
 
@@ -64,7 +64,10 @@ If your stream is lagging, blurry, or you wish to unlock maximum 120FPS performa
 
 ### 4. Renew & Top-Up Your Plan
 
-Thinkmay operates on a unique "Wallet System". You do not directly purchase a subscription with a credit card each month; instead, you deposit **System Credits** into your wallet and use them to purchase time!
+Thinkmay operates on a unique "Wallet System". You do not directly purchase a rigid subscription with a credit card each month; instead, you make frequent, small deposits of **System Credits** into your wallet using local gateways. This flexible architecture ensures you only pay for the time you play, massively reducing billing anxiety.
+
+**Why Upgrade? Persistent Storage!**
+Tired of losing your saved games and mods after the 3-hour trial? Standard and Premium plans grant you **Persistent Drives**, meaning your GTA V FiveM mods and personal files stay safely on your CloudPC forever.
 
 **To Buy or Renew a Plan:**
 
@@ -102,8 +105,8 @@ To track how many hours you have played and understand your subscription boundar
 
 * **Free Hourly Trial (`hour1`)**: Perfect for testing! You receive 3 total hours of ephemeral access powered by a 6-Core Xeon CPU, 16GB of DDR4 RAM, and an NVIDIA RTX 3060Ti (8GB RAM).
   * *AFK Warning*: This plan enforces a strict 30-minute inactivity timeout. Upon completion or disconnect, your storage drive is completely wiped!
-* **Standard Monthly (`month1`)**: Extremely solid performance offering 120 hours per month! You receive a dedicated 200GB Persistent SSD ensuring your games survive securely between sessions. This tier runs natively on a 6-Core Xeon and RTX 3060Ti.
-* **Premium Performance (`month2`)**: Our flagship workstation upgrade granting a massive 360 hours of total playtime! Powered by a massive 14-Core AMD EPYC Milan-X CPU, an elite RTX 5060Ti (16GB RAM), 24GB of DDR4 RAM, and an enormous 400GB persistent Disk allowance!
+* **Standard Monthly (`month1`)**: Extremely solid performance offering 120 hours per month! You receive a dedicated 200GB **Persistent SSD** ensuring your mods (e.g. FiveM) and games survive securely between sessions. This tier runs natively on a 6-Core Xeon and RTX 3060Ti.
+* **Premium Performance (`month2`)**: Our flagship workstation upgrade granting a massive 360 hours of total playtime! Powered by a massive 14-Core AMD EPYC Milan-X CPU, an elite RTX 5060Ti (16GB RAM), 24GB of DDR4 RAM, and an enormous 400GB **Persistent Disk** allowance to keep all your files forever!
   * **VIP Queue Priority**: Your startup commands uniquely bypass the generalized cluster routers entirely. Using `pref_nodes`, your machine routes to private priority hardware queues drastically multiplying your startup times during peak volume hours!
 
 *Note: For all paid persistent plans, if your subscription runs out, please renew quickly—we permanently clear your localized data 2 days after expiration!*
