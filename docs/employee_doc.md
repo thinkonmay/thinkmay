@@ -38,6 +38,14 @@ We run a subscription-based tiering system. When debugging user accounts or expl
 * **Stream & Network Isolation (VPN Safe)**: The video stream is completely isolated from the Windows networking using a physical hardware memory bridge. A customer can install a corporate VPN inside their CloudPC or tinker with firewalls securely without accidentally disconnecting or locking themselves out of the display stream.
 * **Anti-Cheat & Bare-Metal Compatibility**: Our hypervisor completely masks all Virtual Machine footprint signals. For paying gaming clientele, their CloudPC reads and functions identically to a physical gaming rig. This ensures notoriously strict online video game anti-cheats (like Vanguard or Easy Anti-Cheat) run flawlessly without flagging the user.
 
+## How the Video Stream Works (Under the Hood)
+
+If a customer asks how we achieve such low latency, or if you are debugging a profound stream freeze, here is the exact life cycle of a single frame of video:
+1. **Video Capture (Sunshine)**: Inside the user's CloudPC, our custom software (`Sunshine`) captures the game screen physically off the GPU up to 240 times a second and compresses it into a tiny video frame.
+2. **The Memory Bridge (IVSHMEM)**: Instead of sending this frame out through the Windows network card (which adds lag), Sunshine dumps the frame directly into a shared physical hardware memory stick called the **IVSHMEM**. 
+3. **The Proxy Forwarder**: The host data-center server reads that memory stick instantly on the other side. Our Go WebRTC Forwarder chops that frame into tiny network packets (RTP) and shoots it over the internet directly to the user's Web Browser.
+4. **Auto-Recovery**: If a user's home Wi-Fi drops some packets, their browser complains back to the server (via RTCP). Our WebRTC forwarder catches this and writes a "Panic/IDR" or "Lower Bitrate" command backwards through the IVSHMEM memory stick. Sunshine reads that, drops the game's streaming resolution immediately, and forces an instant full-screen refresh (IDR frame) to unfreeze the user's screen in milliseconds!
+
 ## Need to Know (Support & Ops)
 
 * **Database Troubleshooting**: If a customer reports missing data, or an inability to log in, immediately consult the `pocketbase` backend database:
@@ -49,6 +57,60 @@ We run a subscription-based tiering system. When debugging user accounts or expl
 * **Authentication**: Customers can log in via Google OAuth2, Email/Password, or Email OTP.
 * **Customer Support Channels**: All official technical support is handled via **Email** and **Discord**.
 * **Current Service Regions**: Servers are located in Ho Chi Minh City (HCM) and Hai Phong (HP).
+
+## Cluster Configuration (`cluster.yaml`) — For Ops
+
+Every data-center server runs a master daemon that reads its infrastructure topology from a single file: `~/assets/cluster.yaml`. This file tells the daemon **which worker nodes exist, how networking is wired, where storage pools live, and how to reach peer clusters**. You will never need to write this file from scratch — it is pre-configured during server provisioning — but you may need to edit it for common operational tasks.
+
+### Where to Find It
+SSH into the master node and open `~/assets/cluster.yaml` (the home directory of the daemon user, typically `root`).
+
+### Common Ops Edits
+
+| Task | What to Change | Example |
+|---|---|---|
+| **Add a new worker node** | Append to the `nodes:` list | `- ip: "10.30.30.44"` |
+| **Temporarily disable a node** | Set `inactive: true` on the node entry | `- ip: "10.30.30.42"` ⟶ add `inactive: true` |
+| **Change default VM RAM/CPU** | Edit the top-level `ram:` / `vcpu:` values | `ram: 24` / `vcpu: 14` |
+| **Add a storage pool** | Append to `pools:` with type, path, and name | `- type: "user_data"  path: "/data/nvme2"  name: "pool-2"` |
+| **Skip OTA updates for a component** | Add the component name to `skip_updates:` | `skip_updates: ["proxy"]` |
+| **Change default VLANs** | Edit the `default_vlans:` array | `default_vlans: [100, 300]` |
+
+### Applying Changes
+After editing, **restart the daemon**: `systemctl restart virtdaemon`. The config is read once at startup — there is no hot-reload. The daemon will reconnect to all declared nodes, peers, and routers on restart.
+
+> ⚠️ **Warning**: Restarting the daemon during active user sessions does NOT kill running VMs. However, the management API will be unavailable for ~10 seconds during restart. Coordinate restarts during low-traffic windows when possible.
+
+## Multi-Node Cluster Architecture — How It Works
+
+The Thinkmay infrastructure is **not a single server** — it is a cluster of cooperating machines sharing GPUs and storage. Understanding this is critical for diagnosing deployment failures and capacity issues.
+
+### The Four Roles
+
+| Role | What It Does | How to Identify |
+|---|---|---|
+| **Master** | Orchestrates all deployments, owns the GPU queue, runs Pocketbase | Has `nodes:` entries in its `cluster.yaml` |
+| **Worker** | Runs the actual VMs with GPUs. Reports state to the master via gRPC | Listed as an IP in the master's `nodes:` |
+| **Peer** | A separate cluster entirely. The master queries its VMs for routing | Listed in `peers:` (e.g., `haiphong.thinkmay.net`) |
+| **Router** | Handles DNAT port forwarding for VMs in VLANs | Listed in `routers:` with a VLAN number |
+
+### How Deployments Work (Simplified)
+
+1. User clicks "Turn On" → Pocketbase tells the master daemon.
+2. The master checks if the user's disk volume is stored locally or on a worker.
+3. If the volume is on a different server than the available GPU, the master creates a **Network Disk bridge** (NBD) so the GPU node can access the volume over the network.
+4. The master places the user in the **GPU queue**. Standard users go to the back; Performance users go to the front.
+5. When a GPU is free, the master tells the worker to boot the VM.
+
+### Maintenance & Troubleshooting
+
+| Scenario | What to Check |
+|---|---|
+| **User stuck at "you are in X position"** | All GPUs are occupied. Check worker nodes for free GPUs. |
+| **"Server Down" but node is running** | The master cannot reach the worker via gRPC. Check network/firewall between master → worker `:60000`. |
+| **VM booted but streaming doesn't work** | Routing DB may be stale. The `syncDatabase` loop (every 1s) pushes routing to the proxy. Check proxy logs. |
+| **Adding capacity** | Add the new server IP to `nodes:` in the master's `cluster.yaml` and restart `virtdaemon`. |
+| **Taking a node offline** | Set `inactive: true` on the node in `cluster.yaml` + restart. Active VMs finish naturally; no new deployments go there. |
 
 ## Modifying CloudPC Configurations (For Ops)
 
