@@ -41,7 +41,13 @@ We offer a unique "Multi-Routing" feature. Even if your server is in HCM, you ca
 While you cannot drag-and-drop files directly into the browser window, your text clipboard is synchronized! You can freely copy text on your local machine and paste it into the CloudPC, and vice versa.
 
 **Does my gamepad or microphone work?**
-Yes! You can plug in a microphone or gamepad. If you are gaming on a mobile phone, we even provide a built-in virtual on-screen gamepad. *Note that we currently support a single monitor setup per CloudPC.*
+Yes! You can plug in a microphone or gamepad. We don't perform cheap keyboard replacements either. Your controller connects via a deeply emulated virtual Xbox 360 controller straight into your CloudPC, granting you full support for analog triggers, thumbsticks, and Force-Feedback (Rumble) vibrations natively! If you are gaming on a mobile phone, we even provide a built-in virtual on-screen gamepad. *Note that we currently support a single monitor setup per CloudPC.*
+
+**How do mouse and touch controls translate over the cloud?**
+Seamlessly! Your CloudPC uses highly optimized hardware integration schemas to ensure everything works flawlessly:
+* **FPS & 3D Gaming**: The moment you lock your mouse into a 3D game natively (like Minecraft or Valorant), the system automatically flips into **Relative Pointer Lock** directly streaming raw movement deltas into the OS—meaning you won't get stuck hitting the edges of your browser!
+* **Lag-Free Cursors**: Instead of sending your clicks and waiting for a picture to come back, our engines capture the remote Windows mouse icon and display it completely locally on top of your browser! The cursor is synced and smoothed natively, dropping UI latency dramatically.
+* **Mobile Touch vs Trackpad**: You have options! You can configure your phone screen to act as a **Native Windows Touchscreen** where your finger presses correlate identically over the cloud OS. Alternatively, you can use the screenspace like a generic **Laptop Trackpad**, swinging the mouse pointer around and tapping the edges for Left/Right clicks.
 
 ## Need Help?
 
@@ -59,3 +65,10 @@ We provide a **"Show stats" / "Technical Mode"** setting that allows you to see 
 | **Blurry/pixelated stream**                     | **`packetloss`**, **`realbitrate`**, **`realfps`** | Your network is struggling, so the server adaptively lowered the video quality (GCC). Try lowering the `max_bitrate` limit in your settings. If using Wi-Fi, ensure you are on a 5GHz band or switch to a wired Ethernet connection.                                                                                                  |
 | **Video freezing for a few seconds frequently** | **`idrcount`**, **`realfreezecount`**                      | When packets are excessively lost, the server sends an "IDR" frame to reset the video, causing a freeze. Disable the "HQ" mode to lower the framerate (back to 60fps) or change your Data Route in settings.                                                                                                                            |
 | **High input latency / Delay**                  | **`realdelay`**, **`realdecodetime`**                      | If `realdelay` is high, switch your data route to avoid ISP bottlenecks. If `realdecodetime` is high, your device is struggling to decode the video. Try switching your `preferred_codec` from H.265 to H.264 (or vice-versa), and check the `realdecodername` metric to ensure your browser has Hardware Acceleration enabled. |
+
+### Guide to Advanced Video Settings
+Inside your **Settings Panel**, you will find several advanced toggles that drastically alter your gaming or browsing visual quality:
+* **Quality Setup ("High Quality" vs "High Stability")**: Turn on **High Quality** if you have great internet and an amazing monitor (this tells the hardware to unlock up to 120FPS to make everything buttery smooth). Use **High Stability** if you are playing on unstable 4G/LTE or spotty Wi-fi; it hard-caps your framerate to 60FPS to conserve bandwidth.
+* **Max & Min Bitrates**: Turn the caps higher (e.g. 50+ mbps) when you are playing intense colorful video games with rapid visual motion. Turn them lower (< 15mbps) if you are getting "pixelated smudges" due to your router being choked with too much data.
+* **Use H.265 (HEVC)**: Turn this ON if you want the most beautiful image possible at half the internet bandwidth cost. However, turn this OFF (use H.264 instead) if you are playing on an older smartphone, an older Macbook, or a weak Chromebook without dedicated hardware decoders (otherwise your device will overheat quickly!).
+* **VSync Mode**: Turn this ON if you notice horizontal "tearing" or slashing across the display when moving the camera quickly. Note that VSync will add a slight few milliseconds of input latency waiting for the frames to align.

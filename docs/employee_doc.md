@@ -51,6 +51,14 @@ To do this:
    * `{"disable_gpu": true}` - Forces the machine to boot on the CPU without claiming a physical GPU.
    * `{"pref_nodes": ["<node_ip>"]}` - Upgrades the user to **Supreme Deployment Priority** by routing them to the front of the queue targeting a specific server.
 
+## Interaction Modes & HID Emulation (Support Knowledge)
+When aiding users with controller, touch, or keyboard issues, understand that Thinkmay natively maps all Web Browser hardware events straight into the CloudPC using deep HID emulation:
+* **Mouse Interactions**: The frontend dynamically toggles between **Absolute Cursor Mode** (ideal for standard desktop usage, mapping the exact screen bounds) and **Relative Pointer Lock** (transmitting raw X/Y deltas natively). The platform automatically enforces Relative Mode when users play 3D/FPS games (e.g., CS:GO, Minecraft) preventing screen-edge constraints!
+* **Smart Cursor Engine**: Rather than forcing users to suffer UI latency waiting for their mouse clicks to register visually across the internet, our platform utilizes an extracted Base64 remote cursor. It renders the remote Windows Mouse locally directly on top of their Chrome/Safari viewport utilizing sub-millisecond motion interpolation.
+* **Touch & Mobile Playbook**: We support two independent mobile modes natively. If **Native Touch** is toggled, actual touchscreen pinches/taps are piped completely into the Windows 11 kernel as a recognized Touch Monitor. If disabled, touches emulate a generic Laptop Trackpad (where gestures slide the mouse pointer and screen sides act as Left/Right clicks).
+* **Virtual Gamepads (ViGEm)**: You can reassure gamers that standard HTML5 gamepads (PS4/Xbox) don't undergo cheap keyboard-binding emulation! Our Go orchestration actively spins up an emulated Xbox 360 architecture (`gconn` via ViGEmBus) directly inside the Host, seamlessly transferring actual thumb-stick axis movements, triggers, and even translating force-feedback/rumble requests back to their physical controllers natively.
+* **Keyboard Emulations**: When playing international titles, keys can be configured to transmit raw hardware **Scancodes** instead of Javascript strings, entirely bypassing client/host language localization mismatches.
+
 ## Database Structure & Terminology (Where to look)
 If a user submits a ticket, use the **Pocketbase Admin UI** to search for their data across these main tables (collections):
 * **`users`**: The core account table. Check here to verify standard info like `email`, `phone`, and profile data.
