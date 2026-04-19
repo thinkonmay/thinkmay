@@ -110,6 +110,20 @@ If a user complains that their dashboard does not allow them to start their VM (
 *   **"Needs Refresh" / Waiting**: The `/info` API is explicitly returning `inuse: true` for their volume list, meaning the server is currently actively shutting down their last session. Tell them to wait 1-2 minutes and refresh the page.
     *   *Action Plan*: Tell the user to wait up to 5 minutes. If it gets infinitely stuck "waiting", open Pocketbase Admin UI, go to the `sessions` table, find their active `internal` stranded session payload, and politely delete the row manually to instantly hard-flush the `inuse: true` lock!
 
+### Missing Cursor & Overlays on Mobile (Desktop Mode Issue)
+
+If a user submits a ticket stating they are playing on a mobile phone or tablet but **"the mouse cursor is invisible"** or **"the virtual gamepad buttons are gone"**, this is a browser configuration issue, not a backend crash.
+
+*   **The Cause**: The user has **"Request Desktop Site"** toggled ON in their mobile browser (Chrome/Safari). This spoofs their `UserAgent` signature to pretend to be a strict desktop PC (e.g., Windows/macOS). Our frontend UI strictly evaluates this fake user agent (`isMobile() === false`), permanently hiding all touch-specific video overlays (Gamepads) and disabling the internal `server_cursor`, expecting a physical hardware mouse that the mobile device does not physically possess!
+*   **Action Plan**: Look at their screenshot. If the website text is extremely tiny or zoomed out, they are definitely in Desktop Mode. Reply with instructions to immediately toggle off "Desktop site" via the Chrome 3-dot menu or Safari's "aA" icon.
+
+### Missing Wallet Credits & Addon Storage Overages
+
+If a customer submits an angry support ticket claiming their **Wallet Credits disappeared** without them manually buying a new Plan, they have triggered a **Storage Overage** or **Service Addon** dynamic charge!
+
+*   **How Overages Trigger**: Every plan (like Month-Standard) inherently grants base privileges (e.g. 200GB of disk space and 100k LLM AI Tokens on Standard, or 400GB/300k on Pro). If the user opts to download completely massive 300GB+ games on a Standard plan, they physically exceed their explicit plan limit! The backend tracks this overage natively as **accumulated debt**. Thinkmay does *not* randomly deduct credits mid-session! The charges are strictly deducted entirely in bulk as a requisite at the exact moment their plan expires and they attempt to **renew** their subscription!
+*   **Action Plan**: Do not arbitrarily issue refunds! Log into the Pocketbase Admin Console, review the user's `addon_subscriptions` unit counts or run `list_addon_charges_v2(user_email)` to track their debts. Kindly reply to their ticket confirming that by downloading massive games vastly expanding their disk footprint beyond their designated Baseline Privileges, their CloudPC dynamically tracked legitimate Storage Overage fees which were automatically deducted *when they requested their latest plan renewal*.
+
 If a user submits a ticket relating to their hardware or machine session, use the **Pocketbase Admin UI** to search for their data across these main tables (collections):
 
 * **`users`**: The core account table. Check here to verify standard info like `email`, `phone`, and profile data.

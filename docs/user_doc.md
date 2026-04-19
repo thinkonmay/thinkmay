@@ -12,9 +12,22 @@ No downloads required!
 2. **Browsers**: We officially support Chrome and Safari.
 3. **Mobile Users**: For an app-like experience, open the website on your phone and tap "Add to Home Screen".
 
+### Browser Feature Support Matrix
+While you can stream seamlessly on both Google Chrome and Apple Safari, the underlying engine (WebRTC) behaves differently. For the absolute best, lowest-latency gaming experience, **we highly recommend Google Chrome**.
+
+| Feature | Google Chrome | Apple Safari | What this means for you |
+| :--- | :--- | :--- | :--- |
+| **Gamepad Controllers** | ✅ Supported | ✅ Supported | You can plug in Xbox/PlayStation controllers directly via Bluetooth or USB. |
+| **Copy & Paste (Clipboard)** | ✅ Supported | ✅ Supported | You can copy text on your local machine and paste it directly into your CloudPC. |
+| **Mouse Crosshair Lock** | ✅ Supported | ✅ Supported | Required for 3D games (like Minecraft or Valorant) to lock your mouse to the camera natively without hitting your screen edges. |
+| **Deep Error Correction** | ✅ Supported | ❌ Not Supported | Chrome supports advanced network recovery (FlexFEC). If you play on spotty Wi-Fi, Safari might freeze or stutter much more frequently than Chrome! |
+| **Ultra-Low Latency** | ✅ Supported | ❌ Not Supported | Chrome allows our engines to enforce sub-millisecond video buffering, resulting in noticeably snappier inputs during fast-paced situations. |
+| **Hardware Video Decoding (H.265/HEVC)** | ✅ Supported (v136+) | ✅ Supported (v15+) | **Critical Requirement!** Your laptop or phone must have a hardware media decoder (usually any modern device from the last 5-7 years). If your hardware is too old or you're using an outdated Chrome version, the browser falls back to software decoding causing massive lag, unplayable stuttering, and severe battery drain. |
+
 ## Step-by-Step Platform Guide
 
 ### 1. Pay and Subscribe for a Plan
+
 You do not purchase subscriptions directly via credit card. Instead, your account operates on a "Wallet" system.
 
 ![The Payment page showing your Wallet balance and the three subscription tiers with their hardware specs](images/payment_page.png)
@@ -25,9 +38,10 @@ You do not purchase subscriptions directly via credit card. Instead, your accoun
 4. Once your Wallet balance updates, select your desired subscription tier. Your credits will be deducted automatically!
 
 ### 2. Install a Game from Pre-installed Templates
+
 You can completely skip huge download times using Thinkmay's internal Game Templates!
 
-![The Explore/Store page showing AI-powered game recommendations with "Preinstalled Template" badges](images/store_page.png)
+![The Explore/Store page showing AI-powered game recommendations with ](images/store_page.png)
 
 1. Click **Explore** in the sidebar to open the App Store (shown above).
 2. Use the **AI search bar** or browse the **Quick Intent** tags (Racing, Multiplayer, etc.) to find your game.
@@ -35,6 +49,7 @@ You can completely skip huge download times using Thinkmay's internal Game Templ
 4. Click the game card and select **"Set up your PC"**. The system will hot-swap your cloud storage with the pre-downloaded template (a loading bar tracks progress). Once it hits 100%, boot your CloudPC and play!
 
 ### 3. Change Video Stream Settings
+
 If your stream is lagging, blurry, or you wish to unlock maximum 120FPS performance, you can tweak the WebRTC engine:
 
 ![The Advanced Settings panel showing Video Quality sliders, codec toggles, and Compatibility options](images/settings_page.png)
@@ -47,12 +62,23 @@ If your stream is lagging, blurry, or you wish to unlock maximum 120FPS performa
 6. Toggle **VSync & Frame Queuing** ON if you see screen tearing (adds 16–33ms latency).
 
 ### 4. Renew Your Plan
+
 Remember, user data on Paid Persistent plans is strictly wiped 2 days after plan expiration!
+
 1. Keep an eye on your **Profile Dashboard** which displays your remaining days prominently.
 2. Ensure your Wallet has enough System Credits by topping up via the **Payment** tab.
 3. Once financially funded, click **Renew Plan** to instantly extend your hardware time and safely lock your data array.
 
-### 5. Open and Connect to Your CloudPC
+### 5. Check Your Usage & Plan Limits
+
+To track how many hours you have played and understand your subscription boundaries:
+
+1. Click on **Profile** in the main sidebar.
+2. Under the **Subscription Details** section, you can view your current assigned Plan.
+3. Check the **Usage** metrics to see exactly how many **Hours Played** you have accumulated versus your **Total Time Allowance** (e.g., 3 hours for Free Trial, 120 hours for Standard).
+4. You can prominently view your **Expiration Date** here so you know exactly when to renew your hours!
+
+### 6. Open and Connect to Your CloudPC
 
 ![The Login page showing Email/Password fields, Google OAuth, OTP login, and server region selection](images/login_page.png)
 
@@ -64,29 +90,38 @@ Remember, user data on Paid Persistent plans is strictly wiped 2 days after plan
 
 ## Subscription Details & Hardware Privileges
 
-* **Free Hourly Trial (`hour1`)**: Perfect for testing! You receive 3 total hours of ephemeral access powered by a 6-Core Xeon CPU, 16GB of DDR4 RAM, and an NVIDIA RTX 3060Ti (8GB RAM). 
+* **Free Hourly Trial (`hour1`)**: Perfect for testing! You receive 3 total hours of ephemeral access powered by a 6-Core Xeon CPU, 16GB of DDR4 RAM, and an NVIDIA RTX 3060Ti (8GB RAM).
   * *AFK Warning*: This plan enforces a strict 30-minute inactivity timeout. Upon completion or disconnect, your storage drive is completely wiped!
 * **Standard Monthly (`month1`)**: Extremely solid performance offering 120 hours per month! You receive a dedicated 200GB Persistent SSD ensuring your games survive securely between sessions. This tier runs natively on a 6-Core Xeon and RTX 3060Ti.
-* **Premium Performance (`month2`)**: Our flagship workstation upgrade granting a massive 360 hours of total playtime! Powered by a massive 14-Core AMD EPYC Milan-X CPU, an elite RTX 5060Ti (16GB RAM), 24GB of DDR4 RAM, and an enormous 400GB persistent Disk allowance! 
+* **Premium Performance (`month2`)**: Our flagship workstation upgrade granting a massive 360 hours of total playtime! Powered by a massive 14-Core AMD EPYC Milan-X CPU, an elite RTX 5060Ti (16GB RAM), 24GB of DDR4 RAM, and an enormous 400GB persistent Disk allowance!
   * **VIP Queue Priority**: Your startup commands uniquely bypass the generalized cluster routers entirely. Using `pref_nodes`, your machine routes to private priority hardware queues drastically multiplying your startup times during peak volume hours!
 
 *Note: For all paid persistent plans, if your subscription runs out, please renew quickly—we permanently clear your localized data 2 days after expiration!*
 
 ### Where do I install my games? And what is the D: Drive?
-**CRITICAL WARNING:** Your session includes multiple hard drives. You may freely install games, software, and documents anywhere on your primary **User Volume (usually `C:` Drive)**, as it is dynamically mapped to your personal CloudPC. 
+
+**CRITICAL WARNING:** Your session includes multiple hard drives. You may freely install games, software, and documents anywhere on your primary **User Volume (usually `C:` Drive)**, as it is dynamically mapped to your personal CloudPC.
 
 However, you will notice a **`D:` folder**! You must **NEVER** modify, delete, or touch anything inside the `D:` drive. This is not user storage! It is an explicit mounting mechanism mapping background Thinkmay Executables (binaries used for auto-updates and system streaming orchestration). Altering the `D:` drive will critically corrupt your session connection!
 
 ## Frequently Asked Questions
 
 * **Why is the "Power On" or "Play" button missing/greyed out on my Dashboard?**
-If your CloudPC dashboard shows "Server Down" or you cannot turn your machine on, our systems are likely reading an infrastructure mismatch:
+  If your CloudPC dashboard shows "Server Down" or you cannot turn your machine on, our systems are likely reading an infrastructure mismatch:
   * **Wrong Server Region**: Make sure the server you selected during Login (saigon2 vs haiphong) identically matches the node cluster your subscription is assigned to.
   * **Waiting for Shutdown**: If it says "Need Refresh", your previous session is still technically spinning down in the background. Wait 1-2 minutes and refresh the browser!
   * **Expired Subscription**: Verify in the Payment tab that your current standard or trial plan is still active and funded.
+* **Why is my mouse cursor invisible on my phone? / Where are the virtual buttons?**
+  If you are playing on a mobile phone or tablet but your mouse cursor has completely disappeared and the virtual buttons (gamepad) are gone, your browser is incorrectly forcing **Desktop Mode**. This hides the touch controls!
+  You must strictly disable "Desktop site" mapping to fix your interface:
+  * **Android (Google Chrome)**: Tap the three-dot `⋮` menu icon in the top right corner and **uncheck** the "Desktop site" option. [View Official Chrome Guide](https://support.google.com/chrome/answer/2765944?hl=en&co=GENIE.Platform%3DAndroid)
+  * **iPhone / iPad (Safari)**: Tap the `aA` icon on the left side of your URL address bar and select **Request Mobile Website**. [View Official Apple Guide](https://support.apple.com/guide/iphone/customize-your-safari-settings-iphb3100d149/ios)
 * **Why did my "Reset CloudPC" button fail with a Lock Error?**
-Your CloudPC utilizes an invisible native Operating System lock layer to aggressively protect your personal files! If you attempt to mash the Reset hardware buttons while your gaming session is currently active or still shutting down in the background, the servers actively reject and block that overriding command to rigidly prevent your games from magically corrupting. Simply wait around 3 to 5 minutes for the data-center machines to turn off fully, letting the lock expire, before resetting safely!
+  Your CloudPC utilizes an invisible native Operating System lock layer to aggressively protect your personal files! If you attempt to mash the Reset hardware buttons while your gaming session is currently active or still shutting down in the background, the servers actively reject and block that overriding command to rigidly prevent your games from magically corrupting. Simply wait around 3 to 5 minutes for the data-center machines to turn off fully, letting the lock expire, before resetting safely!
 * **Do I have to wait to download games from Steam?** No! The Thinkmay storefront uses a powerful `Volume Templating` engine utilizing our local datacenter storage arrays. When you select massive AAA games directly from our internal App Store, the system instantly hot-swaps your cloud network drive to a hyper-specialized pre-downloaded game template bypassing typical Steam download wait times flawlessly!
+* **Why were extra System Credits deducted from my Wallet when I renewed?**
+Thinkmay implements a strict **Allowance + Overage** billing structure. Your Subscription inherently guarantees Addon Privileges. For example, the **Standard Plan** includes 200GB of solid storage space and 100k AI Chatbot tokens entirely free, while the **Pro Plan** boosts this baseline up to 400GB space natively!
+If you install exceptionally massive games that force your CloudPC hard drive to expand beyond your explicit limit (e.g. going to 250GB on a 200GB plan), the platform smoothly allows the hardware upgrade without stopping you. However, it logically tracks your overage usage as **invisible debt**. Thinkmay never deducts your credits instantly mid-session; instead, the system automatically collects your aggregated Storage Overage payment from your central Wallet exclusively at the exact end of your cycle when it comes time for **Renewal**! You can verify your exact disk Allowance metrics natively in your Profile tab!
 * **Can I play high-end games?** Yes! Our machines utilize RTX GPUs capable of 4K/240FPS limits if your local monitor and network support it!
 * **Will I get banned by anti-cheats for playing on a CloudPC?** No! We execute specialized hardware spoofing that makes your CloudPC natively appear as a physical rack server from Gigabyte, effectively hiding the virtualization environment. You can safely play games with strict hypervisor anti-cheats (like Vanguard) without getting hardware banned.
 * **Does it work on mobile?** Yes! You can use your mobile browser to connect. Furthermore, we feature complete "Virtual Mobile Gamepad" overlays allowing you to customize touchscreen controllers on-the-fly.
@@ -111,6 +146,7 @@ Yes! You can plug in a microphone or gamepad. We don't perform cheap keyboard re
 
 **How do mouse and touch controls translate over the cloud?**
 Seamlessly! Your CloudPC uses highly optimized hardware integration schemas to ensure everything works flawlessly:
+
 * **FPS & 3D Gaming**: The moment you lock your mouse into a 3D game natively (like Minecraft or Valorant), the system automatically flips into **Relative Pointer Lock** directly streaming raw movement deltas into the OS—meaning you won't get stuck hitting the edges of your browser!
 * **Lag-Free Cursors**: Instead of sending your clicks and waiting for a picture to come back, our engines capture the remote Windows mouse icon and display it completely locally on top of your browser! The cursor is synced and smoothed natively, dropping UI latency dramatically.
 * **Mobile Touch vs Trackpad**: You have options! You can configure your phone screen to act as a **Native Windows Touchscreen** where your finger presses correlate identically over the cloud OS. Alternatively, you can use the screenspace like a generic **Laptop Trackpad**, swinging the mouse pointer around and tapping the edges for Left/Right clicks.
@@ -125,6 +161,7 @@ If you run into any issues, our support team is ready to help via **Email** or o
 Thinkmay CloudPC utilizes advanced streaming features like Google Congestion Control (GCC) and Forward Error Correction (FlexFEC) to dynamically handle network fluctuations. However, you might still run into performance issues due to device limitations or unstable Wi-Fi.
 
 We provide a **"Show stats"** setting that allows you to see real-time streaming metrics. Here is exactly what those numbers mean on your display:
+
 * **Route**: The specific regional server node your connection is hitting.
 * **Decoder**: The hardware decoding engine your browser is natively leveraging (e.g. H264).
 * **FPS**: Actual Frames Per Second rendering smoothly on your monitor.
@@ -144,7 +181,9 @@ Here is a quick diagnostic guide linking these metrics to common symptoms:
 | **High input latency / Delay**                  | **`realdelay`**, **`realdecodetime`**                      | If `realdelay` is high, switch your data route to avoid ISP bottlenecks. If `realdecodetime` is high, your device is struggling to decode the video. Try switching your `preferred_codec` from H.265 to H.264 (or vice-versa), and check the `realdecodername` metric to ensure your browser has Hardware Acceleration enabled. |
 
 ### Guide to Advanced Video Settings
+
 Inside your **Settings Panel**, you will find several advanced toggles that drastically alter your gaming or browsing visual quality:
+
 * **Quality Setup ("High Quality" vs "High Stability")**: Turn on **High Quality** if you have great internet and an amazing monitor (this tells the hardware to unlock up to 120FPS to make everything buttery smooth). Use **High Stability** if you are playing on unstable 4G/LTE or spotty Wi-fi; it hard-caps your framerate to 60FPS to conserve bandwidth.
 * **Max & Min Bitrates**: Turn the caps higher (e.g. 50+ mbps) when you are playing intense colorful video games with rapid visual motion. Turn them lower (< 15mbps) if you are getting "pixelated smudges" due to your router being choked with too much data.
 * **Use H.265 (HEVC)**: Turn this ON if you want the most beautiful image possible at half the internet bandwidth cost. However, turn this OFF (use H.264 instead) if you are playing on an older smartphone, an older Macbook, or a weak Chromebook without dedicated hardware decoders (otherwise your device will overheat quickly!).
