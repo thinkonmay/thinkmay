@@ -134,12 +134,13 @@ Your data is exclusively yours! Our backend servers orchestrate CloudPCs using s
 * **Complete Isolation**: When you start your CloudPC, our server maps the request exclusively against your securely signed database ID. It is structurally impossible for another user to view, access, hijack, or boot up your CloudPC machine!
 * **Anti-Hijacking Links**: The streaming handshakes built between our backbone servers and your browser expire intelligently. Network traffic is sealed tight, actively repelling third parties from piggybacking onto your hardware sessions.
 * **Isolated "VPN Safe" Networks**: The network powering your display stream is structurally isolated from your CloudPC's internal internet connection! This ultra-secure architecture means you can install corporate VPNs, tweak Windows Firewall settings, or do deep networking work without *ever* having to worry about locking yourself out of your machine or losing your display stream.
+* **Decentralized Storage Banks**: Your personal files are never sitting statically on unprotected cloud hard drives. Thinkmay natively integrates with the decentralized **Storj** network! When you upload or download files via the dashboard, the system orchestrates an invisible temporary "Edge Link" granting access. These isolated keys logically evaporate when your session drops, ensuring your personal storage is mathematically safe from scraping.
 
 **My connection feels laggy. What can I do?**
 We offer a unique "Multi-Routing" feature. Even if your server is in HCM, you can manually select a different data route (like HP) in the settings. This lets your connection hop on our fast internal network, bypassing potential local internet bottlenecks!
 
 **Can I transfer files to the CloudPC?**
-While you cannot drag-and-drop files directly into the browser window, your text clipboard is synchronized! You can freely copy text on your local machine and paste it into the CloudPC, and vice versa.
+Absolutely! While your browser video stream exclusively acts like a monitor, we provide a dedicated **Storage Tab** in your user dashboard! Here, you can rapidly upload massive files, install zips, or download your game saves independently via ultra-rapid decentralized edge nodes (without interrupting your game). Furthermore, your local **text clipboard** natively synchronizes through the browser so you can effortlessly push copy/paste commands across the cloud!
 
 **Does my gamepad or microphone work?**
 Yes! You can plug in a microphone or gamepad. We don't perform cheap keyboard replacements either. Your controller connects via a deeply emulated virtual Xbox 360 controller straight into your CloudPC, granting you full support for analog triggers, thumbsticks, and Force-Feedback (Rumble) vibrations natively! If you are gaming on a mobile phone, we even provide a built-in virtual on-screen gamepad. *Note that we currently support a single monitor setup per CloudPC.*
@@ -148,7 +149,8 @@ Yes! You can plug in a microphone or gamepad. We don't perform cheap keyboard re
 Seamlessly! Your CloudPC uses highly optimized hardware integration schemas to ensure everything works flawlessly:
 
 * **FPS & 3D Gaming**: The moment you lock your mouse into a 3D game natively (like Minecraft or Valorant), the system automatically flips into **Relative Pointer Lock** directly streaming raw movement deltas into the OS—meaning you won't get stuck hitting the edges of your browser!
-* **Lag-Free Cursors**: Instead of sending your clicks and waiting for a picture to come back, our engines capture the remote Windows mouse icon and display it completely locally on top of your browser! The cursor is synced and smoothed natively, dropping UI latency dramatically.
+* **Lag-Free Cursors**: We do NOT bake your mouse directly into the video stream! Instead, our system intercepts your CloudPC's exact Windows mouse icon (even if it changes to a loading hourglass or game crosshair) and sends it as a tiny, highly efficient image directly to your local computer. 
+  * Your local browser then utilizes an advanced mathematical **Motion Interpolation Smoothing** algorithm (predicting 32-millisecond glide paths while tracking microscopic clock-drifts between networks). This allows your remote mouse to physically glide across your screen with 100% native local-hardware smoothness, completely destroying standard cloud gaming "input lag"!
 * **Mobile Touch vs Trackpad**: You have options! You can configure your phone screen to act as a **Native Windows Touchscreen** where your finger presses correlate identically over the cloud OS. Alternatively, you can use the screenspace like a generic **Laptop Trackpad**, swinging the mouse pointer around and tapping the edges for Left/Right clicks.
 
 ## Need Help?

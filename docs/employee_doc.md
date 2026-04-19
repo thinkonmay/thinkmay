@@ -41,10 +41,17 @@ We run a subscription-based tiering system. When debugging user accounts or expl
 ## How the Video Stream Works (Under the Hood)
 
 If a customer asks how we achieve such low latency, or if you are debugging a profound stream freeze, here is the exact life cycle of a single frame of video:
+
 1. **Video Capture (Sunshine)**: Inside the user's CloudPC, our custom software (`Sunshine`) captures the game screen physically off the GPU up to 240 times a second and compresses it into a tiny video frame.
-2. **The Memory Bridge (IVSHMEM)**: Instead of sending this frame out through the Windows network card (which adds lag), Sunshine dumps the frame directly into a shared physical hardware memory stick called the **IVSHMEM**. 
+2. **The Memory Bridge (IVSHMEM)**: Instead of sending this frame out through the Windows network card (which adds lag), Sunshine dumps the frame directly into a shared physical hardware memory stick called the **IVSHMEM**.
 3. **The Proxy Forwarder**: The host data-center server reads that memory stick instantly on the other side. Our Go WebRTC Forwarder chops that frame into tiny network packets (RTP) and shoots it over the internet directly to the user's Web Browser.
 4. **Auto-Recovery**: If a user's home Wi-Fi drops some packets, their browser complains back to the server (via RTCP). Our WebRTC forwarder catches this and writes a "Panic/IDR" or "Lower Bitrate" command backwards through the IVSHMEM memory stick. Sunshine reads that, drops the game's streaming resolution immediately, and forces an instant full-screen refresh (IDR frame) to unfreeze the user's screen in milliseconds!
+
+## How the Personal Cloud Storage Works (Operations Guide)
+
+* **Decentralized Backends (Storj)**: Instead of costly AWS S3 buckets natively tied to servers, user files uniquely save across the distributed **Storj** decentralized network! 
+* **Zero-Trust Login Mounts**: When a user hits "Power On", the Proxy Backend secretively generates an "Ephemeral Connection Token" natively off their ID. This token completely automatically mounts their designated hardware bucket safely inside the Windows Drive ecosystem, guaranteeing secure zero-configuration mapping without exposing passwords.
+* **Direct Browser Downloading (307 Redirects)**: If a user executes a file download off the Web Dashboard's Storage Tab, they aren't actively downloading *through* our daemon servers (which would lethally choke our stream bandwidth)! The internal Go engine rapidly calculates an isolated Storj `DownloadableURL` and HTTP **307 Redirects** the request out! This physically routes their multi-gigabyte traffic directly onto the local CDN Edge layer gracefully.
 
 ## Need to Know (Support & Ops)
 
@@ -63,20 +70,22 @@ If a customer asks how we achieve such low latency, or if you are debugging a pr
 Every data-center server runs a master daemon that reads its infrastructure topology from a single file: `~/assets/cluster.yaml`. This file tells the daemon **which worker nodes exist, how networking is wired, where storage pools live, and how to reach peer clusters**. You will never need to write this file from scratch — it is pre-configured during server provisioning — but you may need to edit it for common operational tasks.
 
 ### Where to Find It
+
 SSH into the master node and open `~/assets/cluster.yaml` (the home directory of the daemon user, typically `root`).
 
 ### Common Ops Edits
 
-| Task | What to Change | Example |
-|---|---|---|
-| **Add a new worker node** | Append to the `nodes:` list | `- ip: "10.30.30.44"` |
-| **Temporarily disable a node** | Set `inactive: true` on the node entry | `- ip: "10.30.30.42"` ⟶ add `inactive: true` |
-| **Change default VM RAM/CPU** | Edit the top-level `ram:` / `vcpu:` values | `ram: 24` / `vcpu: 14` |
-| **Add a storage pool** | Append to `pools:` with type, path, and name | `- type: "user_data"  path: "/data/nvme2"  name: "pool-2"` |
-| **Skip OTA updates for a component** | Add the component name to `skip_updates:` | `skip_updates: ["proxy"]` |
-| **Change default VLANs** | Edit the `default_vlans:` array | `default_vlans: [100, 300]` |
+| Task                                       | What to Change                                 | Example                                                      |
+| ------------------------------------------ | ---------------------------------------------- | ------------------------------------------------------------ |
+| **Add a new worker node**            | Append to the `nodes:` list                  | `- ip: "10.30.30.44"`                                      |
+| **Temporarily disable a node**       | Set `inactive: true` on the node entry       | `- ip: "10.30.30.42"` ⟶ add `inactive: true`            |
+| **Change default VM RAM/CPU**        | Edit the top-level `ram:` / `vcpu:` values | `ram: 24` / `vcpu: 14`                                   |
+| **Add a storage pool**               | Append to `pools:` with type, path, and name | `- type: "user_data"  path: "/data/nvme2"  name: "pool-2"` |
+| **Skip OTA updates for a component** | Add the component name to `skip_updates:`    | `skip_updates: ["proxy"]`                                  |
+| **Change default VLANs**             | Edit the `default_vlans:` array              | `default_vlans: [100, 300]`                                |
 
 ### Applying Changes
+
 After editing, **restart the daemon**: `systemctl restart virtdaemon`. The config is read once at startup — there is no hot-reload. The daemon will reconnect to all declared nodes, peers, and routers on restart.
 
 > ⚠️ **Warning**: Restarting the daemon during active user sessions does NOT kill running VMs. However, the management API will be unavailable for ~10 seconds during restart. Coordinate restarts during low-traffic windows when possible.
@@ -87,12 +96,12 @@ The Thinkmay infrastructure is **not a single server** — it is a cluster of co
 
 ### The Four Roles
 
-| Role | What It Does | How to Identify |
-|---|---|---|
-| **Master** | Orchestrates all deployments, owns the GPU queue, runs Pocketbase | Has `nodes:` entries in its `cluster.yaml` |
-| **Worker** | Runs the actual VMs with GPUs. Reports state to the master via gRPC | Listed as an IP in the master's `nodes:` |
-| **Peer** | A separate cluster entirely. The master queries its VMs for routing | Listed in `peers:` (e.g., `haiphong.thinkmay.net`) |
-| **Router** | Handles DNAT port forwarding for VMs in VLANs | Listed in `routers:` with a VLAN number |
+| Role             | What It Does                                                        | How to Identify                                        |
+| ---------------- | ------------------------------------------------------------------- | ------------------------------------------------------ |
+| **Master** | Orchestrates all deployments, owns the GPU queue, runs Pocketbase   | Has `nodes:` entries in its `cluster.yaml`         |
+| **Worker** | Runs the actual VMs with GPUs. Reports state to the master via gRPC | Listed as an IP in the master's `nodes:`             |
+| **Peer**   | A separate cluster entirely. The master queries its VMs for routing | Listed in `peers:` (e.g., `haiphong.thinkmay.net`) |
+| **Router** | Handles DNAT port forwarding for VMs in VLANs                       | Listed in `routers:` with a VLAN number              |
 
 ### How Deployments Work (Simplified)
 
@@ -104,13 +113,13 @@ The Thinkmay infrastructure is **not a single server** — it is a cluster of co
 
 ### Maintenance & Troubleshooting
 
-| Scenario | What to Check |
-|---|---|
-| **User stuck at "you are in X position"** | All GPUs are occupied. Check worker nodes for free GPUs. |
-| **"Server Down" but node is running** | The master cannot reach the worker via gRPC. Check network/firewall between master → worker `:60000`. |
-| **VM booted but streaming doesn't work** | Routing DB may be stale. The `syncDatabase` loop (every 1s) pushes routing to the proxy. Check proxy logs. |
-| **Adding capacity** | Add the new server IP to `nodes:` in the master's `cluster.yaml` and restart `virtdaemon`. |
-| **Taking a node offline** | Set `inactive: true` on the node in `cluster.yaml` + restart. Active VMs finish naturally; no new deployments go there. |
+| Scenario                                        | What to Check                                                                                                               |
+| ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| **User stuck at "you are in X position"** | All GPUs are occupied. Check worker nodes for free GPUs.                                                                    |
+| **"Server Down" but node is running**     | The master cannot reach the worker via gRPC. Check network/firewall between master → worker `:60000`.                    |
+| **VM booted but streaming doesn't work**  | Routing DB may be stale. The `syncDatabase` loop (every 1s) pushes routing to the proxy. Check proxy logs.                |
+| **Adding capacity**                       | Add the new server IP to `nodes:` in the master's `cluster.yaml` and restart `virtdaemon`.                            |
+| **Taking a node offline**                 | Set `inactive: true` on the node in `cluster.yaml` + restart. Active VMs finish naturally; no new deployments go there. |
 
 ## Modifying CloudPC Configurations (For Ops)
 
@@ -126,7 +135,9 @@ To do this:
    * `{"pref_nodes": ["<node_ip>"]}` - Upgrades the user to **Supreme Deployment Priority** by routing them to the front of the queue targeting a specific server.
 
 ## Technical Streaming Metrics (Debugging Connection Issues)
+
 When solving customer tickets regarding "Lag" or "Blurry Streams", ask them to toggle "Show stats" in their Settings Panel. Cross-reference their metrics using this guide to pinpoint the exact bottleneck securely:
+
 1. **Ping (`realroundtriptime / 2`)**: Anything over 60ms will feel noticeably laggy. **NEVER** advise the user to download or use an external VPN (like 1.1.1.1 WARP), as this completely destabilizes our WebRTC pipelines! Instead, explicitly instruct them to use our native **"Change Route"** feature inside their Settings Panel to manually bounce their connection across a different datacenter backbone, immediately bypassing local ISP congestion natively.
 2. **Buf/Dec/Proc (`realdecodetime`)**: If `Decode` or `Proc` spikes massively above 15ms, the user's LOCAL hardware (their cheap laptop or older smartphone) is physically too weak to decode the high-resolution stream! Have them drop their Bitrate or turn off H.265 inside Advanced Settings transferring the weight back to standard H.264.
 3. **PL/IDR (`packetloss / idrcount`)**: If `PL` climbs rapidly, their Local Home WiFi is heavily dropping packets causing the server to violently assert `IDR` frames trying to rescue the stream. Explicitly tell them to plug in an Ethernet cable or move significantly closer to their 5GHz network.
@@ -137,7 +148,8 @@ When solving customer tickets regarding "Lag" or "Blurry Streams", ask them to t
 When aiding users with controller, touch, or keyboard issues, understand that Thinkmay natively maps all Web Browser hardware events straight into the CloudPC using deep HID emulation:
 
 * **Mouse Interactions**: The frontend dynamically toggles between **Absolute Cursor Mode** (ideal for standard desktop usage, mapping the exact screen bounds) and **Relative Pointer Lock** (transmitting raw X/Y deltas natively). The platform automatically enforces Relative Mode when users play 3D/FPS games (e.g., CS:GO, Minecraft) preventing screen-edge constraints!
-* **Smart Cursor Engine**: Rather than forcing users to suffer UI latency waiting for their mouse clicks to register visually across the internet, our platform utilizes an extracted Base64 remote cursor. It renders the remote Windows Mouse locally directly on top of their Chrome/Safari viewport utilizing sub-millisecond motion interpolation.
+* **Smart Cursor Engine (`cursor.ts` & `hid.go`)**: To eliminate UI latency, we do NOT bake the mouse into the video stream. Our Go backend (`hid.go`) intercepts the physical Windows OS Cursor state 10 times a second (100ms ping), safely securely caching the PNG to save bandwidth and only broadcasting updates when the `Cursor ID` changes! The WebRTC pipeline fires this PNG over data channels as a base64 Data URI straight into the React frontend.
+  * *Algorithmic Smoothness*: Knowing ping fluctuates, `cursor.ts` does not just rigidly snap the mouse to arriving coordinates. It computes an algorithmic 32-millisecond `INTERPOLATION_DURATION` path! It tracks real-time "Clock Drift" (`smoothedOffset`) between the Server and Client internal clocks, mathematically gliding the custom `<img>` crosshair across the viewport continuously between network packets.
 * **Touch & Mobile Playbook**: We support two independent mobile modes natively. If **Native Touch** is toggled, actual touchscreen pinches/taps are piped completely into the Windows 11 kernel as a recognized Touch Monitor. If disabled, touches emulate a generic Laptop Trackpad (where gestures slide the mouse pointer and screen sides act as Left/Right clicks).
 * **Virtual Gamepads (ViGEm)**: You can reassure gamers that standard HTML5 gamepads (PS4/Xbox) don't undergo cheap keyboard-binding emulation! Our Go orchestration actively spins up an emulated Xbox 360 architecture (`gconn` via ViGEmBus) directly inside the Host, seamlessly transferring actual thumb-stick axis movements, triggers, and even translating force-feedback/rumble requests back to their physical controllers natively.
 * **Keyboard Emulations**: When playing international titles, keys can be configured to transmit raw hardware **Scancodes** instead of Javascript strings, entirely bypassing client/host language localization mismatches.
@@ -165,26 +177,26 @@ If a user submits an aggressive ticket complaining that "all their games or file
 
 If a user complains that their dashboard does not allow them to start their VM (missing "Play" button or greyed out), this means the `GetStarted` UI is overriding the volume state based on a discrepancy between the static Pocketbase database and the live `/info` API of the physical worker node. **Here's exactly how to investigate and resolve it:**
 
-*   **"Server Down" / Missing VM Panel**: Occurs if the overarching `/info` API fails to return computer data, or if the user's specific volume ID is absent from the active hardware payload. This implies the backend worker is unresponsive or the disk hasn't successfully mounted natively.
-    *   *Action Plan*: Open **Pocketbase Admin UI -> `volumes`**. Find the user's volume by email and grab the `local_id`. If `transient: true` or the volume doesn't exist, their Trial expired! If the volume *does* exist, the data center node is likely rebooting. Escalate to Ops if it persists.
-*   **"Wrong Server Domain"**: Instruct the user to switch to the correct web portal; their subscription `.cluster` assignment does not match the active worker address.
-    *   *Action Plan*: Simply look at the URL the customer provided in a screenshot. If their subscription is on `saigon2` but they navigated to a `haiphong` dashboard link, tell them to swap URLs.
-*   **"Needs Refresh" / Waiting**: The `/info` API is explicitly returning `inuse: true` for their volume list, meaning the server is currently actively shutting down their last session. Tell them to wait 1-2 minutes and refresh the page.
-    *   *Action Plan*: Tell the user to wait up to 5 minutes. If it gets infinitely stuck "waiting", open Pocketbase Admin UI, go to the `sessions` table, find their active `internal` stranded session payload, and politely delete the row manually to instantly hard-flush the `inuse: true` lock!
+* **"Server Down" / Missing VM Panel**: Occurs if the overarching `/info` API fails to return computer data, or if the user's specific volume ID is absent from the active hardware payload. This implies the backend worker is unresponsive or the disk hasn't successfully mounted natively.
+  * *Action Plan*: Open **Pocketbase Admin UI -> `volumes`**. Find the user's volume by email and grab the `local_id`. If `transient: true` or the volume doesn't exist, their Trial expired! If the volume *does* exist, the data center node is likely rebooting. Escalate to Ops if it persists.
+* **"Wrong Server Domain"**: Instruct the user to switch to the correct web portal; their subscription `.cluster` assignment does not match the active worker address.
+  * *Action Plan*: Simply look at the URL the customer provided in a screenshot. If their subscription is on `saigon2` but they navigated to a `haiphong` dashboard link, tell them to swap URLs.
+* **"Needs Refresh" / Waiting**: The `/info` API is explicitly returning `inuse: true` for their volume list, meaning the server is currently actively shutting down their last session. Tell them to wait 1-2 minutes and refresh the page.
+  * *Action Plan*: Tell the user to wait up to 5 minutes. If it gets infinitely stuck "waiting", open Pocketbase Admin UI, go to the `sessions` table, find their active `internal` stranded session payload, and politely delete the row manually to instantly hard-flush the `inuse: true` lock!
 
 ### Missing Cursor & Overlays on Mobile (Desktop Mode Issue)
 
 If a user submits a ticket stating they are playing on a mobile phone or tablet but **"the mouse cursor is invisible"** or **"the virtual gamepad buttons are gone"**, this is a browser configuration issue, not a backend crash.
 
-*   **The Cause**: The user has **"Request Desktop Site"** toggled ON in their mobile browser (Chrome/Safari). This spoofs their `UserAgent` signature to pretend to be a strict desktop PC (e.g., Windows/macOS). Our frontend UI strictly evaluates this fake user agent (`isMobile() === false`), permanently hiding all touch-specific video overlays (Gamepads) and disabling the internal `server_cursor`, expecting a physical hardware mouse that the mobile device does not physically possess!
-*   **Action Plan**: Look at their screenshot. If the website text is extremely tiny or zoomed out, they are definitely in Desktop Mode. Reply with instructions to immediately toggle off "Desktop site" via the Chrome 3-dot menu or Safari's "aA" icon.
+* **The Cause**: The user has **"Request Desktop Site"** toggled ON in their mobile browser (Chrome/Safari). This spoofs their `UserAgent` signature to pretend to be a strict desktop PC (e.g., Windows/macOS). Our frontend UI strictly evaluates this fake user agent (`isMobile() === false`), permanently hiding all touch-specific video overlays (Gamepads) and disabling the internal `server_cursor`, expecting a physical hardware mouse that the mobile device does not physically possess!
+* **Action Plan**: Look at their screenshot. If the website text is extremely tiny or zoomed out, they are definitely in Desktop Mode. Reply with instructions to immediately toggle off "Desktop site" via the Chrome 3-dot menu or Safari's "aA" icon.
 
 ### Missing Wallet Credits & Addon Storage Overages
 
 If a customer submits an angry support ticket claiming their **Wallet Credits disappeared** without them manually buying a new Plan, they have triggered a **Storage Overage** or **Service Addon** dynamic charge!
 
-*   **How Overages Trigger**: Every plan (like Month-Standard) inherently grants base privileges (e.g. 200GB of disk space and 100k LLM AI Tokens on Standard, or 400GB/300k on Pro). If the user opts to download completely massive 300GB+ games on a Standard plan, they physically exceed their explicit plan limit! The backend tracks this overage natively as **accumulated debt**. Thinkmay does *not* randomly deduct credits mid-session! The charges are strictly deducted entirely in bulk as a requisite at the exact moment their plan expires and they attempt to **renew** their subscription!
-*   **Action Plan**: Do not arbitrarily issue refunds! Log into the Pocketbase Admin Console, review the user's `addon_subscriptions` unit counts or run `list_addon_charges_v2(user_email)` to track their debts. Kindly reply to their ticket confirming that by downloading massive games vastly expanding their disk footprint beyond their designated Baseline Privileges, their CloudPC dynamically tracked legitimate Storage Overage fees which were automatically deducted *when they requested their latest plan renewal*.
+* **How Overages Trigger**: Every plan (like Month-Standard) inherently grants base privileges (e.g. 200GB of disk space and 100k LLM AI Tokens on Standard, or 400GB/300k on Pro). If the user opts to download completely massive 300GB+ games on a Standard plan, they physically exceed their explicit plan limit! The backend tracks this overage natively as **accumulated debt**. Thinkmay does *not* randomly deduct credits mid-session! The charges are strictly deducted entirely in bulk as a requisite at the exact moment their plan expires and they attempt to **renew** their subscription!
+* **Action Plan**: Do not arbitrarily issue refunds! Log into the Pocketbase Admin Console, review the user's `addon_subscriptions` unit counts or run `list_addon_charges_v2(user_email)` to track their debts. Kindly reply to their ticket confirming that by downloading massive games vastly expanding their disk footprint beyond their designated Baseline Privileges, their CloudPC dynamically tracked legitimate Storage Overage fees which were automatically deducted *when they requested their latest plan renewal*.
 
 If a user submits a ticket relating to their hardware or machine session, use the **Pocketbase Admin UI** to search for their data across these main tables (collections):
 
@@ -196,10 +208,13 @@ If a user submits a ticket relating to their hardware or machine session, use th
 * **`app_access` & `llmModels`**: Tracks user quotas and usage counts for specific internal tools and AI. If a user says they are rate-limited, check their `usage` meters here.
 
 ## Website Sitemap & SEO Routing
+
 To assist our Marketing and SEO Operations teams, here is the architectural Next.js App Router topology natively extracted from the `website/app` directory. Note that internal folders enclosed in parentheses (e.g., `(e-commerce)`) are structural Route Groups and do not visibly append to the finalized web URL:
 
 ### 1. Public E-Commerce & SEO Targets `/(e-commerce)`
+
 These routes are publicly accessible, completely open to Google bot crawling, and act as the core organic discovery funnel. They require highly strict metadata and keyword optimization:
+
 * `/` - The primary Marketing Homepage (`page.tsx`).
 * `/blog` & `/blog/[slug]` - Informational hubs for press releases and SEO keyword targeting.
 * `/discovery` & `/discovery/[...slug]` - Public catalogs and product spotlights.
@@ -207,7 +222,9 @@ These routes are publicly accessible, completely open to Google bot crawling, an
 * `/contact`, `/faq`, `/legal`, `/privacy` - General corporate compliance pages.
 
 ### 2. User Dashboard & Infrastructure `/(app)` & `/(auth)`
+
 These routes are gated by authentication logic. SEO optimization and metadata indexing are completely irrelevant here!
+
 * **The WebRTC Interfaces**: `/remote` and `/play` form the absolute core canvases where the virtual streaming displays are loaded.
 * **Storefront**: `/store` and `/store/[...slug]` operate the Game Template swap commands.
 * **Storage Hubs**: `/storage` and `/storage/backups` manipulate Buckets and Volumes.
