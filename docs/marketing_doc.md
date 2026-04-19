@@ -63,7 +63,7 @@ When creating visual assets (Posters, Social Media Ads, Discord Banners, Event B
 Gamers are naturally skeptical of "Cloud Gaming" lag. Win their trust by flexing our tech-savviness right on the posters:
 * 🔋 `Dedicated RTX 5060Ti / 3060Ti Rigs`
 * ⚡ `Ultra-Low Latency WebRTC Engine`
-* 🛡️ `Vanguard & Easy Anti-Cheat Compatibility` (Crucial for our Esports community)
+* 🛡️ `Easy Anti-Cheat & BattlEye Compatibility` (Crucial for our Esports community)
 * 🌐 `Powered by Google Chrome` (Visually stamp the Chrome Logo to emphasize *Zero Downloads Required*).
 
 ### 3. Aesthetics & The Call-To-Action
