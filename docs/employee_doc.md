@@ -8,14 +8,24 @@ This document is for Thinkmay employees (Sales, Support, Marketing, and Operatio
 
 Our primary users are **Gamers** and **3D Designers** who require high-performance, GPU-accelerated computing without the upfront cost of expensive local hardware.
 
-## Pricing Plans & Hardware Tiers
+## Subscriptions & Hardware Privileges Matrix
 
-We run a subscription-based model with three main tiers:
+We run a subscription-based tiering system. When debugging user accounts or explaining plans, reference these exact Database constraints globally pushed across the Daemon configurations:
 
-1. **Trial Plan**: 3 hours of trial access. User data/machine is permanently wiped after 3 hours.
-2. **Standard Plan**: 120 hours/month (30 days limit). Backed by EPYC Milan CPUs and RTX 5060ti GPUs. Data is kept persistent.
-3. **Performance Plan**: 360 hours/month (30 days limit). Backed by Intel Xeon CPUs and RTX 3060ti GPUs. Data is kept persistent.
-   *Note: For all paid plans, user data is securely wiped exactly 2 days after a subscription expires to free up capacity.*
+1. **Hour1 (Free Trial Tier)**:
+   * **Duration**: 3 hours.
+   * **Hardware**: Intel Xeon 8171M (6 Cores), RTX 3060Ti (8GB), 16GB DDR4 RAM.
+   * **Configuration (`transient: true`)**: These users are severely restricted. Explain that they DO NOT save data. Furthermore, their `configuration` strictly injects `"timeout": 30`, meaning the `jobs.go` daemon intrinsically terminates their container if they are away for 30 minutes!
+2. **Month1 (Standard Plan)**: 
+   * **Duration**: 120 hours/month.
+   * **Hardware**: Intel Xeon 8171M (6 Cores), RTX 3060Ti (8GB), 16GB DDR4 RAM.
+   * **Configuration (`transient: null`)**: Grants persistent `.raw` user volumes isolated on stable disks (200GB allocation limit). Generous application allowances (20 total) and 100K LLM tokens.
+3. **Month2 (Premium Performance Plan)**:
+   * **Duration**: 360 hours/month.
+   * **Hardware**: Heavy-duty AMD EPYC Milan-X (14 Cores), RTX 5060Ti (16GB), 24GB DDR4 RAM! Enormous 400GB Disk quota.
+   * **Configuration (`pref_nodes`)**: *A crucial operational note!* This plan uniquely injects the strict array `pref_nodes: ["10.30.30.41", ...]`. This inherently overrides the data center Load Balancers completely bypassing generic FIFO queues and routes these users straight into private VIP priority node channels ensuring zero boot latency during peak traffic!
+
+*Note: For all paid persistent plans, user data is securely wiped exactly 2 days after a subscription expires to free up cluster capacity.*
 
 ## Key Selling Points & Capabilities
 
@@ -60,7 +70,19 @@ When aiding users with controller, touch, or keyboard issues, understand that Th
 * **Keyboard Emulations**: When playing international titles, keys can be configured to transmit raw hardware **Scancodes** instead of Javascript strings, entirely bypassing client/host language localization mismatches.
 
 ## Database Structure & Terminology (Where to look)
-If a user submits a ticket, use the **Pocketbase Admin UI** to search for their data across these main tables (collections):
+The Thinkmay Platform operates a **Dual-Architecture Gateway**:
+1. **The Global Database (Supabase)**: Operates the money and the queues. It handles the `pockets` (user wallets), handles App Store inventory searching, and handles 3rd Party APIs (PayOS, Stripe). It speaks directly to Pocketbase via SQL HTTP Webhooks. Support tickets regarding *Billing, Subscriptions, and User Wallets* belong here.
+ * **Payment/Wallet Inquiries playbook**: Thinkmay evaluates usage via a "Top-Up Ledger" called `pockets`. Users DO NOT buy subscriptions directly with Cards; they top up "System Credits" into their Wallet. If a user complains a payment hasn't hit their software, verify the `transactions` table to ascertain whether their Gateway connection (Stripe/PayOS) is stuck processing `_PENDING`. If they complain a subscription didn't boot their CloudPC despite paying, verify their `pockets.amount` actually exceeds the target `plans.credit` expense to afford clearance!
+2. **The Local Worker Databases (Pocketbase)**: Resides locally on the data center servers. We use Pocketbase specifically to securely orchestrate bare-metal hardware functions locally. Support tickets regarding *Missing CloudPCs, Bad Networking, missing Hardware, or Auth failures* belong here.
+
+### Handling "Lost Data" / Game Save Tickets (Transient vs Persistent Plans)
+If a user submits an aggressive ticket complaining that "all their games or file saves randomly disappeared" after they closed out of their session, quickly check the plan they purchased via the Supabase Dashboard:
+* **Transient Plans (Hourly Tiers)**: Inform them that the subscription they selected is intentionally designed as an Ephemeral / Transient system. The Thinkmay proxy daemon physically triggers a `MarkAsTransient()` sequence shredding their `.raw` user volume disk instance into the incinerator immediately upon session disconnect.
+* **Persistent Plans (Monthly Tiers)**: These are non-transient tier machines. Their data rests safely mapped to persistent `.raw` files on the `user_data` storage pool! If they truly lost files here, it is a catastrophic infrastructure failure requiring immediate Level-3 escalation to the dev ops team.
+* **"Disk is currently locked" / Reset Failures**: This indicates the user attempted to press the Reset or Restart buttons while their prior streaming session was still physically spinning down. The master infrastructure immediately catches this and flags a background `lock` ticking file to prevent them from accidentally formatting their hardware while it is still flushing saved game data! Tell them to wait approximately 3 to 5 minutes so the hardware can fully shut off naturally, which will remove the lock.
+* **App Store Installation Stuck at 0% (/reallocate fails)**: If they complain a giant game install from the Thinkmay App Store is completely frozen, it implies their `/reallocate/sse` volume pipeline stream crashed while attempting to overlay the internal Game Template. Have them execute a Hard Reset from their dashboard to safely flush their `.raw` locking mechanism and cleanly redownload the target!
+
+If a user submits a ticket relating to their hardware or machine session, use the **Pocketbase Admin UI** to search for their data across these main tables (collections):
 * **`users`**: The core account table. Check here to verify standard info like `email`, `phone`, and profile data.
 * **`volumes` & `buckets`**: These represent the actual CloudPC hard drives (`volumes`) and temporary cloud storage (`buckets`). If a user complains about lost data, verify these records exist.
 * **`sessions`**: Represents currently active streaming links.

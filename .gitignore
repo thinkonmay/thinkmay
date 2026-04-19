@@ -13,3 +13,4 @@ artifacts/
 g4.exe
 worker/router/etc-pihole/
 worker/router/lancache
+docs/db/

@@ -12,15 +12,26 @@ No downloads required!
 2. **Browsers**: We officially support Chrome and Safari.
 3. **Mobile Users**: For an app-like experience, open the website on your phone and tap "Add to Home Screen".
 
-## Subscriptions and Your Data
+## Subscription Details & Hardware Privileges
 
-* **Trial Plan**: Enjoy 3 hours of free access to test the waters. *Warning: Upon completion of the 3 hours, your storage is completely wiped.*
-* **Standard Plan**: You get powerful dedicated hardware (up to 120 hours/month) and your files are saved securely between sessions.
-* **Performance Plan**: Upgrading gives you our highest hardware tier (up to 360 hours/month) PLUS **VIP Queue Priority**! During peak hours, your CloudPC startup commands completely skip the general line and go straight to the front of our server waitlist, meaning your machine boots significantly faster than other tiers.
-  * *Note: For all paid plans, if your subscription runs out, please renew quickly—we permanently clear your files 2 days after expiration!*
+* **Free Hourly Trial (`hour1`)**: Perfect for testing! You receive 3 total hours of ephemeral access powered by a 6-Core Xeon CPU, 16GB of DDR4 RAM, and an NVIDIA RTX 3060Ti (8GB RAM). 
+  * *AFK Warning*: This plan enforces a strict 30-minute inactivity timeout. Upon completion or disconnect, your storage drive is completely wiped!
+* **Standard Monthly (`month1`)**: Extremely solid performance offering 120 hours per month! You receive a dedicated 200GB Persistent SSD ensuring your games survive securely between sessions. This tier runs natively on a 6-Core Xeon and RTX 3060Ti.
+* **Premium Performance (`month2`)**: Our flagship workstation upgrade granting a massive 360 hours of total playtime! Powered by a massive 14-Core AMD EPYC Milan-X CPU, an elite RTX 5060Ti (16GB RAM), 24GB of DDR4 RAM, and an enormous 400GB persistent Disk allowance! 
+  * **VIP Queue Priority**: Your startup commands uniquely bypass the generalized cluster routers entirely. Using `pref_nodes`, your machine routes to private priority hardware queues drastically multiplying your startup times during peak volume hours!
+
+*Note: For all paid persistent plans, if your subscription runs out, please renew quickly—we permanently clear your localized data 2 days after expiration!*
+
+### Where do I install my games? And what is the D: Drive?
+**CRITICAL WARNING:** Your session includes multiple hard drives. You may freely install games, software, and documents anywhere on your primary **User Volume (usually `C:` Drive)**, as it is dynamically mapped to your personal CloudPC. 
+
+However, you will notice a **`D:` folder**! You must **NEVER** modify, delete, or touch anything inside the `D:` drive. This is not user storage! It is an explicit mounting mechanism mapping background Thinkmay Executables (binaries used for auto-updates and system streaming orchestration). Altering the `D:` drive will critically corrupt your session connection!
 
 ## Frequently Asked Questions
 
+* **Why did my "Reset CloudPC" button fail with a Lock Error?**
+Your CloudPC utilizes an invisible native Operating System lock layer to aggressively protect your personal files! If you attempt to mash the Reset hardware buttons while your gaming session is currently active or still shutting down in the background, the servers actively reject and block that overriding command to rigidly prevent your games from magically corrupting. Simply wait around 3 to 5 minutes for the data-center machines to turn off fully, letting the lock expire, before resetting safely!
+* **Do I have to wait to download games from Steam?** No! The Thinkmay storefront uses a powerful `Volume Templating` engine utilizing our local datacenter storage arrays. When you select massive AAA games directly from our internal App Store, the system instantly hot-swaps your cloud network drive to a hyper-specialized pre-downloaded game template bypassing typical Steam download wait times flawlessly!
 * **Can I play high-end games?** Yes! Our machines utilize RTX GPUs capable of 4K/240FPS limits if your local monitor and network support it!
 * **Will I get banned by anti-cheats for playing on a CloudPC?** No! We execute specialized hardware spoofing that makes your CloudPC natively appear as a physical rack server from Gigabyte, effectively hiding the virtualization environment. You can safely play games with strict hypervisor anti-cheats (like Vanguard) without getting hardware banned.
 * **Does it work on mobile?** Yes! You can use your mobile browser to connect. Furthermore, we feature complete "Virtual Mobile Gamepad" overlays allowing you to customize touchscreen controllers on-the-fly.
