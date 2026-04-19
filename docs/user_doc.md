@@ -13,15 +13,16 @@ No downloads required!
 3. **Mobile Users**: For an app-like experience, open the website on your phone and tap "Add to Home Screen".
 
 ### Browser Feature Support Matrix
+
 While you can stream seamlessly on both Google Chrome and Apple Safari, the underlying engine (WebRTC) behaves differently. For the absolute best, lowest-latency gaming experience, **we highly recommend Google Chrome**.
 
-| Feature | Google Chrome | Apple Safari | What this means for you |
-| :--- | :--- | :--- | :--- |
-| **Gamepad Controllers** | ✅ Supported | ✅ Supported | You can plug in Xbox/PlayStation controllers directly via Bluetooth or USB. |
-| **Copy & Paste (Clipboard)** | ✅ Supported | ✅ Supported | You can copy text on your local machine and paste it directly into your CloudPC. |
-| **Mouse Crosshair Lock** | ✅ Supported | ✅ Supported | Required for 3D games (like Minecraft or Valorant) to lock your mouse to the camera natively without hitting your screen edges. |
-| **Deep Error Correction** | ✅ Supported | ❌ Not Supported | Chrome supports advanced network recovery (FlexFEC). If you play on spotty Wi-Fi, Safari might freeze or stutter much more frequently than Chrome! |
-| **Ultra-Low Latency** | ✅ Supported | ❌ Not Supported | Chrome allows our engines to enforce sub-millisecond video buffering, resulting in noticeably snappier inputs during fast-paced situations. |
+| Feature                                        | Google Chrome        | Apple Safari        | What this means for you                                                                                                                                                                                                                                                                                                                |
+| :--------------------------------------------- | :------------------- | :------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Gamepad Controllers**                  | ✅ Supported         | ✅ Supported        | You can plug in Xbox/PlayStation controllers directly via Bluetooth or USB.                                                                                                                                                                                                                                                            |
+| **Copy & Paste (Clipboard)**             | ✅ Supported         | ✅ Supported        | You can copy text on your local machine and paste it directly into your CloudPC.                                                                                                                                                                                                                                                       |
+| **Mouse Crosshair Lock**                 | ✅ Supported         | ✅ Supported        | Required for 3D games (like Minecraft or Valorant) to lock your mouse to the camera natively without hitting your screen edges.                                                                                                                                                                                                        |
+| **Deep Error Correction**                | ✅ Supported         | ❌ Not Supported    | Chrome supports advanced network recovery (FlexFEC). If you play on spotty Wi-Fi, Safari might freeze or stutter much more frequently than Chrome!                                                                                                                                                                                     |
+| **Ultra-Low Latency**                    | ✅ Supported         | ❌ Not Supported    | Chrome allows our engines to enforce sub-millisecond video buffering, resulting in noticeably snappier inputs during fast-paced situations.                                                                                                                                                                                            |
 | **Hardware Video Decoding (H.265/HEVC)** | ✅ Supported (v136+) | ✅ Supported (v15+) | **Critical Requirement!** Your laptop or phone must have a hardware media decoder (usually any modern device from the last 5-7 years). If your hardware is too old or you're using an outdated Chrome version, the browser falls back to software decoding causing massive lag, unplayable stuttering, and severe battery drain. |
 
 ## Step-by-Step Platform Guide
@@ -61,13 +62,22 @@ If your stream is lagging, blurry, or you wish to unlock maximum 120FPS performa
 5. Toggle **Use H.265** ON for better image quality at lower bandwidth, or OFF if your device overheats.
 6. Toggle **VSync & Frame Queuing** ON if you see screen tearing (adds 16–33ms latency).
 
-### 4. Renew Your Plan
+### 4. Renew & Top-Up Your Plan
 
-Remember, user data on Paid Persistent plans is strictly wiped 2 days after plan expiration!
+Thinkmay operates on a unique "Wallet System". You do not directly purchase a subscription with a credit card each month; instead, you deposit **System Credits** into your wallet and use them to purchase time!
 
-1. Keep an eye on your **Profile Dashboard** which displays your remaining days prominently.
-2. Ensure your Wallet has enough System Credits by topping up via the **Payment** tab.
-3. Once financially funded, click **Renew Plan** to instantly extend your hardware time and safely lock your data array.
+**To Buy or Renew a Plan:**
+
+1. Navigate to the **Payment** tab in the sidebar.
+2. Choose your desired package: The **Hourly Plan**, **Standard**, or **Premium Performance**.
+3. **Customize your Checkout:**
+   - **Discounts**: Enter any promotional codes in the discount box and hit Apply.
+   - **Wallet Deduction**: Toggle the "Pay from Pocket" switch to deduct funds directly from your existing Wallet Balance, lowering the total price you pay today!
+   - **Addons**: Elect to purchase additional storage or AI limits if desired.
+4. **Choose Payment Gateway:**
+   - For **Credit Cards**: Switch to the **Credit Card / Monthly Fees** tab and select Stripe.
+   - For **Local Banks (Vietnam/Indonesia)**: Select **VietQR (PayOS)** or **Dana/Ovo**.
+5. Click **Continue**. If you selected VietQR, scan the generated QR code intimately with your phone's banking app; the page will automatically detect the transfer in real-time and successfully complete your purchase without you having to click anything!
 
 ### 5. Check Your Usage & Plan Limits
 
@@ -109,18 +119,21 @@ However, you will notice a **`D:` folder**! You must **NEVER** modify, delete, o
 The **Settings** menu gives you complete control over your CloudPC streaming network and hardware interfaces. Here is everything you can do!
 
 ### Diagnostic & Network Tools
+
 * **Network Testing (`Network Test`)**: Having awful lag despite high internet speeds? You can safely hop onto a completely different peer-to-peer data center route! Use this page to manually force your stream connection through an alternative backbone node, smoothly bypassing local ISP traffic congestion.
-* **Controller Testing (`Gamepad / Keyboard Test`)**: Verify if your joysticks, deadzones, or custom macro keys are correctly registering to the browser *before* booting into your game session securely. 
+* **Controller Testing (`Gamepad / Keyboard Test`)**: Verify if your joysticks, deadzones, or custom macro keys are correctly registering to the browser *before* booting into your game session securely.
   * **Troubleshooting Controller Drift / Inputs**: If your game character keeps walking by themselves, or buttons aren't responding, open the **Gamepad Test** page. Move your physical thumbsticks. If you see the visual indicators jittering or moving without you touching them, you have hardware *stick drift*! If no buttons light up when pressed, your local OS or browser hasn't granted gamepad permissions.
   * **Troubleshooting Keyboard Compatibility**: If certain keys aren't working in-game, open the **Keyboard Test** page. Press your keys and ensure they light up the corresponding blocks. If a key fails to light up, your local operating system is actively intercepting the hotkey (e.g., Windows Key, Alt-Tab) before it reaches the CloudPC. Use this tool to confirm full compatibility before starting your stream!
 
 ### Advanced Streaming Controls
-* **Video Quality Bounds (`Advanced Settings`)**: Use the sliders to mathematically cap your bandwidth usage. If you are on an unstable cellular network, drop the `Min/Max Bitrate` sliders down (towards 5 mbps) so the servers stop overloading your Wifi router! 
+
+* **Video Quality Bounds (`Advanced Settings`)**: Use the sliders to mathematically cap your bandwidth usage. If you are on an unstable cellular network, drop the `Min/Max Bitrate` sliders down (towards 5 mbps) so the servers stop overloading your Wifi router!
 * **Quality vs Stability Presets**: Select **High Quality** to command the CloudPC GPU to stream natively at lightning-fast 120 FPS. Select **High Stability** to lock the engine to 60 FPS permanently, reserving critical CPU resources for pure game rendering instead of high-speed stream capturing!
 * **H.265 Encoder**: If you have a decent modern laptop/phone GPU, toggle this ON. It will drastically lower the required internet speed necessary to maintain crisp visual quality! If your device is old or overheats quickly, toggle this OFF.
 * **Vertical Sync (VSync)**: Eliminate visual screen-tearing if the CloudPC pushes frames much faster than your local physical monitor can refresh.
 
 ### Hardware & Input Compatibility
+
 * **Disk Resize (`Disk Resize`)**: Completely ran out of storage space on your C: drive? If you own a Premium package with higher Storage allowances (e.g. 500GB limit), you can effortlessly use the Disk interface here to securely grow your CloudPC persistent hard drive mathematically in real-time!
 * **Keyboard Scancode**: Are you using an international or custom QWERTY/AZERTY keyboard format that is resulting in mismatched key presses in-game? Enable the Scancode toggle to fix translation mismatches seamlessly by forcing the stream to natively read physical hardware keys.
 * **Auto-Relative Mouse**: This brilliant feature automatically locks your cursor dynamically exactly when you click inside the stream, completely solving annoying mouse jumps or edge-blocking in intensive 3D/First-Person Shooter games.
@@ -141,8 +154,8 @@ The **Settings** menu gives you complete control over your CloudPC streaming net
   Your CloudPC utilizes an invisible native Operating System lock layer to aggressively protect your personal files! If you attempt to mash the Reset hardware buttons while your gaming session is currently active or still shutting down in the background, the servers actively reject and block that overriding command to rigidly prevent your games from magically corrupting. Simply wait around 3 to 5 minutes for the data-center machines to turn off fully, letting the lock expire, before resetting safely!
 * **Do I have to wait to download games from Steam?** No! The Thinkmay storefront uses a powerful `Volume Templating` engine utilizing our local datacenter storage arrays. When you select massive AAA games directly from our internal App Store, the system instantly hot-swaps your cloud network drive to a hyper-specialized pre-downloaded game template bypassing typical Steam download wait times flawlessly!
 * **Why were extra System Credits deducted from my Wallet when I renewed?**
-Thinkmay implements a strict **Allowance + Overage** billing structure. Your Subscription inherently guarantees Addon Privileges. For example, the **Standard Plan** includes 200GB of solid storage space and 100k AI Chatbot tokens entirely free, while the **Pro Plan** boosts this baseline up to 400GB space natively!
-If you install exceptionally massive games that force your CloudPC hard drive to expand beyond your explicit limit (e.g. going to 250GB on a 200GB plan), the platform smoothly allows the hardware upgrade without stopping you. However, it logically tracks your overage usage as **invisible debt**. Thinkmay never deducts your credits instantly mid-session; instead, the system automatically collects your aggregated Storage Overage payment from your central Wallet exclusively at the exact end of your cycle when it comes time for **Renewal**! You can verify your exact disk Allowance metrics natively in your Profile tab!
+  Thinkmay implements a strict **Allowance + Overage** billing structure. Your Subscription inherently guarantees Addon Privileges. For example, the **Standard Plan** includes 200GB of solid storage space and 100k AI Chatbot tokens entirely free, while the **Pro Plan** boosts this baseline up to 400GB space natively!
+  If you install exceptionally massive games that force your CloudPC hard drive to expand beyond your explicit limit (e.g. going to 250GB on a 200GB plan), the platform smoothly allows the hardware upgrade without stopping you. However, it logically tracks your overage usage as **invisible debt**. Thinkmay never deducts your credits instantly mid-session; instead, the system automatically collects your aggregated Storage Overage payment from your central Wallet exclusively at the exact end of your cycle when it comes time for **Renewal**! You can verify your exact disk Allowance metrics natively in your Profile tab!
 * **Can I play high-end games?** Yes! Our machines utilize RTX GPUs capable of 4K/240FPS limits if your local monitor and network support it!
 * **Will I get banned by anti-cheats for playing on a CloudPC?** No! We execute specialized hardware spoofing that makes your CloudPC natively appear as a physical rack server from Gigabyte, effectively hiding the virtualization environment. You can safely play games with strict hypervisor anti-cheats (like Vanguard) without getting hardware banned.
 * **Does it work on mobile?** Yes! You can use your mobile browser to connect. Furthermore, we feature complete "Virtual Mobile Gamepad" overlays allowing you to customize touchscreen controllers on-the-fly.
@@ -170,7 +183,7 @@ Yes! You can plug in a microphone or gamepad. We don't perform cheap keyboard re
 Seamlessly! Your CloudPC uses highly optimized hardware integration schemas to ensure everything works flawlessly:
 
 * **FPS & 3D Gaming**: The moment you lock your mouse into a 3D game natively (like Minecraft or Valorant), the system automatically flips into **Relative Pointer Lock** directly streaming raw movement deltas into the OS—meaning you won't get stuck hitting the edges of your browser!
-* **Lag-Free Cursors**: We do NOT bake your mouse directly into the video stream! Instead, our system intercepts your CloudPC's exact Windows mouse icon (even if it changes to a loading hourglass or game crosshair) and sends it as a tiny, highly efficient image directly to your local computer. 
+* **Lag-Free Cursors**: We do NOT bake your mouse directly into the video stream! Instead, our system intercepts your CloudPC's exact Windows mouse icon (even if it changes to a loading hourglass or game crosshair) and sends it as a tiny, highly efficient image directly to your local computer.
   * Your local browser then utilizes an advanced mathematical **Motion Interpolation Smoothing** algorithm (predicting 32-millisecond glide paths while tracking microscopic clock-drifts between networks). This allows your remote mouse to physically glide across your screen with 100% native local-hardware smoothness, completely destroying standard cloud gaming "input lag"!
 * **Mobile Touch vs Trackpad**: You have options! You can configure your phone screen to act as a **Native Windows Touchscreen** where your finger presses correlate identically over the cloud OS. Alternatively, you can use the screenspace like a generic **Laptop Trackpad**, swinging the mouse pointer around and tapping the edges for Left/Right clicks.
 

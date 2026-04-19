@@ -162,6 +162,15 @@ The Thinkmay Platform operates a **Dual-Architecture Gateway**:
 
 * **Payment/Wallet Inquiries playbook**: Thinkmay evaluates usage via a "Top-Up Ledger" called `pockets`. Users DO NOT buy subscriptions directly with Cards; they top up "System Credits" into their Wallet. If a user complains a payment hasn't hit their software, verify the `transactions` table to ascertain whether their Gateway connection (Stripe/PayOS) is stuck processing `_PENDING`. If they complain a subscription didn't boot their CloudPC despite paying, verify their `pockets.amount` actually exceeds the target `plans.credit` expense to afford clearance!
 
+### The Frontend Checkout Engine (`/payment`)
+If a user is confused about how to renew their plan, guide them through the frontend payment logic framework:
+1. **The Catalog (`/payment`)**: When users hit the payment tab, if they already own an active subscription, they are presented with an `OwnedPlan` dashboard detailing their exact renewal dates and costs (accounting for Addons they attached). If they are completely new, they see the `<PlansGrid>`.
+2. **The Checkout Customizer (`/payment/[id]`)**: Users use this interface to technically manipulate their checkout payload before routing to the payment gateways. Instruct them that they can toggle **"Wallet Deduction"** (which mathematically subtracts their existing `user.balance` from the required fiat deposit price), toggle `Addons`, and apply discount codes (`validate_discount_code`).
+3. **Gateway Distributions (`/payment/[gateway]/[id]`)**:
+   - *VietQR/PayOS*: The client renders a React `<QRCode>` mapping to their specific deposit request. The frontend actively polls the backend `isFinished()` loop every 3 seconds for 5 minutes. If a user complains their QR code randomly expired or kicked them out, they simply hit the 5-minute inactivity timeout!
+   - *Stripe*: Renders standard Stripe Elements allowing either Single `payment` drops or Recurring `subscription` hooks.
+   - *Dana/Ovo*: Standard Indonesian-localized digital wallets.
+
 2. **The Local Worker Databases (Pocketbase)**: Resides locally on the data center servers. We use Pocketbase specifically to securely orchestrate bare-metal hardware functions locally. Support tickets regarding *Missing CloudPCs, Bad Networking, missing Hardware, or Auth failures* belong here.
 
 ### Handling "Lost Data" / Game Save Tickets (Transient vs Persistent Plans)
