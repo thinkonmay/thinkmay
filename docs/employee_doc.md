@@ -207,6 +207,29 @@ If a user submits a ticket relating to their hardware or machine session, use th
 * **`mail`**: Logs all system emails and campaigns sent to the user. Ops can verify here if a customer actually received an OTP or marketing email, diagnosing delivery completely based on the `errors` or `finalHTML` columns.
 * **`app_access` & `llmModels`**: Tracks user quotas and usage counts for specific internal tools and AI. If a user says they are rate-limited, check their `usage` meters here.
 
+## Explaining the Settings Dashboard (Support Guide)
+
+If a customer is confused by the options inside the **Settings Panel** (`/setting`), use this operations guide to explain the exact technical capabilities exposed to their frontend component:
+
+### Diagnostic Tools (`/setting/diagnostic`)
+* **Network Router (`/setting/network`)**: This visually maps out the Active "Multi-Route" domain. If the user experiences severe backbone ISP routing issues, Operations can instruct them to manually select a different routing server here. This structurally pivots their proxy ingestion endpoint, immediately bypassing local ISP congestion!
+* **Keyboard & Gamepad Testers**: Native sandboxes mapping raw physical presses exactly as the browser registers them, designed solely for debugging inputs before starting a session.
+
+### Advanced WebRTC Configurations (`/setting/advance`)
+* **Dual-Range Bitrate Limiters**: The slider doesn't just "set" the visual quality. It defines the explicit WebRTC `BandwidthEstimator` floor (`min_bitrate`) and ceiling (`max_bitrate`), natively capping at 60 Mbps. The server dynamically sweeps NVENC compression inside this user-defined bounds.
+* **Video Presets (Speed vs Quality)**: The "High Quality" vs "High Stability" radio buttons explicitly alter the React `framerate` state, signaling the host machine to cap the renderer globally between 120 FPS vs 60 FPS natively.
+* **H.265 / HEVC**: Support can instruct gamers with strong local GPUs (i.e. good decoding power) to toggle "Use H265". This massively drops network bandwidth requirements, but absolutely destroys the stream if their physical device lacks hardware decoding capabilities.
+* **VSync Mode**: Toggling this forces VSync, dramatically eliminating screen-tearing algorithms natively.
+
+### Compatibility Configurations (`/setting/advance`)
+* **Scancode Keyboard Mapping**: This tells the system to transmit raw OS hardware binary presses instead of browser-interpreted strings. Essential for bypassing foreign language/QWERTY mismatch issues.
+* **Client Cursor Engine**: Overrides their desktop mouse with a server-rendered `<img>` crosshair mapped to the relative `smoothedOffset` system. Activating this effectively bypasses system/browser mouse acceleration.
+* **Auto-Relative Mouse**: Forces the browser into Pointer Lock immediately on click, perfect for 3D/FPS gamers circumventing the ESC pause menu.
+
+### Hardware Modifications (`/setting/other`)
+* **Disk Customizer (`/setting/disk`)**: Users can effortlessly resize their physical CloudPC storage (200GB vs 500GB) natively. The React frontend sends a Resize webhook mapping the limit physically against their Subscription `fetch_plan_policy()` limits safely!
+* **Multi-Connection Proxy (`/setting/mcp`)**: Users demanding to hook into external third-party integrations or heavy server APIs can freely toggle their physical `api.EnableMCP()` connection here.
+
 ## Website Sitemap & SEO Routing
 
 To assist our Marketing and SEO Operations teams, here is the architectural Next.js App Router topology natively extracted from the `website/app` directory. Note that internal folders enclosed in parentheses (e.g., `(e-commerce)`) are structural Route Groups and do not visibly append to the finalized web URL:

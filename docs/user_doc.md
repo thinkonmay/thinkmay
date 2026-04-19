@@ -104,6 +104,27 @@ To track how many hours you have played and understand your subscription boundar
 
 However, you will notice a **`D:` folder**! You must **NEVER** modify, delete, or touch anything inside the `D:` drive. This is not user storage! It is an explicit mounting mechanism mapping background Thinkmay Executables (binaries used for auto-updates and system streaming orchestration). Altering the `D:` drive will critically corrupt your session connection!
 
+## The Settings Panel (Customizing Your Experience)
+
+The **Settings** menu gives you complete control over your CloudPC streaming network and hardware interfaces. Here is everything you can do!
+
+### Diagnostic & Network Tools
+* **Network Testing (`Network Test`)**: Having awful lag despite high internet speeds? You can safely hop onto a completely different peer-to-peer data center route! Use this page to manually force your stream connection through an alternative backbone node, smoothly bypassing local ISP traffic congestion.
+* **Controller Testing (`Gamepad / Keyboard Test`)**: Verify if your joysticks, deadzones, or custom macro keys are correctly registering to the browser *before* booting into your game session securely. 
+  * **Troubleshooting Controller Drift / Inputs**: If your game character keeps walking by themselves, or buttons aren't responding, open the **Gamepad Test** page. Move your physical thumbsticks. If you see the visual indicators jittering or moving without you touching them, you have hardware *stick drift*! If no buttons light up when pressed, your local OS or browser hasn't granted gamepad permissions.
+  * **Troubleshooting Keyboard Compatibility**: If certain keys aren't working in-game, open the **Keyboard Test** page. Press your keys and ensure they light up the corresponding blocks. If a key fails to light up, your local operating system is actively intercepting the hotkey (e.g., Windows Key, Alt-Tab) before it reaches the CloudPC. Use this tool to confirm full compatibility before starting your stream!
+
+### Advanced Streaming Controls
+* **Video Quality Bounds (`Advanced Settings`)**: Use the sliders to mathematically cap your bandwidth usage. If you are on an unstable cellular network, drop the `Min/Max Bitrate` sliders down (towards 5 mbps) so the servers stop overloading your Wifi router! 
+* **Quality vs Stability Presets**: Select **High Quality** to command the CloudPC GPU to stream natively at lightning-fast 120 FPS. Select **High Stability** to lock the engine to 60 FPS permanently, reserving critical CPU resources for pure game rendering instead of high-speed stream capturing!
+* **H.265 Encoder**: If you have a decent modern laptop/phone GPU, toggle this ON. It will drastically lower the required internet speed necessary to maintain crisp visual quality! If your device is old or overheats quickly, toggle this OFF.
+* **Vertical Sync (VSync)**: Eliminate visual screen-tearing if the CloudPC pushes frames much faster than your local physical monitor can refresh.
+
+### Hardware & Input Compatibility
+* **Disk Resize (`Disk Resize`)**: Completely ran out of storage space on your C: drive? If you own a Premium package with higher Storage allowances (e.g. 500GB limit), you can effortlessly use the Disk interface here to securely grow your CloudPC persistent hard drive mathematically in real-time!
+* **Keyboard Scancode**: Are you using an international or custom QWERTY/AZERTY keyboard format that is resulting in mismatched key presses in-game? Enable the Scancode toggle to fix translation mismatches seamlessly by forcing the stream to natively read physical hardware keys.
+* **Auto-Relative Mouse**: This brilliant feature automatically locks your cursor dynamically exactly when you click inside the stream, completely solving annoying mouse jumps or edge-blocking in intensive 3D/First-Person Shooter games.
+
 ## Frequently Asked Questions
 
 * **Why is the "Power On" or "Play" button missing/greyed out on my Dashboard?**
