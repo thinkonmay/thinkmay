@@ -79,6 +79,11 @@ However, you will notice a **`D:` folder**! You must **NEVER** modify, delete, o
 
 ## Frequently Asked Questions
 
+* **Why is the "Power On" or "Play" button missing/greyed out on my Dashboard?**
+If your CloudPC dashboard shows "Server Down" or you cannot turn your machine on, our systems are likely reading an infrastructure mismatch:
+  * **Wrong Server Region**: Make sure the server you selected during Login (saigon2 vs haiphong) identically matches the node cluster your subscription is assigned to.
+  * **Waiting for Shutdown**: If it says "Need Refresh", your previous session is still technically spinning down in the background. Wait 1-2 minutes and refresh the browser!
+  * **Expired Subscription**: Verify in the Payment tab that your current standard or trial plan is still active and funded.
 * **Why did my "Reset CloudPC" button fail with a Lock Error?**
 Your CloudPC utilizes an invisible native Operating System lock layer to aggressively protect your personal files! If you attempt to mash the Reset hardware buttons while your gaming session is currently active or still shutting down in the background, the servers actively reject and block that overriding command to rigidly prevent your games from magically corrupting. Simply wait around 3 to 5 minutes for the data-center machines to turn off fully, letting the lock expire, before resetting safely!
 * **Do I have to wait to download games from Steam?** No! The Thinkmay storefront uses a powerful `Volume Templating` engine utilizing our local datacenter storage arrays. When you select massive AAA games directly from our internal App Store, the system instantly hot-swaps your cloud network drive to a hyper-specialized pre-downloaded game template bypassing typical Steam download wait times flawlessly!

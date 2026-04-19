@@ -99,6 +99,17 @@ If a user submits an aggressive ticket complaining that "all their games or file
 * **"Disk is currently locked" / Reset Failures**: This indicates the user attempted to press the Reset or Restart buttons while their prior streaming session was still physically spinning down. The master infrastructure immediately catches this and flags a background `lock` ticking file to prevent them from accidentally formatting their hardware while it is still flushing saved game data! Tell them to wait approximately 3 to 5 minutes so the hardware can fully shut off naturally, which will remove the lock.
 * **App Store Installation Stuck at 0% (/reallocate fails)**: If they complain a giant game install from the Thinkmay App Store is completely frozen, it implies their `/reallocate/sse` volume pipeline stream crashed while attempting to overlay the internal Game Template. Have them execute a Hard Reset from their dashboard to safely flush their `.raw` locking mechanism and cleanly redownload the target!
 
+### Dashboard "Turn On" Issues (Troubleshooting VM Start Failures)
+
+If a user complains that their dashboard does not allow them to start their VM (missing "Play" button or greyed out), this means the `GetStarted` UI is overriding the volume state based on a discrepancy between the static Pocketbase database and the live `/info` API of the physical worker node. **Here's exactly how to investigate and resolve it:**
+
+*   **"Server Down" / Missing VM Panel**: Occurs if the overarching `/info` API fails to return computer data, or if the user's specific volume ID is absent from the active hardware payload. This implies the backend worker is unresponsive or the disk hasn't successfully mounted natively.
+    *   *Action Plan*: Open **Pocketbase Admin UI -> `volumes`**. Find the user's volume by email and grab the `local_id`. If `transient: true` or the volume doesn't exist, their Trial expired! If the volume *does* exist, the data center node is likely rebooting. Escalate to Ops if it persists.
+*   **"Wrong Server Domain"**: Instruct the user to switch to the correct web portal; their subscription `.cluster` assignment does not match the active worker address.
+    *   *Action Plan*: Simply look at the URL the customer provided in a screenshot. If their subscription is on `saigon2` but they navigated to a `haiphong` dashboard link, tell them to swap URLs.
+*   **"Needs Refresh" / Waiting**: The `/info` API is explicitly returning `inuse: true` for their volume list, meaning the server is currently actively shutting down their last session. Tell them to wait 1-2 minutes and refresh the page.
+    *   *Action Plan*: Tell the user to wait up to 5 minutes. If it gets infinitely stuck "waiting", open Pocketbase Admin UI, go to the `sessions` table, find their active `internal` stranded session payload, and politely delete the row manually to instantly hard-flush the `inuse: true` lock!
+
 If a user submits a ticket relating to their hardware or machine session, use the **Pocketbase Admin UI** to search for their data across these main tables (collections):
 
 * **`users`**: The core account table. Check here to verify standard info like `email`, `phone`, and profile data.
