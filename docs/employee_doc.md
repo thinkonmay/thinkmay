@@ -16,7 +16,7 @@ We run a subscription-based tiering system. When debugging user accounts or expl
    * **Duration**: 3 hours.
    * **Hardware**: Intel Xeon 8171M (6 Cores), RTX 3060Ti (8GB), 16GB DDR4 RAM.
    * **Configuration (`transient: true`)**: These users are severely restricted. Explain that they DO NOT save data. Furthermore, their `configuration` strictly injects `"timeout": 30`, meaning the `jobs.go` daemon intrinsically terminates their container if they are away for 30 minutes!
-2. **Month1 (Standard Plan)**: 
+2. **Month1 (Standard Plan)**:
    * **Duration**: 120 hours/month.
    * **Hardware**: Intel Xeon 8171M (6 Cores), RTX 3060Ti (8GB), 16GB DDR4 RAM.
    * **Configuration (`transient: null`)**: Grants persistent `.raw` user volumes isolated on stable disks (200GB allocation limit). Generous application allowances (20 total) and 100K LLM tokens.
@@ -51,8 +51,10 @@ We run a subscription-based tiering system. When debugging user accounts or expl
 * **Current Service Regions**: Servers are located in Ho Chi Minh City (HCM) and Hai Phong (HP).
 
 ## Modifying CloudPC Configurations (For Ops)
-As an Operations or Support team member, you may occasionally need to modify a customer's machine manually (e.g., removing a GPU for debugging, or granting them VIP queue access). 
+
+As an Operations or Support team member, you may occasionally need to modify a customer's machine manually (e.g., removing a GPU for debugging, or granting them VIP queue access).
 To do this:
+
 1. Log into the internal **Pocketbase Admin UI**.
 2. Navigate to the `volumes` collection and find the customer's volume record.
 3. Locate the `configuration` text field (which stores data in a JSON format).
@@ -61,8 +63,17 @@ To do this:
    * `{"disable_gpu": true}` - Forces the machine to boot on the CPU without claiming a physical GPU.
    * `{"pref_nodes": ["<node_ip>"]}` - Upgrades the user to **Supreme Deployment Priority** by routing them to the front of the queue targeting a specific server.
 
+## Technical Streaming Metrics (Debugging Connection Issues)
+When solving customer tickets regarding "Lag" or "Blurry Streams", ask them to toggle "Show stats" in their Settings Panel. Cross-reference their metrics using this guide to pinpoint the exact bottleneck securely:
+1. **Ping (`realroundtriptime / 2`)**: Anything over 60ms will feel noticeably laggy. **NEVER** advise the user to download or use an external VPN (like 1.1.1.1 WARP), as this completely destabilizes our WebRTC pipelines! Instead, explicitly instruct them to use our native **"Change Route"** feature inside their Settings Panel to manually bounce their connection across a different datacenter backbone, immediately bypassing local ISP congestion natively.
+2. **Buf/Dec/Proc (`realdecodetime`)**: If `Decode` or `Proc` spikes massively above 15ms, the user's LOCAL hardware (their cheap laptop or older smartphone) is physically too weak to decode the high-resolution stream! Have them drop their Bitrate or turn off H.265 inside Advanced Settings transferring the weight back to standard H.264.
+3. **PL/IDR (`packetloss / idrcount`)**: If `PL` climbs rapidly, their Local Home WiFi is heavily dropping packets causing the server to violently assert `IDR` frames trying to rescue the stream. Explicitly tell them to plug in an Ethernet cable or move significantly closer to their 5GHz network.
+4. **Jt/Avg (`realjitter`)**: High Jitter means packets arrive entirely out of chronological order (highly typical on heavily congested 4G/LTE mobile networks). This natively induces severe visual stutter.
+
 ## Interaction Modes & HID Emulation (Support Knowledge)
+
 When aiding users with controller, touch, or keyboard issues, understand that Thinkmay natively maps all Web Browser hardware events straight into the CloudPC using deep HID emulation:
+
 * **Mouse Interactions**: The frontend dynamically toggles between **Absolute Cursor Mode** (ideal for standard desktop usage, mapping the exact screen bounds) and **Relative Pointer Lock** (transmitting raw X/Y deltas natively). The platform automatically enforces Relative Mode when users play 3D/FPS games (e.g., CS:GO, Minecraft) preventing screen-edge constraints!
 * **Smart Cursor Engine**: Rather than forcing users to suffer UI latency waiting for their mouse clicks to register visually across the internet, our platform utilizes an extracted Base64 remote cursor. It renders the remote Windows Mouse locally directly on top of their Chrome/Safari viewport utilizing sub-millisecond motion interpolation.
 * **Touch & Mobile Playbook**: We support two independent mobile modes natively. If **Native Touch** is toggled, actual touchscreen pinches/taps are piped completely into the Windows 11 kernel as a recognized Touch Monitor. If disabled, touches emulate a generic Laptop Trackpad (where gestures slide the mouse pointer and screen sides act as Left/Right clicks).
@@ -70,22 +81,49 @@ When aiding users with controller, touch, or keyboard issues, understand that Th
 * **Keyboard Emulations**: When playing international titles, keys can be configured to transmit raw hardware **Scancodes** instead of Javascript strings, entirely bypassing client/host language localization mismatches.
 
 ## Database Structure & Terminology (Where to look)
+
 The Thinkmay Platform operates a **Dual-Architecture Gateway**:
+
 1. **The Global Database (Supabase)**: Operates the money and the queues. It handles the `pockets` (user wallets), handles App Store inventory searching, and handles 3rd Party APIs (PayOS, Stripe). It speaks directly to Pocketbase via SQL HTTP Webhooks. Support tickets regarding *Billing, Subscriptions, and User Wallets* belong here.
- * **Payment/Wallet Inquiries playbook**: Thinkmay evaluates usage via a "Top-Up Ledger" called `pockets`. Users DO NOT buy subscriptions directly with Cards; they top up "System Credits" into their Wallet. If a user complains a payment hasn't hit their software, verify the `transactions` table to ascertain whether their Gateway connection (Stripe/PayOS) is stuck processing `_PENDING`. If they complain a subscription didn't boot their CloudPC despite paying, verify their `pockets.amount` actually exceeds the target `plans.credit` expense to afford clearance!
+
+* **Payment/Wallet Inquiries playbook**: Thinkmay evaluates usage via a "Top-Up Ledger" called `pockets`. Users DO NOT buy subscriptions directly with Cards; they top up "System Credits" into their Wallet. If a user complains a payment hasn't hit their software, verify the `transactions` table to ascertain whether their Gateway connection (Stripe/PayOS) is stuck processing `_PENDING`. If they complain a subscription didn't boot their CloudPC despite paying, verify their `pockets.amount` actually exceeds the target `plans.credit` expense to afford clearance!
+
 2. **The Local Worker Databases (Pocketbase)**: Resides locally on the data center servers. We use Pocketbase specifically to securely orchestrate bare-metal hardware functions locally. Support tickets regarding *Missing CloudPCs, Bad Networking, missing Hardware, or Auth failures* belong here.
 
 ### Handling "Lost Data" / Game Save Tickets (Transient vs Persistent Plans)
+
 If a user submits an aggressive ticket complaining that "all their games or file saves randomly disappeared" after they closed out of their session, quickly check the plan they purchased via the Supabase Dashboard:
+
 * **Transient Plans (Hourly Tiers)**: Inform them that the subscription they selected is intentionally designed as an Ephemeral / Transient system. The Thinkmay proxy daemon physically triggers a `MarkAsTransient()` sequence shredding their `.raw` user volume disk instance into the incinerator immediately upon session disconnect.
 * **Persistent Plans (Monthly Tiers)**: These are non-transient tier machines. Their data rests safely mapped to persistent `.raw` files on the `user_data` storage pool! If they truly lost files here, it is a catastrophic infrastructure failure requiring immediate Level-3 escalation to the dev ops team.
 * **"Disk is currently locked" / Reset Failures**: This indicates the user attempted to press the Reset or Restart buttons while their prior streaming session was still physically spinning down. The master infrastructure immediately catches this and flags a background `lock` ticking file to prevent them from accidentally formatting their hardware while it is still flushing saved game data! Tell them to wait approximately 3 to 5 minutes so the hardware can fully shut off naturally, which will remove the lock.
 * **App Store Installation Stuck at 0% (/reallocate fails)**: If they complain a giant game install from the Thinkmay App Store is completely frozen, it implies their `/reallocate/sse` volume pipeline stream crashed while attempting to overlay the internal Game Template. Have them execute a Hard Reset from their dashboard to safely flush their `.raw` locking mechanism and cleanly redownload the target!
 
 If a user submits a ticket relating to their hardware or machine session, use the **Pocketbase Admin UI** to search for their data across these main tables (collections):
+
 * **`users`**: The core account table. Check here to verify standard info like `email`, `phone`, and profile data.
 * **`volumes` & `buckets`**: These represent the actual CloudPC hard drives (`volumes`) and temporary cloud storage (`buckets`). If a user complains about lost data, verify these records exist.
 * **`sessions`**: Represents currently active streaming links.
 * **`setting` & `persona`**: Stores the user's saved software configurations and algorithm-generated custom profiles (`persona`).
 * **`mail`**: Logs all system emails and campaigns sent to the user. Ops can verify here if a customer actually received an OTP or marketing email, diagnosing delivery completely based on the `errors` or `finalHTML` columns.
 * **`app_access` & `llmModels`**: Tracks user quotas and usage counts for specific internal tools and AI. If a user says they are rate-limited, check their `usage` meters here.
+
+## Website Sitemap & SEO Routing
+To assist our Marketing and SEO Operations teams, here is the architectural Next.js App Router topology natively extracted from the `website/app` directory. Note that internal folders enclosed in parentheses (e.g., `(e-commerce)`) are structural Route Groups and do not visibly append to the finalized web URL:
+
+### 1. Public E-Commerce & SEO Targets `/(e-commerce)`
+These routes are publicly accessible, completely open to Google bot crawling, and act as the core organic discovery funnel. They require highly strict metadata and keyword optimization:
+* `/` - The primary Marketing Homepage (`page.tsx`).
+* `/blog` & `/blog/[slug]` - Informational hubs for press releases and SEO keyword targeting.
+* `/discovery` & `/discovery/[...slug]` - Public catalogs and product spotlights.
+* `/pricing` & `/pricing/how-it-works` - Sales and conversion funnels.
+* `/contact`, `/faq`, `/legal`, `/privacy` - General corporate compliance pages.
+
+### 2. User Dashboard & Infrastructure `/(app)` & `/(auth)`
+These routes are gated by authentication logic. SEO optimization and metadata indexing are completely irrelevant here!
+* **The WebRTC Interfaces**: `/remote` and `/play` form the absolute core canvases where the virtual streaming displays are loaded.
+* **Storefront**: `/store` and `/store/[...slug]` operate the Game Template swap commands.
+* **Storage Hubs**: `/storage` and `/storage/backups` manipulate Buckets and Volumes.
+* **Configuration Overlays**: Advanced `/setting` trees handle highly specific diagnostic tools like `/setting/network`, `/setting/advance` (where real-time video bitrates are set), and `/setting/gamepad`.
+* **Financial Bridges**: `/payment/...` heavily controls transactions routing outward to gateways like Stripe, PayOS, Dana, and OVO.
+* **Authentication Pipelines**: `/login`, `/login-otp`, `/register`, and `/reset-password` cleanly route user identity handshakes into Supabase.

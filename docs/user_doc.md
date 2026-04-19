@@ -12,6 +12,56 @@ No downloads required!
 2. **Browsers**: We officially support Chrome and Safari.
 3. **Mobile Users**: For an app-like experience, open the website on your phone and tap "Add to Home Screen".
 
+## Step-by-Step Platform Guide
+
+### 1. Pay and Subscribe for a Plan
+You do not purchase subscriptions directly via credit card. Instead, your account operates on a "Wallet" system.
+
+![The Payment page showing your Wallet balance and the three subscription tiers with their hardware specs](images/payment_page.png)
+
+1. Navigate to the **Payment** page from the sidebar (shown above).
+2. Your current **Wallet Balance** is displayed prominently at the top.
+3. Choose your preferred Gateway (Stripe, PayOS, Dana, or OVO) to top up "System Credits".
+4. Once your Wallet balance updates, select your desired subscription tier. Your credits will be deducted automatically!
+
+### 2. Install a Game from Pre-installed Templates
+You can completely skip huge download times using Thinkmay's internal Game Templates!
+
+![The Explore/Store page showing AI-powered game recommendations with "Preinstalled Template" badges](images/store_page.png)
+
+1. Click **Explore** in the sidebar to open the App Store (shown above).
+2. Use the **AI search bar** or browse the **Quick Intent** tags (Racing, Multiplayer, etc.) to find your game.
+3. Look for titles marked with the **"Preinstalled Template"** badge — these are ready for instant play!
+4. Click the game card and select **"Set up your PC"**. The system will hot-swap your cloud storage with the pre-downloaded template (a loading bar tracks progress). Once it hits 100%, boot your CloudPC and play!
+
+### 3. Change Video Stream Settings
+If your stream is lagging, blurry, or you wish to unlock maximum 120FPS performance, you can tweak the WebRTC engine:
+
+![The Advanced Settings panel showing Video Quality sliders, codec toggles, and Compatibility options](images/settings_page.png)
+
+1. Click **Settings** → **Advanced Settings** in the sidebar (shown above).
+2. Under **Streaming Quality**, choose **High Quality** (for fast Wi-Fi) or **High Stability** (for cellular/unstable networks).
+3. Drag the **Streaming Quality** slider to set your Min/Max Bitrate (1–60 mbps). Higher = sharper visuals, lower = more stable.
+4. Adjust the **Max FPS** slider (40–240 FPS) based on your monitor's refresh rate.
+5. Toggle **Use H.265** ON for better image quality at lower bandwidth, or OFF if your device overheats.
+6. Toggle **VSync & Frame Queuing** ON if you see screen tearing (adds 16–33ms latency).
+
+### 4. Renew Your Plan
+Remember, user data on Paid Persistent plans is strictly wiped 2 days after plan expiration!
+1. Keep an eye on your **Profile Dashboard** which displays your remaining days prominently.
+2. Ensure your Wallet has enough System Credits by topping up via the **Payment** tab.
+3. Once financially funded, click **Renew Plan** to instantly extend your hardware time and safely lock your data array.
+
+### 5. Open and Connect to Your CloudPC
+
+![The Login page showing Email/Password fields, Google OAuth, OTP login, and server region selection](images/login_page.png)
+
+1. Open your browser and navigate to the Thinkmay website. Log in using your **Email & Password**, **Google**, or **Email OTP** (shown above). Select the server nearest to you (**haiphong** or **saigon2**).
+2. Once logged in, click **Home** in the sidebar to reach the Play dashboard.
+3. Your CloudPC machine card will display its name, storage size, and status. Click **Power On** to boot it.
+4. Wait 2–5 minutes for the machine to initialize (Premium Performance users skip the queue!).
+5. Once ready, click **Connect** — the full-screen video stream canvas will appear with your mouse, keyboard, and touch inputs actively linked to the remote Windows 11 hardware.
+
 ## Subscription Details & Hardware Privileges
 
 * **Free Hourly Trial (`hour1`)**: Perfect for testing! You receive 3 total hours of ephemeral access powered by a 6-Core Xeon CPU, 16GB of DDR4 RAM, and an NVIDIA RTX 3060Ti (8GB RAM). 
@@ -69,7 +119,18 @@ If you run into any issues, our support team is ready to help via **Email** or o
 
 Thinkmay CloudPC utilizes advanced streaming features like Google Congestion Control (GCC) and Forward Error Correction (FlexFEC) to dynamically handle network fluctuations. However, you might still run into performance issues due to device limitations or unstable Wi-Fi.
 
-We provide a **"Show stats" / "Technical Mode"** setting that allows you to see real-time streaming metrics. Here is a guide on how to read these metrics and fix common symptoms:
+We provide a **"Show stats"** setting that allows you to see real-time streaming metrics. Here is exactly what those numbers mean on your display:
+* **Route**: The specific regional server node your connection is hitting.
+* **Decoder**: The hardware decoding engine your browser is natively leveraging (e.g. H264).
+* **FPS**: Actual Frames Per Second rendering smoothly on your monitor.
+* **Ping**: Your one-way latency to our servers in milliseconds. Lower (under 40ms) is better!
+* **Buf/Dec/Proc**: Measures how many milliseconds your browser spends Buffering, Decoding, and Processing video frames natively. If these numbers spike heavily, your local PC/Laptop CPU is struggling to draw the stream frame!
+* **Bitrate**: The current data bandwidth consumed (e.g. `10.5mbps`). Huge bitrates look extremely beautiful but require heavily stable Wi-fi!
+* **PL/IDR**: Packet Loss and IDR frames. If Packet Loss is high, your Local Router connection is dropping data! IDR spikes occur when the stream is forced to "hard refresh" the entire screen due to extreme network instability.
+* **Jt/Avg (Jitter)**: Network Jitter measures exactly how inconsistently internet packets arrive. Massive jitter spikes cause heavily noticeable visual stuttering.
+* **Freeze/Drop**: How many times the video completely froze, or frames had to be rigidly discarded because they arrived over the network too late.
+
+Here is a quick diagnostic guide linking these metrics to common symptoms:
 
 | Symptom                                               | Metric to Look At                                                          | How to Solve It                                                                                                                                                                                                                                                                                                                         |
 | :---------------------------------------------------- | :------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
