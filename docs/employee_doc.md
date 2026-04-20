@@ -227,6 +227,7 @@ If a customer is confused by the options inside the **Settings Panel** (`/settin
 
 ### Advanced WebRTC Configurations (`/setting/advance`)
 * **Dual-Range Bitrate Limiters**: The slider doesn't just "set" the visual quality. It defines the explicit WebRTC `BandwidthEstimator` floor (`min_bitrate`) and ceiling (`max_bitrate`), natively capping at 60 Mbps. The server dynamically sweeps NVENC compression inside this user-defined bounds.
+* **Adaptive Bitrate Override (Fixed Bitrate)**: If the user sets "High Stability", they can activate **Disable Adaptive Bitrate**. This converts the Dual-Range Limiters into a *Single Fixed Bitrate* control panel. The web client immediately sends `&gcc=false` upon connection, forcing host server encoders to maintain constant bitrates at the cost of higher potential jitter inside congested loops.
 * **Video Presets (Speed vs Quality)**: The "High Quality" vs "High Stability" radio buttons explicitly alter the React `framerate` state, signaling the host machine to cap the renderer globally between 120 FPS vs 60 FPS natively.
 * **H.265 / HEVC**: Support can instruct gamers with strong local GPUs (i.e. good decoding power) to toggle "Use H265". This massively drops network bandwidth requirements, but absolutely destroys the stream if their physical device lacks hardware decoding capabilities.
 * **VSync Mode**: Toggling this forces VSync, dramatically eliminating screen-tearing algorithms natively.

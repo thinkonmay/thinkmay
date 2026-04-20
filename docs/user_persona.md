@@ -7,20 +7,24 @@ Based on granular behavioral data and user feedback, we have identified the core
 ## 1. The Mobile-First RP Gamer (Primary Persona, ~70% of Users)
 
 **Profile Summary:**
+
 - **Demographics:** College student, aged 18-24.
 - **Location:** Vietnam, Indonesia, and other SEA countries.
 - **Core Hardware:** Exclusively plays on a Mobile Device (Phone or Tablet) over their Home Wi-Fi network.
 - **Input Methods:** Heavy reliance on the on-screen virtual gaming keyboard, virtual gamepad, or connected physical Bluetooth gamepads.
 
 **Motivations & Core Goals:**
+
 - **"Play Anywhere, Keep Everything."** Their primary reason for choosing Thinkmay over an internet cafe is the sheer convenience. They can play demanding PC games on their phone at home, and effortlessly switch to a PC later if they choose.
-- **Persistent Storage is Key:** Because they play heavily modded games (like GTA V FiveM), the ability to install custom mods and keep their save files intact across sessions is their biggest requirement. 
+- **Persistent Storage is Key:** Because they play heavily modded games (like GTA V FiveM), the ability to install custom mods and keep their save files intact across sessions is their biggest requirement.
 
 **Typical Workloads & Social Dynamics:**
+
 - **Co-op & Roleplay:** Predominantly active in tightly-knit roleplay clans/communities within GTA V FiveM.
 - **Heavy Socialization:** Discord is central to their experience. They not only use Voice Chat but frequently utilize the Discord stream function to broadcast their Thinkmay gameplay to friends.
 
 **Financial Behavior & Friction Points:**
+
 - **Conversion Trigger:** They initially rely on the 3-hour free trial. However, the emotional pain of losing their saved progress and installed mods after the trial expires acts as the main psychological driver for them to upgrade to a paid persistent tier.
 - **Frustration:** The two biggest sources of churn are:
   1. *Billing Rigidness:* They pay for a 3-hour block but end up only playing for 1 hour, feeling like they wasted money.
@@ -32,10 +36,12 @@ Based on granular behavioral data and user feedback, we have identified the core
 ## 2. The Budget PC Gamer (Secondary Persona, ~30% of Users)
 
 **Profile Summary:**
+
 - **Demographics:** College students / young adults in SEA.
 - **Core Hardware:** Using low-end desktops or basic laptops, playing primarily via wired Ethernet or home Wi-Fi with traditional Mouse & Keyboard setups.
 
 **Motivations & Core Goals:**
+
 - **"High Settings Only."** Their rig is too weak to run modern heavyweights like Cyberpunk, Red Dead Redemption 2, or FC Online. They specifically care about the deep platform specs (like having access to RTX GPUs) to push High visual settings and robust FPS outputs.
 - Some play on random servers individually, simply seeking access to hardware they cannot afford.
 

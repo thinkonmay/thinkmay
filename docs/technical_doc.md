@@ -16,7 +16,7 @@ Thinkmay CloudPC is a high-performance cloud PC service tailored for gamers and 
 
 ### Streaming & Network
 * **Protocol**: WebRTC is the core streaming protocol, chosen for real-time, low-latency delivery. Supports FlexFEC and NACK + RTX.
-* **Congestion Control**: Uses Google Congestion Control (GCC) for adaptive bitrate.
+* **Adaptive Bitrate**: Uses Google Congestion Control (GCC) for adaptive bitrate adjustments.
 * **Routing Strategy**: Implements multi-routing where users can manually choose their ingress route independently of the server's region. (e.g., A user in Hanoi connecting to a HCM server can route through Hai Phong into our internal backbone). This manual selection doubles as a user-driven failover mechanism.
 
 ### Video & Input
@@ -37,7 +37,7 @@ Welcome to the Thinkmay CloudPC backend! If you are getting up to speed, focus y
 ### 1. Streaming Logic (`worker\proxy\forwarder\webrtc`)
 * **What it does**: This module acts as the WebRTC gateway, responsible for transmitting the actual video and audio data to the client's browser.
 * **Key Components**: 
-  * `forwarder.go`: Manages the RTP/RTCP packet flow. This is where advanced streaming features live, such as **FlexFEC** (Forward Error Correction) and **Google Congestion Control** (GCC).
+  * `forwarder.go`: Manages the RTP/RTCP packet flow. This is where advanced streaming features live, such as **FlexFEC** (Forward Error Correction) and **Adaptive Bitrate** (GCC).
   * **Optimization Flow**: GCC adaptively tracks available network bandwidth. When a `bitrate_change` event triggers, the module commands the video encoder to scale down its output to prevent stuttering. If a packet loss reaches an unrecoverable limit, the module catches `PictureLossIndication` or `FullIntraRequest` from the RTCP channel and enforces an `IDR` frame (full frame reset) to unfreeze the client's video.
 
 ### 2. Backend & Database Logic (`worker\daemon\pocketbase`)
@@ -395,7 +395,7 @@ The software relies on extreme end-to-end continuous integration entirely manage
 
 ### 11. Advanced Streaming Variables & WebRTC Configs
 Under the hood, the CloudPC engine exposes several deep-level frontend WebRTC flags (`setting/index.tsx`) that directly hook into the Go-based WebRTC Session interceptors (`worker/proxy/forwarder/webrtc/forwarder.go`).
-* **Google Congestion Control (GCC) & Bitrate**: The frontend provides a `min_bitrate` and `max_bitrate` array. When configured, the Go WebRTC stack initializes `cc.NewInterceptor` defining the `BandwidthEstimator`. The backend dynamically sweeps the backend video encoder (NVENC or x264) bitrate on the fly based on realtime network packet conditions bounded perfectly by the limits the user explicitly set.
+* **Adaptive Bitrate (GCC) & Bitrate**: The frontend provides a `min_bitrate` and `max_bitrate` array. When configured, the Go WebRTC stack initializes `cc.NewInterceptor` defining the `BandwidthEstimator`. The backend dynamically sweeps the backend video encoder (NVENC or x264) bitrate on the fly based on realtime network packet conditions bounded perfectly by the limits the user explicitly set. Furthermore, an explicit **Disable Adaptive Bitrate** overlay is allowed when using the "High Stability" mode. This injects `&gcc=false` and omits the dynamic bounds, leaving a fixed `&bitrate=` limit that forces NVENC to stream blindly at the maximum allowed data rate.
 * **Forward Error Correction (FlexFEC-03)**: Handled deeply in `webrtc.ConfigureFlexFEC03`, the stream injects redundant parity packets alongside the video payloads. This allows browsers to recover lost `h264` chunks immediately upon corruption without forcing costly Network Acknowledgment (NACK) re-transmission delays, keeping streams smooth on unstable Wifi.
 * **HQ Mode Presets**: The frontend React app features a single-click "HQ vs High Stability" toggle. Technically, this toggle merely manipulates the local UI `framerate` state, pushing the hardware cap to 120 FPS vs dropping to 60 FPS natively.
 * **Codec Enforcement**: When the user switches between `H264`, `H265`, or `AV1`, the WebRTC server destructs and restarts the internal payloaders (`&codecs.H265Payloader{}`) routing traffic utilizing explicitly modified SDP parameters.

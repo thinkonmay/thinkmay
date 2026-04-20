@@ -132,6 +132,7 @@ The **Settings** menu gives you complete control over your CloudPC streaming net
 
 * **Video Quality Bounds (`Advanced Settings`)**: Use the sliders to mathematically cap your bandwidth usage. If you are on an unstable cellular network, drop the `Min/Max Bitrate` sliders down (towards 5 mbps) so the servers stop overloading your Wifi router!
 * **Quality vs Stability Presets**: Select **High Quality** to command the CloudPC GPU to stream natively at lightning-fast 120 FPS. Select **High Stability** to lock the engine to 60 FPS permanently, reserving critical CPU resources for pure game rendering instead of high-speed stream capturing!
+* **Disable Adaptive Bitrate (`Advanced Settings`)**: Available only when **High Stability** is selected. This allows you to toggle off the automatic bandwidth adjustment and force a fixed bitrate stream. Do not use this over Wi-Fi unless your router is extremely stable, as disabling it stops the stream from automatically lowering quality during network drops.
 * **H.265 Encoder**: If you have a decent modern laptop/phone GPU, toggle this ON. It will drastically lower the required internet speed necessary to maintain crisp visual quality! If your device is old or overheats quickly, toggle this OFF.
 * **Vertical Sync (VSync)**: Eliminate visual screen-tearing if the CloudPC pushes frames much faster than your local physical monitor can refresh.
 
@@ -200,7 +201,7 @@ If you run into any issues, our support team is ready to help via **Email** or o
 
 ## Streaming Optimization & Troubleshooting
 
-Thinkmay CloudPC utilizes advanced streaming features like Google Congestion Control (GCC) and Forward Error Correction (FlexFEC) to dynamically handle network fluctuations. However, you might still run into performance issues due to device limitations or unstable Wi-Fi.
+Thinkmay CloudPC utilizes advanced streaming features like Adaptive Bitrate (GCC) and Forward Error Correction (FlexFEC) to dynamically handle network fluctuations. However, you might still run into performance issues due to device limitations or unstable Wi-Fi.
 
 We provide a **"Show stats"** setting that allows you to see real-time streaming metrics. Here is exactly what those numbers mean on your display:
 
@@ -218,7 +219,7 @@ Here is a quick diagnostic guide linking these metrics to common symptoms:
 
 | Symptom                                               | Metric to Look At                                                          | How to Solve It                                                                                                                                                                                                                                                                                                                         |
 | :---------------------------------------------------- | :------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Blurry/pixelated stream**                     | **`packetloss`**, **`realbitrate`**, **`realfps`** | Your network is struggling, so the server adaptively lowered the video quality (GCC). Try lowering the `max_bitrate` limit in your settings. If using Wi-Fi, ensure you are on a 5GHz band or switch to a wired Ethernet connection.                                                                                                  |
+| **Blurry/pixelated stream**                     | **`packetloss`**, **`realbitrate`**, **`realfps`** | Your network is struggling, so the server automatically lowered the video quality (Adaptive Bitrate). Try lowering the `max_bitrate` limit in your settings. If using Wi-Fi, ensure you are on a 5GHz band or switch to a wired Ethernet connection.                                                                                                  |
 | **Video freezing for a few seconds frequently** | **`idrcount`**, **`realfreezecount`**                      | When packets are excessively lost, the server sends an "IDR" frame to reset the video, causing a freeze. Disable the "HQ" mode to lower the framerate (back to 60fps) or change your Data Route in settings.                                                                                                                            |
 | **High input latency / Delay**                  | **`realdelay`**, **`realdecodetime`**                      | If `realdelay` is high, switch your data route to avoid ISP bottlenecks. If `realdecodetime` is high, your device is struggling to decode the video. Try switching your `preferred_codec` from H.265 to H.264 (or vice-versa), and check the `realdecodername` metric to ensure your browser has Hardware Acceleration enabled. |
 
