@@ -13,12 +13,6 @@
 [submodule "worker/proxy"]
 	path = worker/proxy
 	url = https://github.com/thinkonmay/thinkremote-rtchub
-[submodule "global/proxy"]
-	path = global/proxy
-	url = https://github.com/thinkonmay/global-proxy
-[submodule "global/data"]
-	path = global/data
-	url = https://github.com/thinkonmay/manage
 [submodule "native/mobile"]
 	path = native/mobile
 	url = https://github.com/thinkonmay/think_may_mobile
