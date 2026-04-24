@@ -1,0 +1,41 @@
+services:
+  grafana:
+    container_name: grafana
+    image: grafana/grafana
+    restart: unless-stopped
+    volumes:
+      - ../volumes/grafana/grafana:/var/lib/grafana
+      - ../volumes/grafana/grafana-ds:/etc/grafana/provisioning/datasources
+    configs:
+      - source: grafana_ini
+        target: /etc/grafana/grafana.ini
+    networks:
+      - shared
+
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:latest
+    restart: unless-stopped
+    volumes:
+      - ../volumes/grafana/prometheus:/prometheus
+    configs:
+      - source: prometheus_yml
+        target: /etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    networks:
+      - shared
+
+configs:
+  grafana_ini:
+    file: ../volumes/grafana/grafana.ini
+  prometheus_yml:
+    file: ../volumes/grafana/prometheus.yml
+
+networks:
+  shared:
+    name: thinkmay
