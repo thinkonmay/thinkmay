@@ -19,3 +19,6 @@
 [submodule "native/moonlight"]
 	path = native/moonlight
 	url = https://github.com/thinkonmay/moonlight-android
+[submodule "community"]
+	path = community
+	url = https://github.com/thinkonmay/community

@@ -1,0 +1,33 @@
+services:
+  community-bot:
+    container_name: community-bot
+    build:
+      context: ../community/bot
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+      - KAFKA_BROKER=kafka:9092
+      - KAFKA_TOPIC=discord-events
+    depends_on:
+      - kafka
+    networks:
+      - shared
+
+  community-consumer:
+    container_name: community-consumer
+    build:
+      context: ../community/consumer
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - KAFKA_BROKER=kafka:9092
+      - KAFKA_TOPIC=discord-events
+    depends_on:
+      - kafka
+    networks:
+      - shared
+
+networks:
+  shared:
+    name: thinkmay

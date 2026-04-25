@@ -1,10 +1,11 @@
 name: thinkmay
 
 include:
-  - path: ./compose/supabase.yaml
-  - path: ./compose/monitoring.yaml
+  # - path: ./compose/supabase.yaml
+  # - path: ./compose/monitoring.yaml
   - path: ./compose/kafka.yaml
-  - path: ./compose/rybbit.yaml
+  # - path: ./compose/rybbit.yaml
+  - path: ./compose/community.yaml
 
 services:
   gateway:
