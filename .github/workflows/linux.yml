@@ -22,34 +22,34 @@ jobs:
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
 
-  build_qemu_24:
-    name: Qemu 24
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: build
-        run: |
-          mkdir -p artifacts
-          docker build . -t qemu24 -f Dockerfile.qemu24 && docker run -v ./artifacts:/mnt/host qemu24
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: qemu24-linux
-          path: artifacts/prefix
-  build_qemu_22:
-    name: Qemu 22
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: build
-        run: |
-          mkdir -p artifacts
-          docker build . -t qemu22 -f Dockerfile.qemu22 && docker run -v ./artifacts:/mnt/host qemu22
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: qemu22-linux
-          path: artifacts/prefix
+  # build_qemu_24:
+  #   name: Qemu 24
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: build
+  #       run: |
+  #         mkdir -p artifacts
+  #         docker build . -t qemu24 -f Dockerfile.qemu24 && docker run -v ./artifacts:/mnt/host qemu24
+  #     - name: Upload Artifacts
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: qemu24-linux
+  #         path: artifacts/prefix
+  # build_qemu_22:
+  #   name: Qemu 22
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: build
+  #       run: |
+  #         mkdir -p artifacts
+  #         docker build . -t qemu22 -f Dockerfile.qemu22 && docker run -v ./artifacts:/mnt/host qemu22
+  #     - name: Upload Artifacts
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: qemu22-linux
+  #         path: artifacts/prefix
 
   build_proxy:
     name: Proxy Linux
@@ -125,7 +125,7 @@ jobs:
   build_package: 
     name: Package Linux
     runs-on: ubuntu-latest
-    needs: [build_daemon,build_proxy,build_qemu_22,build_qemu_24]
+    needs: [build_daemon,build_proxy]
     steps:
       - uses: actions/download-artifact@v4
         name: download daemon
@@ -137,16 +137,16 @@ jobs:
         with:
           name: proxy-linux
           path: proxy
-      - uses: actions/download-artifact@v4
-        name: download qemu
-        with:
-          name: qemu24-linux
-          path: qemu24
-      - uses: actions/download-artifact@v4
-        name: download qemu
-        with:
-          name: qemu22-linux
-          path: qemu22
+      # - uses: actions/download-artifact@v4
+      #   name: download qemu
+      #   with:
+      #     name: qemu24-linux
+      #     path: qemu24
+      # - uses: actions/download-artifact@v4
+      #   name: download qemu
+      #   with:
+      #     name: qemu22-linux
+      #     path: qemu22
 
       - name: build assets
         run: |
@@ -161,8 +161,6 @@ jobs:
           cp daemon/pb ./assets
           cp daemon/mgmt ./assets
           cp proxy/proxy ./assets
-          cp -r qemu24/* ./assets/qemu24
-          cp -r qemu22/* ./assets/qemu22
           chmod 777 -R ./assets
 
       - name: copy to artifacts folder
