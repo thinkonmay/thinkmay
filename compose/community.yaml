@@ -27,6 +27,40 @@ services:
       - kafka
     networks:
       - shared
+  
+  community-monitor-be:
+    container_name: community-monitor-be
+    build:
+      context: ../community/monitor/backend
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      DATA_DIR: "/app/data"
+      GRAFANA_SSH_HOST: "10.30.30.0"
+      GRAFANA_SSH_USER: "huyhoang"
+      GRAFANA_SSH_KEY_PATH: "/ssh-keys/saigon2"
+    volumes:
+      - ../community/monitor_db:/app/data
+      - /home/huyhoang/.ssh:/ssh-keys:ro
+    cap_add:
+      - NET_RAW
+    restart: unless-stopped
+
+  community-monitor-fe:
+    container_name: community-monitor-fe
+    build:
+      context: ../community/monitor/frontend
+      dockerfile: Dockerfile
+    network_mode: host
+    environment:
+      PORT: "3001"
+      HOSTNAME: "0.0.0.0"
+      BACKEND_URL: "http://localhost:8001"  
+    depends_on: 
+      - community-monitor-be
+    restart: unless-stopped
+
 
 networks:
   shared:
