@@ -16,3 +16,4 @@ worker/router/lancache
 docs/db/
 .agents/
 volumes/
+9router/db.json

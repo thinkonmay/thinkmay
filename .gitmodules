@@ -19,3 +19,6 @@
 [submodule "community"]
 	path = community
 	url = https://github.com/thinkonmay/community
+[submodule "gateway"]
+	path = gateway
+	url = https://github.com/thinkonmay/global-proxy.git
