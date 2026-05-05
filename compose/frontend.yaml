@@ -1,11 +1,14 @@
 services:
   fe:
+    container_name: fe
     build:
-      context: ./website
+      context: ../website
       dockerfile: Dockerfile
     restart: unless-stopped
     env_file:
       - ../website/.env
+    # ports:
+    #   - "3000:3000"
     networks:
       - shared
 
@@ -13,14 +16,15 @@ services:
     image: pigeatgarlic/9router:latest
     container_name: 9router
     restart: unless-stopped
-    network_mode: host
     environment:
       DATA_DIR: /app/data
-      PORT: 20128
-      HOSTNAME: 10.30.30.35
+      # PORT: 20128
+      # HOSTNAME: 192.168.1.60
       NEXT_TELEMETRY_DISABLED: "1"
       # DEBUG: "true"
     volumes:
       - ../9router:/app/data
     networks:
       - shared
+    # ports:
+    #   - "20128:20128"

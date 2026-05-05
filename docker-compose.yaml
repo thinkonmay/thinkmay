@@ -11,15 +11,15 @@ services:
   gateway:
     container_name: gateway
     build:
-      context: ./gateway
+      context: ./gateway/proxy
       dockerfile: Dockerfile
     restart: unless-stopped
     ports:
       - 80:80
       - 443:443
     volumes:
-      - ./gateway/config.yaml:/etc/gateway/config.yaml:ro
-      - ./volumes/gateway/certs:/var/lib/gateway/certs
+      - ./volumes/gateway/config.yaml:/etc/gateway/config.yaml:ro
+      - ./volumes/gateway/pb_data:/var/lib/gateway/certs
     networks:
       - shared
 
