@@ -189,24 +189,10 @@ All missions are categorized by the business incentive they serve. Each mission 
 | `HELP_ANSWER_10` | Answer 10 questions total | `DISCORD_MILESTONE` | 10 | 20 ⭐ | ❌ |
 | `HELP_ANSWER_50` | Answer 50 questions total | `DISCORD_MILESTONE` | 50 | 100 ⭐ | ❌ |
 
-**How it works**: A Discord bot monitors the `#support` channel. When a message from a user is reacted with ✅ by a moderator (or the original question asker), the bot writes to `generic_events`:
+**How it works**: Evaluated dynamically from the `discord_events` table. A help answer counts when a user posts a message that tags another user (`recipients` is not empty) and subsequently receives a reaction from a non-self user.
 
-```jsonc
-// generic_events row
-{
-  "name": "discord_help_answer",
-  "type": "STAR_EVENT",
-  "value": {
-    "helper_email": "helper@gmail.com",
-    "question_author": "asker@gmail.com",
-    "message_id": "1234567890",
-    "channel": "support"
-  }
-}
-```
-
-**Evaluation (`DISCORD_EVENT`)**: Count matching `generic_events` rows for today.
-**Evaluation (`DISCORD_MILESTONE`)**: Count total matching `generic_events` rows.
+**Evaluation (`DISCORD_EVENT`)**: Count distinct `message_id` from `discord_events` (name='message_create') with non-empty recipients where a `reaction_add` exists from a user other than the author, for today.
+**Evaluation (`DISCORD_MILESTONE`)**: Same as above, but lifetime count.
 
 ---
 
@@ -220,7 +206,7 @@ All missions are categorized by the business incentive they serve. Each mission 
 | `FEEDBACK_SUBMIT_10` | Submit 10 feedbacks total | `FEEDBACK_MILESTONE` | 10 | 20 ⭐ | ❌ |
 | `FEEDBACK_SUBMIT_50` | Submit 50 feedbacks total | `FEEDBACK_MILESTONE` | 50 | 100 ⭐ | ❌ |
 
-**Evaluation**: Count rows in `feedbacks` where `email = p_email`. For daily repeatable, count today's rows. Deduplication uses the same `DISTINCT ON (DATE(created_at), email)` pattern from `feedback.sql`.
+**Evaluation**: Evaluated dynamically from `discord_events`. Count distinct `message_create` events in the `feedback` channel where an admin has added a reaction (any emoji) to the message. For daily repeatable, count today's approved messages.
 
 ---
 
@@ -230,10 +216,10 @@ All missions are categorized by the business incentive they serve. Each mission 
 
 | Code | Title | Type | Target | Stars | Repeatable |
 |---|---|---|---|---|---|
-| `DISCORD_REVIEW` | Post a product review on Discord | `DISCORD_EVENT` | 1 | 30 ⭐ | ✅ (weekly) |
-| `DISCORD_FEATURE_REQ` | Submit a feature request on Discord | `DISCORD_EVENT` | 1 | 10 ⭐ | ✅ (weekly) |
+| `DISCORD_REVIEW` | Post a bug report on Discord | `DISCORD_EVENT` | 1 | 30 ⭐ | ❌ (Milestone) |
+| `DISCORD_FEATURE_REQ` | Submit a feature request on Discord | `DISCORD_EVENT` | 1 | 10 ⭐ | ❌ (Milestone) |
 
-**How it works**: Discord bot monitors `#reviews` and `#feature-requests` channels. Posts meeting minimum length (50+ chars) are logged to `generic_events` with names `discord_review` and `discord_feature_request`.
+**How it works**: Evaluated dynamically from `discord_events`. Bug reports (`bug_report_create`) and feature requests (`feature_request_create`) count when an admin adds a reaction (any emoji) to the corresponding thread.
 
 ---
 
