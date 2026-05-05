@@ -3,9 +3,9 @@ name: thinkmay
 include:
   # - path: ./compose/supabase.yaml
   # - path: ./compose/monitoring.yaml
-  - path: ./compose/kafka.yaml
-  # - path: ./compose/rybbit.yaml
-  - path: ./compose/community.yaml
+  # - path: ./compose/kafka.yaml
+  - path: ./compose/rybbit.yaml
+  - path: ./compose/frontend.yaml
 
 services:
   gateway:
@@ -20,19 +20,6 @@ services:
     volumes:
       - ./gateway/config.yaml:/etc/gateway/config.yaml:ro
       - ./volumes/gateway/certs:/var/lib/gateway/certs
-    environment:
-      CONFIG_PATH: /etc/gateway/config.yaml
-    networks:
-      - shared
-
-  website:
-    container_name: thinkmay-website
-    build:
-      context: ./website
-      dockerfile: Dockerfile
-    restart: unless-stopped
-    env_file:
-      - ./website/.env
     networks:
       - shared
 

@@ -1,27 +1,14 @@
 services:
   fe:
-    image: pigeatgarlic/fe:latest
+    build:
+      context: ./website
+      dockerfile: Dockerfile
     restart: unless-stopped
     env_file:
-      - ../.env
-  globalproxy:
-    image: pigeatgarlic/global-proxy:latest
-    restart: unless-stopped
-    ports:
-      - "443:443"
-    volumes:
-      - ../assets/pb_data/.autocert_cache:/app/pb_data/.autocert_cache
-    command:
-      - '-dom'
-      - 'official.thinkmay.net'
-      - '-dom'
-      - 'fe.thinkmay.net'
-      - '-dom'
-      - 'www.thinkmay.net'
-      - '-dom'
-      - 'thinkmay.net'
-      - '-feport'
-      - '443'
+      - ../website/.env
+    networks:
+      - shared
+
   9router:
     image: pigeatgarlic/9router:latest
     container_name: 9router
@@ -35,3 +22,5 @@ services:
       # DEBUG: "true"
     volumes:
       - ../9router:/app/data
+    networks:
+      - shared
