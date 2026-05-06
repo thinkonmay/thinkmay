@@ -1,14 +1,12 @@
 services:
-  fe:
-    container_name: fe
+  website:
+    container_name: website
     build:
       context: ../website
       dockerfile: Dockerfile
     restart: unless-stopped
     env_file:
       - ../website/.env
-    # ports:
-    #   - "3000:3000"
     networks:
       - shared
 
@@ -18,13 +16,8 @@ services:
     restart: unless-stopped
     environment:
       DATA_DIR: /app/data
-      # PORT: 20128
-      # HOSTNAME: 192.168.1.60
       NEXT_TELEMETRY_DISABLED: "1"
-      # DEBUG: "true"
     volumes:
       - ../9router:/app/data
     networks:
       - shared
-    # ports:
-    #   - "20128:20128"
