@@ -135,6 +135,8 @@ To do this:
    * `{"disable_gpu": true}` - Forces the machine to boot on the CPU without claiming a physical GPU.
    * `{"pref_nodes": ["<node_ip>"]}` - Upgrades the user to **Supreme Deployment Priority** by routing them to the front of the queue targeting a specific server.
 
+5. **"Set Template" Permission**: To grant an operations member the ability to transform a CloudPC into a reusable Store Template, ensure their email is listed inside the internal `_superusers` collection. This unlocks the "Set template" button inside the frontend Store, which executes an instant `.old` backup and zero-downtime template copy!
+
 ## Technical Streaming Metrics (Debugging Connection Issues)
 
 When solving customer tickets regarding "Lag" or "Blurry Streams", ask them to toggle "Show stats" in their Settings Panel. Cross-reference their metrics using this guide to pinpoint the exact bottleneck securely:
