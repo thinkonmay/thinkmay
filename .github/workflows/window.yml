@@ -145,7 +145,7 @@ jobs:
         run: |
           $ErrorActionPreference = "Stop"
           $url = "https://github.com/zeroclaw-labs/zeroclaw/releases/latest/download/zeroclaw-x86_64-pc-windows-msvc.zip"
-          curl -L -o zeroclaw-windows.zip $url
+          curl.exe -L -o zeroclaw-windows.zip $url
           New-Item -ItemType Directory -Force -Path zeroclaw-prebuilt | Out-Null
           tar -xf zeroclaw-windows.zip -C zeroclaw-prebuilt
           $exe = Get-ChildItem -Path zeroclaw-prebuilt -Recurse -Filter zeroclaw.exe | Select-Object -First 1
