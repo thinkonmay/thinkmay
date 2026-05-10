@@ -17,3 +17,4 @@ docs/db/
 .agents/
 volumes/
 9router/db.json
+docs/draft/
