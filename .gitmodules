@@ -19,3 +19,6 @@
 [submodule "gateway"]
 	path = gateway
 	url = https://github.com/thinkonmay/global-proxy.git
+[submodule "worker/assistant"]
+	path = worker/assistant
+	url = https://github.com/thinkonmay/assistant

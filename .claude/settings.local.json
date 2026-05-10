@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(git *)",
+      "PowerShell(New-Item *)",
+      "PowerShell(gofmt *)",
+      "PowerShell(cargo check *)",
+      "PowerShell(Out-Null *)",
+      "PowerShell(go *)",
+      "PowerShell(Move-Item *)",
+      "PowerShell(Get-ChildItem *)",
+      "WebFetch(domain:github.com)",
+      "PowerShell($url = \"https://raw.githubusercontent.com/zeroclaw-labs/zeroclaw/master/README.md\"; \\(Invoke-WebRequest -UseBasicParsing -Uri $url\\).Content)",
+      "PowerShell(\\(Invoke-WebRequest -UseBasicParsing -Uri \"https://raw.githubusercontent.com/zeroclaw-labs/zeroclaw/master/docs/book/src/setup/windows.md\"\\).Content)",
+      "PowerShell(\\(Invoke-WebRequest -UseBasicParsing -Uri \"https://raw.githubusercontent.com/zeroclaw-labs/zeroclaw/master/install.sh\"\\).Content)",
+      "PowerShell(\\(Invoke-WebRequest -UseBasicParsing -Uri \"https://raw.githubusercontent.com/zeroclaw-labs/zeroclaw/master/setup.bat\"\\).Content)"
+    ]
+  }
+}

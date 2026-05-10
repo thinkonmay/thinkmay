@@ -122,10 +122,58 @@ jobs:
           path: artifacts/ 
 
 
-  build_package: 
+  build_assistant_plugin:
+    name: Assistant Plugin Win
+    runs-on: windows-2025
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build assistant plugin
+        run: |
+          cd ./worker/assistant
+          cargo build --release
+
+      - name: Download ZeroClaw prebuilt binary
+        shell: powershell
+        run: |
+          $ErrorActionPreference = "Stop"
+          $url = "https://github.com/zeroclaw-labs/zeroclaw/releases/latest/download/zeroclaw-x86_64-pc-windows-msvc.zip"
+          curl -L -o zeroclaw-windows.zip $url
+          New-Item -ItemType Directory -Force -Path zeroclaw-prebuilt | Out-Null
+          tar -xf zeroclaw-windows.zip -C zeroclaw-prebuilt
+          $exe = Get-ChildItem -Path zeroclaw-prebuilt -Recurse -Filter zeroclaw.exe | Select-Object -First 1
+          if (-not $exe) {
+            throw "zeroclaw.exe was not found in the ZeroClaw prebuilt release zip"
+          }
+          Copy-Item $exe.FullName ./zeroclaw.exe -Force
+
+      - name: Package assistant plugin
+        shell: powershell
+        run: |
+          $ErrorActionPreference = "Stop"
+          New-Item -ItemType Directory -Force -Path artifacts | Out-Null
+          Copy-Item ./worker/assistant/target/release/zeroclaw_thinkmay_assistant_channel.dll ./artifacts/zeroclaw_thinkmay_assistant_channel.dll -Force
+          Copy-Item ./worker/assistant/run.ps1 ./artifacts/run.ps1 -Force
+          Copy-Item ./zeroclaw.exe ./artifacts/zeroclaw.exe -Force
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: assistant-plugin-windows
+          path: artifacts
+
+
+  build_package:
     name: Package Win
     runs-on: windows-2025
-    needs: [build_daemon,build_sunshine]
+    needs: [build_daemon,build_sunshine,build_assistant_plugin]
 
     steps:
       - uses: actions/checkout@v4
@@ -150,6 +198,11 @@ jobs:
         with:
           name: daemon-windows
           path: daemon
+      - uses: actions/download-artifact@v4
+        name: download assistant plugin
+        with:
+          name: assistant-plugin-windows
+          path: assistant-plugin
 
       - name: build assets
         run: |
@@ -164,8 +217,12 @@ jobs:
         shell: powershell
         run: |
           mkdir -p artifacts
+          mkdir -p ./assets/assistant
           cp daemon/daemon.exe ./assets
           cp sunshine/shmsunshine.exe ./assets
+          cp assistant-plugin/zeroclaw_thinkmay_assistant_channel.dll ./assets/assistant/zeroclaw_thinkmay_assistant_channel.dll
+          cp assistant-plugin/run.ps1 ./assets/assistant/run.ps1
+          cp assistant-plugin/zeroclaw.exe ./assets/assistant/zeroclaw.exe
 
           ./nsis.ps1
           cp installer.exe ./artifacts

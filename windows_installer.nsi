@@ -54,6 +54,9 @@ Section "Component Name"
   SetOutPath "$INSTDIR\storage"
   File ".\assets\storage\*"
 
+  SetOutPath "$INSTDIR\assistant"
+  File ".\assets\assistant\*"
+
   SetOutPath "$INSTDIR\directx"
   File ".\assets\directx\*"
 
