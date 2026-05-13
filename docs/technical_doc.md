@@ -76,6 +76,23 @@ To understand how video reaches the client, here is the exact data path from the
 4. **Packetization & WebRTC Transmission**: Inside `worker/proxy/forwarder/webrtc/forwarder.go` (`readLoopRTP`), the WebRTC Forwarder decodes the C-struct byte array to extract the timestamp and data payload. It then runs this payload through a Pion `Packetizer` (segmenting it into MTU-compliant RTP units) and executes `track.WriteRTP()` to transmit the packets across the UDP internet socket to the end-user browser.
 5. **Reverse Telemetry (RTCP -> IVSHMEM)**: If the browser's Google Congestion Control (GCC) detects jitter, or if packet loss triggers an RTCP PLI/FIR (Picture Loss Indication), the Forwarder writes control frames (`1` for Bitrate, `3` for IDR) directly back into the IVSHMEM `ctrlChann`. Sunshine polls this memory in reverse and actively downscales the video encoder bitrate or forces an IDR keyframe reset instantly.
 
+##### Shared-memory polling cadence
+
+The shared-memory bridge uses polling at the queue boundary, so wait periods are tuned by path sensitivity rather than set globally:
+
+| Pipeline | Direction | Queue/method | Wait period | Reason |
+| --- | --- | --- | --- | --- |
+| Video media | Sunshine -> proxy -> WebRTC RTP | proxy `DisplayQueueImpl.Pop` | 1 ms | Supports high-FPS streaming up to 240fps; frame interval can be ~4.17 ms. |
+| Video control | proxy/GCC/RTCP -> Sunshine | Sunshine `pull` loop on media queue `outindex` | 1 ms | Bitrate, framerate, resolution, pointer, and IDR controls should reach the encoder quickly. |
+| Audio media | Sunshine -> proxy -> WebRTC Opus RTP | proxy `DQueueImpl.Pop` for `MediaMemory.audio` | 5 ms | Sunshine emits 10 ms Opus packets; 5 ms keeps max queueing latency below one packet while limiting idle wakeups. |
+| HID input | client DataChannel -> proxy -> daemon HID adapter | daemon `HIDQueueImpl.WriterPop` | 1 ms | Mouse, keyboard, touch, and active gamepad input are latency-critical. |
+| HID feedback | daemon/guest -> proxy -> client DataChannel | proxy `HIDQueueImpl.Pop` | 10 ms | Cursor, rumble, notification, and ping feedback should stay smoother than the cursor interpolation window without 1 kHz idle polling. |
+| Microphone media | client WebRTC Opus RTP -> proxy -> daemon microphone process | daemon `DQueueImpl.WriterPop` for `DataMemory.audio` | 10 ms | Microphone is optional and Opus-oriented; 10 ms aligns with typical low-latency audio frame cadence. |
+| Microphone reverse/proxy-side data read | guest/data memory -> proxy | proxy `DQueueImpl.Pop` for `DataMemory.audio` | 50 ms | This direction is not the active microphone media path, so it remains idle-friendly. |
+| Session/log/default data queues | guest/daemon/proxy auxiliary data | `DQueueImpl.Pop`/`WriterPop` default | 50 ms | Non-interactive paths are not user-latency sensitive. |
+
+Avoid lowering all data queues to 1 ms: `SafeLoop(0)` delegates pacing to these queue methods, so every 1 ms idle queue would add about 1000 wakeups per second per active session.
+
 ##### Clustered Environment Packet Flow
 In a multi-node cluster, users don't always connect directly to the worker node running their application. Clients typically hit an **Edge Gateway Proxy**. The proxy leverages the synchronized routing database to pipe the IVSHMEM packets seamlessly across the internal datacenter network (via QUIC backend dialers) before executing the final WebRTC packetization at the public edge.
 
