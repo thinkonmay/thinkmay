@@ -19,3 +19,6 @@
 [submodule "gateway"]
 	path = gateway
 	url = https://github.com/thinkonmay/global-proxy.git
+[submodule "mobile"]
+	path = mobile
+	url = https://github.com/thinkonmay/think_may_mobile.git
