@@ -106,6 +106,7 @@ jobs:
         with:
           msystem: mingw64
           update: true
+          path-type: inherit
           install: >-
             mingw-w64-x86_64-gcc
             mingw-w64-x86_64-opus
