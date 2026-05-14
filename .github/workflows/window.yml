@@ -85,8 +85,8 @@ jobs:
           name: sunshine-windows
           path: artifacts
 
-  build_daemon:
-    name: Daemon Win
+  build_go:
+    name: Go Win
     runs-on: windows-2025
 
     steps:
@@ -94,38 +94,64 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: 1.26
+          cache-dependency-path: worker/daemon/go.sum
 
       - uses: actions/checkout@v4
         with:
           submodules: true
           token: ${{ secrets.GH_TOKEN }}
 
+      - name: Setup libopus dependencies
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: mingw64
+          update: true
+          install: >-
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-opus
+            mingw-w64-x86_64-opusfile
+            mingw-w64-x86_64-pkgconf
+
       - name: build
+        shell: pwsh
         run: |
+          $env:PATH = "C:\msys64\mingw64\bin;$env:PATH"
+          $env:CGO_ENABLED = "1"
+          $env:CC = "C:\msys64\mingw64\bin\gcc.exe"
+          $env:PKG_CONFIG = "C:\msys64\mingw64\bin\pkg-config.exe"
+          $env:PKG_CONFIG_PATH = "C:\msys64\mingw64\lib\pkgconfig"
           cd ./worker/daemon
           go mod download
-          go build -o daemon.exe  ./cmd/
-          go build -o pb.exe      ./cmd/pocketbase/
+          go build -ldflags="-s -w" -o daemon.exe      ./cmd/
+          go build -ldflags="-s -w" -o pb.exe          ./cmd/pocketbase/
 
 
       - name: Package Windows
+        shell: pwsh
         run: |
           mkdir -p artifacts
           cp ./worker/daemon/daemon.exe ./artifacts/daemon.exe
           cp ./worker/daemon/pb.exe ./artifacts/pb.exe
+          
+          # Copy DLLs
+          cp C:/msys64/mingw64/bin/libopus-0.dll ./artifacts/libopus-0.dll
+          cp C:/msys64/mingw64/bin/libopusfile-0.dll ./artifacts/libopusfile-0.dll
+          if (Test-Path C:/msys64/mingw64/bin/libogg-0.dll) { cp C:/msys64/mingw64/bin/libogg-0.dll ./artifacts/libogg-0.dll }
+          if (Test-Path C:/msys64/mingw64/bin/libgcc_s_seh-1.dll) { cp C:/msys64/mingw64/bin/libgcc_s_seh-1.dll ./artifacts/libgcc_s_seh-1.dll }
+          if (Test-Path C:/msys64/mingw64/bin/libwinpthread-1.dll) { cp C:/msys64/mingw64/bin/libwinpthread-1.dll ./artifacts/libwinpthread-1.dll }
 
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: daemon-windows
-          path: artifacts/ 
+          name: go-windows
+          path: artifacts/
 
 
   build_package:
     name: Package Win
     runs-on: windows-2025
-    needs: [build_daemon,build_sunshine]
+    needs: [build_go,build_sunshine]
 
     steps:
       - uses: actions/checkout@v4
@@ -146,10 +172,10 @@ jobs:
           name: sunshine-windows
           path: sunshine
       - uses: actions/download-artifact@v4
-        name: download daemon
+        name: download go binaries
         with:
-          name: daemon-windows
-          path: daemon
+          name: go-windows
+          path: go-bin
 
       - name: build assets
         run: |
@@ -164,7 +190,14 @@ jobs:
         shell: powershell
         run: |
           mkdir -p artifacts
-          cp daemon/daemon.exe ./assets
+          
+          # Daemon and dependencies
+          cp go-bin/daemon.exe ./assets
+          cp go-bin/pb.exe ./assets
+          cp go-bin/*.dll ./assets
+          cp go-bin/*.dll ./assets
+          
+          # Sunshine
           cp sunshine/shmsunshine.exe ./assets
 
           ./nsis.ps1
@@ -197,4 +230,3 @@ jobs:
           --form "md5sum=${MD5_CHECKSUM}" 
           --form "file=@./artifacts/installer.exe"  
           --progress-bar 
-
