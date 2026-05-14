@@ -13,7 +13,22 @@
       "PowerShell($url = \"https://raw.githubusercontent.com/zeroclaw-labs/zeroclaw/master/README.md\"; \\(Invoke-WebRequest -UseBasicParsing -Uri $url\\).Content)",
       "PowerShell(\\(Invoke-WebRequest -UseBasicParsing -Uri \"https://raw.githubusercontent.com/zeroclaw-labs/zeroclaw/master/docs/book/src/setup/windows.md\"\\).Content)",
       "PowerShell(\\(Invoke-WebRequest -UseBasicParsing -Uri \"https://raw.githubusercontent.com/zeroclaw-labs/zeroclaw/master/install.sh\"\\).Content)",
-      "PowerShell(\\(Invoke-WebRequest -UseBasicParsing -Uri \"https://raw.githubusercontent.com/zeroclaw-labs/zeroclaw/master/setup.bat\"\\).Content)"
+      "PowerShell(\\(Invoke-WebRequest -UseBasicParsing -Uri \"https://raw.githubusercontent.com/zeroclaw-labs/zeroclaw/master/setup.bat\"\\).Content)",
+      "PowerShell(foreach \\($c in @\\('212f8022fcca7935ad63b64a84f467a960c0f600','157da6d4ef2a0cf6bc94513239ab4e88c66457aa'\\)\\) { git cat-file -t $c; if \\($LASTEXITCODE -eq 0\\) { \"$c present\" } else { \"$c missing\" } }; git remote -v)",
+      "PowerShell(foreach \\($c in @\\('212f8022fcca7935ad63b64a84f467a960c0f600','157da6d4ef2a0cf6bc94513239ab4e88c66457aa'\\)\\) { git cat-file -t $c; if \\($LASTEXITCODE -eq 0\\) { \"$c present\" } else { \"$c missing\" } })",
+      "PowerShell(npm *)",
+      "PowerShell(npx --prefix website prettier --write \"website/app/[locale]/\\(app\\)/layout.tsx\")",
+      "PowerShell(npx --prefix website prettier --write \"website/backend/utils/sidepane.ts\" \"website/backend/reducers/sidepane.ts\" \"website/backend/reducers/index.ts\" \"website/components/control/gamepad/index.tsx\" \"website/components/control/gamepad/button/defaultBtn.tsx\" \"website/components/control/gamepad/button/index.scss\" \"website/components/control/gamingKeyboard/index.tsx\" \"website/components/control/gamingKeyboard/types.ts\" \"website/components/control/gamingKeyboard/components/button.tsx\" \"website/components/control/gamingKeyboard/components/joystickWrapper.tsx\" \"website/components/control/gamingKeyboard/components/NavSettings.tsx\" \"website/components/control/gamingKeyboard/components/index.scss\" \"website/messages/en.json\" \"website/messages/vi.json\" \"website/messages/id.json\")",
+      "PowerShell(npx tsc -p \"website\\\\tsconfig.json\" --noEmit)",
+      "PowerShell(ffprobe *)",
+      "PowerShell(ffmpeg -hide_banner -i \"Record \\(online-voice-recorder.com\\).mp3\" -af astats=metadata=1:reset=1,ametadata=print:file=- -f null -)",
+      "PowerShell(ffmpeg *)",
+      "PowerShell($lines = Get-Content \"D:\\\\binary\\\\thinkmay.log\"; $matches = $lines | Select-String -Pattern \"successfully initialize microphone|failed to init gst|CABLE-A Input|wasapi|rtpjitterbuffer|rtpopusdepay|microphone failed|failed to inspect\"; $matches | Select-Object -Last 80 | ForEach-Object { $_.Line })",
+      "PowerShell($lines = Get-Content \"D:\\\\binary\\\\thinkmay.log\"; $matches = $lines | Select-String -Pattern \"^\\\\d{4}-\\\\d{2}-\\\\d{2} \\\\d{2}:\\\\d{2}:\\\\d{2} \\\\d+$\"; $matches | Select-Object -Last 120 | ForEach-Object { $_.Line })",
+      "PowerShell(go test *)",
+      "PowerShell(go build *)",
+      "PowerShell(Test-Path *)",
+      "PowerShell(& \"C:\\\\scoop\\\\apps\\\\msys2\\\\current\\\\usr\\\\bin\\\\pacman.exe\" -S --needed --noconfirm mingw-w64-x86_64-opusfile)"
     ]
   }
 }
