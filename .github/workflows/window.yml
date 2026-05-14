@@ -113,13 +113,11 @@ jobs:
             mingw-w64-x86_64-pkgconf
 
       - name: build
-        shell: pwsh
+        shell: msys2 {0}
         run: |
-          $env:PATH = "C:\msys64\mingw64\bin;$env:PATH"
-          $env:CGO_ENABLED = "1"
-          $env:CC = "C:\msys64\mingw64\bin\gcc.exe"
-          $env:PKG_CONFIG = "C:\msys64\mingw64\bin\pkg-config.exe"
-          $env:PKG_CONFIG_PATH = "C:\msys64\mingw64\lib\pkgconfig"
+          export CGO_ENABLED=1
+          export CC=gcc
+          export PKG_CONFIG=pkg-config
           cd ./worker/daemon
           go mod download
           go build -ldflags="-s -w" -o daemon.exe      ./cmd/
@@ -127,18 +125,18 @@ jobs:
 
 
       - name: Package Windows
-        shell: pwsh
+        shell: msys2 {0}
         run: |
           mkdir -p artifacts
           cp ./worker/daemon/daemon.exe ./artifacts/daemon.exe
           cp ./worker/daemon/pb.exe ./artifacts/pb.exe
           
           # Copy DLLs
-          cp C:/msys64/mingw64/bin/libopus-0.dll ./artifacts/libopus-0.dll
-          cp C:/msys64/mingw64/bin/libopusfile-0.dll ./artifacts/libopusfile-0.dll
-          if (Test-Path C:/msys64/mingw64/bin/libogg-0.dll) { cp C:/msys64/mingw64/bin/libogg-0.dll ./artifacts/libogg-0.dll }
-          if (Test-Path C:/msys64/mingw64/bin/libgcc_s_seh-1.dll) { cp C:/msys64/mingw64/bin/libgcc_s_seh-1.dll ./artifacts/libgcc_s_seh-1.dll }
-          if (Test-Path C:/msys64/mingw64/bin/libwinpthread-1.dll) { cp C:/msys64/mingw64/bin/libwinpthread-1.dll ./artifacts/libwinpthread-1.dll }
+          cp /mingw64/bin/libopus-0.dll ./artifacts/libopus-0.dll
+          cp /mingw64/bin/libopusfile-0.dll ./artifacts/libopusfile-0.dll
+          if [ -f /mingw64/bin/libogg-0.dll ]; then cp /mingw64/bin/libogg-0.dll ./artifacts/libogg-0.dll; fi
+          if [ -f /mingw64/bin/libgcc_s_seh-1.dll ]; then cp /mingw64/bin/libgcc_s_seh-1.dll ./artifacts/libgcc_s_seh-1.dll; fi
+          if [ -f /mingw64/bin/libwinpthread-1.dll ]; then cp /mingw64/bin/libwinpthread-1.dll ./artifacts/libwinpthread-1.dll; fi
 
 
       - name: Upload Artifacts
