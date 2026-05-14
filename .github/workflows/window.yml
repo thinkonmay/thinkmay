@@ -164,25 +164,8 @@ jobs:
         shell: powershell
         run: |
           mkdir -p artifacts
-          mkdir -p ./assets/assistant
           cp daemon/daemon.exe ./assets
           cp sunshine/shmsunshine.exe ./assets
-          @'
-          $ErrorActionPreference = "Stop"
-          $ScoopRoot = "C:\scoop"
-          $ScoopNode = Join-Path $ScoopRoot "apps\nodejs\current\node.exe"
-          $ScoopNpm = Join-Path $ScoopRoot "apps\nodejs\current\npm.cmd"
-          if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
-            $env:SCOOP = $ScoopRoot
-            [Environment]::SetEnvironmentVariable("SCOOP", $env:SCOOP, "User")
-            Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
-            Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
-          }
-          $env:PATH = "$ScoopRoot\shims;$env:PATH"
-          if (-not (Test-Path $ScoopNode) -or -not (Test-Path $ScoopNpm)) { scoop install nodejs }
-          $npmRoot = (& $ScoopNpm root -g).Trim()
-          if (-not (Test-Path (Join-Path $npmRoot "openclaw\package.json"))) { & $ScoopNpm install -g openclaw@latest }
-          '@ | Set-Content ./assets/assistant/install_openclaw.ps1 -Encoding utf8
 
           ./nsis.ps1
           cp installer.exe ./artifacts
