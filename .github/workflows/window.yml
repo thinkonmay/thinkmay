@@ -101,7 +101,7 @@ jobs:
           submodules: true
           token: ${{ secrets.GH_TOKEN }}
 
-      - name: Setup libopus dependencies
+      - name: Setup mingw dependencies
         uses: msys2/setup-msys2@v2
         with:
           msystem: mingw64
@@ -109,8 +109,6 @@ jobs:
           path-type: inherit
           install: >-
             mingw-w64-x86_64-gcc
-            mingw-w64-x86_64-opus
-            mingw-w64-x86_64-opusfile
             mingw-w64-x86_64-pkgconf
 
       - name: build
@@ -133,9 +131,6 @@ jobs:
           cp ./worker/daemon/pb.exe ./artifacts/pb.exe
           
           # Copy DLLs
-          cp /mingw64/bin/libopus-0.dll ./artifacts/libopus-0.dll
-          cp /mingw64/bin/libopusfile-0.dll ./artifacts/libopusfile-0.dll
-          if [ -f /mingw64/bin/libogg-0.dll ]; then cp /mingw64/bin/libogg-0.dll ./artifacts/libogg-0.dll; fi
           if [ -f /mingw64/bin/libgcc_s_seh-1.dll ]; then cp /mingw64/bin/libgcc_s_seh-1.dll ./artifacts/libgcc_s_seh-1.dll; fi
           if [ -f /mingw64/bin/libwinpthread-1.dll ]; then cp /mingw64/bin/libwinpthread-1.dll ./artifacts/libwinpthread-1.dll; fi
 
