@@ -136,6 +136,85 @@ graph TD
     IVSHMEM -.->|Resolution or Bitrate Drop| Guest
 ```
 
+##### Stream health and backend status signaling
+
+```mermaid
+flowchart LR
+    subgraph Guest[Windows guest]
+        Sunshine[Sunshine capture/encoder]
+    end
+
+    subgraph SharedMemory[IVSHMEM bridge]
+        MediaQueue[Video/audio media queues]
+        ControlQueue[Binary control queue]
+        HIDQueue[HID/data queues]
+    end
+
+    subgraph WorkerProxy[Worker node proxy]
+        Listener[Shared-memory listeners]
+        Stats[Per-listener sequence/timestamp stats]
+        WorkerQUIC[QUIC forwarder]
+    end
+
+    subgraph EdgeProxy[Edge proxy]
+        EdgeQUIC[QUIC dialer]
+        WebRTC[WebRTC packetizer]
+        Health[Stream health state machine]
+    end
+
+    subgraph Client[Browser/mobile client]
+        RTP[Video/audio playback]
+        Input[HID/input]
+        Metrics[Metrics and status UI]
+    end
+
+    Sunshine -->|Encoded video/audio frames| MediaQueue
+    MediaQueue -->|Pop samples| Listener
+    Listener -->|Sequence + timestamp heartbeat| Stats
+    Listener -->|Media samples| WorkerQUIC
+    WorkerQUIC -->|QUIC media streams| EdgeQUIC
+    EdgeQUIC -->|Media samples| WebRTC
+    WebRTC -->|RTP media| RTP
+
+    Input -->|HID DataChannel| WebRTC
+    WebRTC -->|Binary controls: IDR/bitrate/input| EdgeQUIC
+    EdgeQUIC -->|QUIC control datagrams| WorkerQUIC
+    WorkerQUIC -->|Binary controls only| ControlQueue
+    ControlQueue -->|Encoder commands| Sunshine
+    Input -->|HID events| HIDQueue
+
+    Stats -.->|listener_heartbeat / video_stalled / encoder_stalled| WorkerQUIC
+    WorkerQUIC -.->|JSON status datagrams| EdgeQUIC
+    EdgeQUIC -.->|JSON status signaling| Health
+    Health -.->|recovering_video / backend_reconnecting / control_blocked| Metrics
+    WebRTC -.->|RTCP PLI/FIR| Health
+
+    classDef media fill:#e8f4ff,stroke:#2176bd;
+    classDef control fill:#fff4e6,stroke:#d97706;
+    classDef health fill:#eef8ee,stroke:#238636,stroke-dasharray:4 3;
+
+    class Sunshine,MediaQueue,Listener,WorkerQUIC,EdgeQUIC,WebRTC,RTP media;
+    class ControlQueue,HIDQueue,Input control;
+    class Stats,Health,Metrics health;
+```
+
+The media payload format remains unchanged across IVSHMEM, QUIC streams, RTP, and HID data channels. Health signals are side-channel JSON messages shaped as `{"event":"status","data":...}` and are carried over QUIC datagrams between proxies and WebRTC/WebSocket signaling to clients. These messages are never forwarded into Sunshine; only existing binary IVSHMEM controls such as IDR, bitrate, and resolution enter the guest control queue.
+
+Each multiplexed listener tracks sequence/timestamp metadata in proxy stats. The edge can use `listener_heartbeat` to compare per-listener sequence advancement and distinguish a live relay from a frozen video producer. Audio is treated as sample-driven only: silence is valid, so the proxy does not emit audio stall events just because audio samples stop.
+
+Status response policy:
+
+| Status | Meaning | Website response |
+| --- | --- | --- |
+| `listener_heartbeat` | Listener is alive; includes latest sequence/timestamp | Update health metrics; if video sequence advances after recovery/stall, return stream health to `healthy`. |
+| `hid_alive` | HID/control path recently received input | Clear transient `control_blocked` health if present. |
+| `waiting_for_keyframe` | Video sequence stopped briefly and proxy requested IDR | Mark stream health as `recovering_video`; do not reconnect. |
+| `video_stalled` | Video sequence did not advance after the recovery window | Mark stream health as `video_stalled` and rate-limit one extra client IDR request. |
+| `encoder_stalled` | Guest encoder/Sunshine did not recover after keyframe request | Mark stream health as `encoder_stalled`; do not auto-restart VM from the client. |
+| `control_path_blocked` | Proxy could not enqueue control into IVSHMEM | Mark stream health as `control_blocked`. |
+| `backend_disconnected` | Edge lost the backend QUIC relay | Mark stream health as `backend_reconnecting`; keep WebRTC alive unless its own connection fails. |
+| `backend_reconnected` | Backend relay recovered | Mark stream health as `recovering_video` and request/expect a fresh keyframe. |
+
 ##### Multi-Route Environment Packet Flow (Cross-Cluster / Peer Routing)
 In a multi-route environment, a user might actively change their ingest route (e.g., connecting their WebRTC socket to a gateway in Ho Chi Minh City) while their deployment physically lives on a remote Peer cluster (e.g., in Hai Phong). The physical flow navigates through three distinct proxy hops using the `worker/proxy/forwarder/quic/dialer.go` module which powers this peer dial routing:
 
@@ -233,6 +312,7 @@ interface:
     ip: "103.x.x.x"
     subnet: "255.255.255.0"
     mac: "AA:BB:CC:DD:EE:FF"
+    mtu: 9000                       # Optional; daemon periodically enforces when set
   turn:                             # Interface for TURN/relay traffic
     name: "eth1"
     ip: "10.10.10.5"
