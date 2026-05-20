@@ -18,3 +18,63 @@ docs/db/
 volumes/
 9router/db.json
 docs/draft/
+
+# Local environment / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cert
+*.kubeconfig
+
+# Local agent/tooling state
+.claude/
+.codex/
+.openclaw/
+worker/.claude/
+worker/assistant/
+
+# Generated research captures and raw exports
+# Keep curated markdown reports, scripts, and README files tracked; ignore bulky/private raw artifacts.
+docs/snapshots/**/*.png
+docs/snapshots/**/*.jpg
+docs/snapshots/**/*.jpeg
+docs/snapshots/**/*.webp
+docs/snapshots/**/*.gif
+docs/snapshots/**/*.html
+docs/snapshots/**/*.txt
+!docs/snapshots/**/README.md
+
+docs/competitor_analysis/screenshots/**/*.png
+docs/competitor_analysis/screenshots/**/*.jpg
+docs/competitor_analysis/screenshots/**/*.jpeg
+docs/competitor_analysis/screenshots/**/*.webp
+docs/competitor_analysis/screenshots/**/*.gif
+docs/competitor_analysis/screenshots/**/*.html
+docs/competitor_analysis/screenshots/**/*.txt
+
+docs/google_search/**/*.xlsx
+docs/google_search/**/*.xls
+docs/google_search/**/*.csv
+docs/rybbit/**/*.json
+docs/rybbit/**/*.csv
+
+# Database dumps / backups / local state
+*.dump
+*.backup
+*.bak
+*.sqlite
+*.sqlite3
+*.db
+*.db-wal
+*.db-shm
+docs/google_search/
+docs/competitor_analysis/
+docs/rybbit/
+docs/snapshots/
+.antigravitycli/
+docs/seo-writing/
