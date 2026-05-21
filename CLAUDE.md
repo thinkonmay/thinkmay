@@ -8,9 +8,8 @@ Thinkmay CloudPC is a monorepo for a cloud gaming / remote Windows desktop platf
 
 Important docs to read when touching architecture-level work:
 
-- `docs/technical_doc.md` — backend, cluster, PocketBase schema, streaming, QEMU/KVM, and deployment architecture.
-- `docs/mobile_architecture.md` and `docs/native_app.md` — Flutter client architecture and WebRTC signaling protocol.
-- `docs/snapshot_protocol.md` and `docs/snapshot_implementation_plan.md` — MFS snapshot protocol and implementation checklist.
+- `docs/product/architecture/technical_doc.md` — backend, cluster, PocketBase schema, streaming, QEMU/KVM, and deployment architecture.
+- `docs/product/architecture/mobile_architecture.md` and `docs/product/architecture/native_app.md` — Flutter client architecture and WebRTC signaling protocol.
 - `README.md` — high-level product/infrastructure summary.
 
 ## Common commands
@@ -129,7 +128,7 @@ This Go module (`github.com/thinkonmay/thinkshare-daemon`) is the control plane.
 
 Key responsibilities:
 
-- Cluster/manifest parsing from `cluster.yaml` via `cluster.NewClusterConfig`; production assets expect this under the assets path described in `utils/path` and `docs/technical_doc.md`.
+- Cluster/manifest parsing from `cluster.yaml` via `cluster.NewClusterConfig`; production assets expect this under the assets path described in `utils/path` and `docs/product/architecture/technical_doc.md`.
 - VM lifecycle orchestration in `hypervisor.go` and `session.go`.
 - PocketBase custom REST routes, cron jobs, auth filtering, and record hooks in `pocketbase/`.
 - Storage abstractions in `storage/`; MFS volumes use `mfsmount` and `mfsmakesnapshot`, while unified/local volumes do not implement snapshot support.
@@ -175,7 +174,7 @@ Run `build_runner` after changing Freezed/JSON models or injectable registration
 
 ## MFS snapshot protocol status
 
-The snapshot protocol described in `docs/snapshot_protocol.md` is mostly implemented in backend/proxy code:
+The snapshot protocol is mostly implemented in backend/proxy code:
 
 - `storage.Snapshottable` and `SnapshotInfo` are in `worker/daemon/storage/virt.go`.
 - MFS snapshot/list/prune/restore methods are in `worker/daemon/storage/mfs/chain.go`.

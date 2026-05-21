@@ -6,13 +6,13 @@ Welcome to the Thinkmay CloudPC Engine! This repository powers a highly optimize
 
 To fully understand the orchestration, we have broken down our core operation manuals into three robust documents located inside the `docs/` folder:
 
-1. **[Technical Architecture & Onboarding (`docs/technical_doc.md`)](./docs/technical_doc.md)**: 
+1. **[Technical Architecture & Onboarding (`docs/product/architecture/technical_doc.md`)](./docs/product/architecture/technical_doc.md)**: 
    The ultimate guide for Engineers. Covers WebRTC GCC optimization, QEMU/KVM spoofing, VFIO GPU passthrough architectures, and the custom Pocketbase schemas.
    
-2. **[Employee & Support Playbook (`docs/employee_doc.md`)](./docs/employee_doc.md)**:
+2. **[Employee & Support Playbook (`docs/employee/playbooks/employee_doc.md`)](./docs/employee/playbooks/employee_doc.md)**:
    The ultimate guide for Customer Support and Operations. Highlights our pricing tiers, Priority Queue deployment behaviors, Database troubleshooting, and system anti-cheat capabilities to confidently resolve user tickets.
    
-3. **[User-facing Guide (`docs/user_doc.md`)](./docs/user_doc.md)**:
+3. **[User-facing Guide (`docs/product/guides/user_doc.md`)](./docs/product/guides/user_doc.md)**:
    A fully-featured FAQ to assist our cloud-gaming customers. Explains basic "how-tos", robust streaming latency optimizations, connection diagnostics, and robust VPN-compatibility guarantees.
 
 ---
@@ -28,4 +28,4 @@ To fully understand the orchestration, we have broken down our core operation ma
 
 ## 🚀 Quick Starts
 
-**Developers**: Please consult `technical_doc.md` to map the Go `daemon` worker relationships alongside the Pocketbase schema architectures located in `docs/db/schema.json` before actively pushing `local_version_control_v1` patches.
+**Developers**: Please consult `docs/product/architecture/technical_doc.md` to map the Go `daemon` worker relationships alongside the Pocketbase schema architectures and shared DB artifacts under `docs/shared/data/db/` before actively pushing `local_version_control_v1` patches.

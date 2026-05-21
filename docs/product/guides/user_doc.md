@@ -31,7 +31,7 @@ While you can stream seamlessly on both Google Chrome and Apple Safari, the unde
 
 You do not purchase subscriptions directly via credit card. Instead, your account operates on a "Wallet" system.
 
-![The Payment page showing your Wallet balance and the three subscription tiers with their hardware specs](images/payment_page.png)
+![The Payment page showing your Wallet balance and the three subscription tiers with their hardware specs](../../shared/assets/images/payment_page.png)
 
 1. Navigate to the **Payment** page from the sidebar (shown above).
 2. Your current **Wallet Balance** is displayed prominently at the top.
@@ -42,7 +42,7 @@ You do not purchase subscriptions directly via credit card. Instead, your accoun
 
 You can completely skip huge download times using Thinkmay's internal Game Templates!
 
-![The Explore/Store page showing AI-powered game recommendations with ](images/store_page.png)
+![The Explore/Store page showing AI-powered game recommendations with ](../../shared/assets/images/store_page.png)
 
 1. Click **Explore** in the sidebar to open the App Store (shown above).
 2. Use the **AI search bar** or browse the **Quick Intent** tags (Racing, Multiplayer, etc.) to find your game.
@@ -53,7 +53,7 @@ You can completely skip huge download times using Thinkmay's internal Game Templ
 
 If your stream is lagging, blurry, or you wish to unlock maximum 120FPS performance, you can tweak the WebRTC engine:
 
-![The Advanced Settings panel showing Video Quality sliders, codec toggles, and Compatibility options](images/settings_page.png)
+![The Advanced Settings panel showing Video Quality sliders, codec toggles, and Compatibility options](../../shared/assets/images/settings_page.png)
 
 1. Click **Settings** → **Advanced Settings** in the sidebar (shown above).
 2. Under **Streaming Quality**, choose **High Quality** (for fast Wi-Fi) or **High Stability** (for cellular/unstable networks).
@@ -93,7 +93,7 @@ To track how many hours you have played and understand your subscription boundar
 
 ### 6. Open and Connect to Your CloudPC
 
-![The Login page showing Email/Password fields, Google OAuth, OTP login, and server region selection](images/login_page.png)
+![The Login page showing Email/Password fields, Google OAuth, OTP login, and server region selection](../../shared/assets/images/login_page.png)
 
 1. Open your browser and navigate to the Thinkmay website. Log in using your **Email & Password**, **Google**, or **Email OTP** (shown above). Select the server nearest to you (**haiphong** or **saigon2**).
 2. Once logged in, click **Home** in the sidebar to reach the Play dashboard.

@@ -306,10 +306,10 @@ Interpretation:
 
 The SEO docs are broadly directionally sound:
 
-- `docs/seo_growth_implementation_plan.md`
-- `docs/google_search/seo_health_summary_2026-05-17.md`
-- `docs/rybbit/rybbit_seo_combined_analysis_2026-05-17.md`
-- `docs/thinkmay_competitor_positioning_memo.md`
+- `docs/marketing/seo/seo_growth_implementation_plan.md`
+- `docs/marketing/analytics/google_search/seo_health_summary_2026-05-17.md`
+- `docs/marketing/analytics/rybbit/rybbit_seo_combined_analysis_2026-05-17.md`
+- `docs/marketing/strategy/thinkmay_competitor_positioning_memo.md`
 
 They correctly emphasize:
 - brand-heavy SEO
@@ -322,9 +322,9 @@ They correctly emphasize:
 
 The bigger concern is analytics/privacy wording in docs such as:
 
-- `docs/data_privacy.md`
-- `docs/user_doc.md`
-- `docs/employee_doc.md`
+- `docs/product/guides/data_privacy.md`
+- `docs/product/guides/user_doc.md`
+- `docs/employee/playbooks/employee_doc.md`
 
 These documents say or strongly imply that analytics:
 - strictly blacklist system processes

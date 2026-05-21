@@ -87,11 +87,11 @@ Captured files:
 - `C:\thinkmay\website\components\cache\product.tsx`
 - `C:\thinkmay\website\app\[locale]\(e-commerce)\contact\ContactContent.tsx`
 - `C:\thinkmay\website\backend\utils\constant.ts`
-- `C:\thinkmay\docs\marketing_doc.md`
-- `C:\thinkmay\docs\user_persona.md`
-- `C:\thinkmay\docs\gamification.md`
-- `C:\thinkmay\docs\reward_mission.md`
-- `C:\thinkmay\docs\data_privacy.md`
+- `C:\thinkmay\docs\marketing\strategy\marketing_doc.md`
+- `C:\thinkmay\docs\marketing\research\user_persona.md`
+- `C:\thinkmay\docs\product\features\gamification.md`
+- `C:\thinkmay\docs\product\features\reward_mission.md`
+- `C:\thinkmay\docs\product\guides\data_privacy.md`
 
 ### External/social surfaces checked
 

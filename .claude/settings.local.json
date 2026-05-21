@@ -13,7 +13,29 @@
       "PowerShell($url = \"https://raw.githubusercontent.com/zeroclaw-labs/zeroclaw/master/README.md\"; \\(Invoke-WebRequest -UseBasicParsing -Uri $url\\).Content)",
       "PowerShell(\\(Invoke-WebRequest -UseBasicParsing -Uri \"https://raw.githubusercontent.com/zeroclaw-labs/zeroclaw/master/docs/book/src/setup/windows.md\"\\).Content)",
       "PowerShell(\\(Invoke-WebRequest -UseBasicParsing -Uri \"https://raw.githubusercontent.com/zeroclaw-labs/zeroclaw/master/install.sh\"\\).Content)",
-      "PowerShell(\\(Invoke-WebRequest -UseBasicParsing -Uri \"https://raw.githubusercontent.com/zeroclaw-labs/zeroclaw/master/setup.bat\"\\).Content)"
+      "PowerShell(\\(Invoke-WebRequest -UseBasicParsing -Uri \"https://raw.githubusercontent.com/zeroclaw-labs/zeroclaw/master/setup.bat\"\\).Content)",
+      "mcp__dfs-mcp__kw_data_google_ads_search_volume",
+      "mcp__dfs-mcp__kw_data_dfs_trends_explore",
+      "mcp__dfs-mcp__serp_organic_live_advanced",
+      "mcp__dfs-mcp__dataforseo_labs_google_keywords_for_site",
+      "mcp__dfs-mcp__dataforseo_labs_google_serp_competitors",
+      "mcp__dfs-mcp__dataforseo_labs_google_ranked_keywords",
+      "WebSearch",
+      "mcp__dfs-mcp__backlinks_bulk_referring_domains",
+      "mcp__dfs-mcp__backlinks_bulk_ranks",
+      "mcp__dfs-mcp__backlinks_bulk_backlinks",
+      "mcp__dfs-mcp__dataforseo_labs_bulk_traffic_estimation",
+      "mcp__dfs-mcp__dataforseo_labs_google_domain_intersection",
+      "mcp__dfs-mcp__dataforseo_labs_google_domain_rank_overview",
+      "WebFetch(domain:official.thinkmay.net)",
+      "WebFetch(domain:oneplay.in)",
+      "mcp__dfs-mcp__dataforseo_labs_google_keyword_overview",
+      "WebFetch(domain:www.oneplay.in)",
+      "WebFetch(domain:thinkmay.net)",
+      "WebFetch(domain:www.ezycloudx.com)",
+      "WebFetch(domain:pcrender.vn)",
+      "WebFetch(domain:trumbox.net)",
+      "WebFetch(domain:revolt.vn)"
     ]
   }
 }

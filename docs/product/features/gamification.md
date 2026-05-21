@@ -449,7 +449,7 @@ graph TD
 - [ ] Drop legacy referral trigger/function (if not already done): `on_referral_added`, `apply_referral_reward`
 - [ ] Update frontend Redux thunks to remove calls to old RPCs (will temporarily disable quest UI)
 - [ ] Remove `reward_mission.md` doc (replaced by this document)
-- [ ] Remove `missions.sql` and `leaderboard.sql` from `docs/db/` (replaced by new schemas below)
+- [ ] Remove `missions.sql` and `leaderboard.sql` from `docs/shared/data/db/` (replaced by new schemas below)
 
 > [!WARNING]
 > **Data loss**: All existing `user_mission_claims` rows (users who claimed old hour-based missions) will be lost. Since those rewards were already applied to `subscriptions.usage_limit`, no rollback is needed — the hours are already granted. Consider archiving the old table before dropping if audit trail is desired.

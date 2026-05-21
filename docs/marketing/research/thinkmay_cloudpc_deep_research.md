@@ -24,12 +24,12 @@ Primary local sources inspected include:
 - `CLAUDE.md`
 - `.gitmodules`
 - `docs/documentation_audit.md`
-- `docs/technical_doc.md`
-- `docs/mobile_architecture.md`
-- `docs/native_app.md`
+- `docs/product/architecture/technical_doc.md`
+- `docs/product/architecture/mobile_architecture.md`
+- `docs/product/architecture/native_app.md`
 - `docs/business_model.md`
-- `docs/data_privacy.md`
-- `docs/reward_mission.md`
+- `docs/product/guides/data_privacy.md`
+- `docs/product/features/reward_mission.md`
 - `docs/affiliate_program.md`
 - `worker/daemon/README.md`
 - `worker/proxy/README.md`
@@ -217,7 +217,7 @@ This separation can simplify stream-specific behavior and reconnect logic, but i
 
 ### Adaptive Bitrate and Recovery
 
-`docs/technical_doc.md` describes:
+`docs/product/architecture/technical_doc.md` describes:
 
 - WebRTC as the core protocol.
 - FlexFEC and NACK/RTX support.

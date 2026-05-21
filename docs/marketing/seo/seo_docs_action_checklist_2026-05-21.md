@@ -2,23 +2,23 @@
 
 _Date: 2026-05-21_
 
-This is the short execution checklist derived from `docs/seo_docs_gsc_audit_2026-05-21.md`.
+This is the short execution checklist derived from `docs/marketing/seo/seo_docs_gsc_audit_2026-05-21.md`.
 
 ## Highest-priority doc edits
 
-### 1. `docs/seo_growth_implementation_plan.md`
+### 1. `docs/marketing/seo/seo_growth_implementation_plan.md`
 - [x] Add a live-GSC validation note so readers know the plan was cross-checked after the original 2026-05-17 export.
 - [x] Reconfirm that brand-heavy SEO, `cloud pc`, mobile, and Indonesia still hold up.
 - [x] Add explicit mention of **query noise / irrelevant overlap**.
 - [x] Strengthen the commercial-intent wording around `thuê cloud pc`.
 - [x] Clarify that Indonesia is already a strong organic asset, not only a future bet.
 
-### 2. `docs/google_search/seo_health_summary_2026-05-17.md`
+### 2. `docs/marketing/analytics/google_search/seo_health_summary_2026-05-17.md`
 - [x] Mark the file as a **point-in-time export summary**.
 - [x] Point readers to the live audit for current decision-making.
 - [x] Add a caution that some low-CTR opportunities may actually be irrelevant-query noise.
 
-### 3. `docs/rybbit/rybbit_seo_combined_analysis_2026-05-17.md`
+### 3. `docs/marketing/analytics/rybbit/rybbit_seo_combined_analysis_2026-05-17.md`
 - [x] Add a note that aggregate engagement data still needs a **query relevance check**.
 - [x] Add a next-step reminder to filter irrelevant query clusters before prioritizing optimization work.
 
@@ -31,9 +31,9 @@ This is the short execution checklist derived from `docs/seo_docs_gsc_audit_2026
 ## Remaining follow-up edits worth doing next
 
 ### Documentation
-- [ ] Refresh stale numeric snapshots in `docs/seo_growth_implementation_plan.md` if you want one canonical current-state plan.
+- [ ] Refresh stale numeric snapshots in `docs/marketing/seo/seo_growth_implementation_plan.md` if you want one canonical current-state plan.
 - [ ] Add one short subsection in the plan specifically titled `Query noise / irrelevant rankings`.
-- [ ] If useful, append a short "live GSC delta" section to `docs/google_search/seo_health_summary_2026-05-17.md` instead of leaving that only in the separate audit.
+- [ ] If useful, append a short "live GSC delta" section to `docs/marketing/analytics/google_search/seo_health_summary_2026-05-17.md` instead of leaving that only in the separate audit.
 
 ### SEO strategy / analysis
 - [ ] Review the `trumbox` query cluster and determine whether it comes from:

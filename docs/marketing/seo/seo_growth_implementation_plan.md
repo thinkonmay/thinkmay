@@ -4,10 +4,10 @@ _Last updated: 2026-05-17_
 
 This plan is based on:
 
-- Google Search Console export: `docs/google_search/https___thinkmay.net_-Performance-on-Search-2026-05-17.xlsx`
-- SEO summary: `docs/google_search/seo_health_summary_2026-05-17.md`
-- Rybbit export: `docs/rybbit/rybbit.json`
-- Rybbit + SEO combined analysis: `docs/rybbit/rybbit_seo_combined_analysis_2026-05-17.md`
+- Google Search Console export: `docs/marketing/analytics/google_search/https___thinkmay.net_-Performance-on-Search-2026-05-17.xlsx`
+- SEO summary: `docs/marketing/analytics/google_search/seo_health_summary_2026-05-17.md`
+- Rybbit export: `docs/marketing/analytics/rybbit/rybbit.json`
+- Rybbit + SEO combined analysis: `docs/marketing/analytics/rybbit/rybbit_seo_combined_analysis_2026-05-17.md`
 - Frontend source inspection: `website/` Next.js app using `next-intl`, locales `vi`, `en`, `id`
 - Live GSC validation check on 2026-05-21 via MCP (`https://thinkmay.net/`, 2026-02-21 -> 2026-05-21)
 

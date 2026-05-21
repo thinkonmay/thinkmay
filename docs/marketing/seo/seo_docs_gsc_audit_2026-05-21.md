@@ -6,9 +6,9 @@ _Date: 2026-05-21_
 
 This audit reviews the main SEO documentation in `docs/` against the currently connected live Google Search Console property:
 
-- `docs/seo_growth_implementation_plan.md`
-- `docs/google_search/seo_health_summary_2026-05-17.md`
-- `docs/rybbit/rybbit_seo_combined_analysis_2026-05-17.md`
+- `docs/marketing/seo/seo_growth_implementation_plan.md`
+- `docs/marketing/analytics/google_search/seo_health_summary_2026-05-17.md`
+- `docs/marketing/analytics/rybbit/rybbit_seo_combined_analysis_2026-05-17.md`
 - `docs/thinkmay_competitor_positioning_memo.md`
 
 The purpose is to determine:
@@ -104,7 +104,7 @@ However, the docs need refreshing in three areas:
 
 ## File-by-file audit
 
-## 1. `docs/seo_growth_implementation_plan.md`
+## 1. `docs/marketing/seo/seo_growth_implementation_plan.md`
 
 ### Verdict
 
@@ -135,7 +135,7 @@ However, the docs need refreshing in three areas:
 - Add `thuê cloud pc` as a more visible commercial-intent term in the page-priority logic.
 - Call out `/id/` as a top-performing organic asset that deserves protection and iteration.
 
-## 2. `docs/google_search/seo_health_summary_2026-05-17.md`
+## 2. `docs/marketing/analytics/google_search/seo_health_summary_2026-05-17.md`
 
 ### Verdict
 
@@ -171,7 +171,7 @@ The current live picture suggests a more important missing section:
 - Keep this file as a dated export-based summary.
 - Add a short header note saying it is a **point-in-time snapshot** and should be compared with live GSC before strategic decisions.
 
-## 3. `docs/rybbit/rybbit_seo_combined_analysis_2026-05-17.md`
+## 3. `docs/marketing/analytics/rybbit/rybbit_seo_combined_analysis_2026-05-17.md`
 
 ### Verdict
 
@@ -253,11 +253,11 @@ The live GSC data supports this:
 
 ### High priority
 
-1. Update `docs/seo_growth_implementation_plan.md` with refreshed live GSC numbers.
+1. Update `docs/marketing/seo/seo_growth_implementation_plan.md` with refreshed live GSC numbers.
 2. Add a new section on **query relevance / query noise**.
 3. Explicitly call out `/id/` as a protected high-performing asset.
 4. Increase emphasis on `thuê cloud pc` / rental-intent keywords.
-5. Mark `docs/google_search/seo_health_summary_2026-05-17.md` as a dated snapshot.
+5. Mark `docs/marketing/analytics/google_search/seo_health_summary_2026-05-17.md` as a dated snapshot.
 
 ### Medium priority
 
@@ -277,7 +277,7 @@ If the docs are meant to guide execution today, the clearest live priorities are
 
 ## Bottom line
 
-The SEO docs are **mostly good and mostly current**, especially the strategic logic in `docs/seo_growth_implementation_plan.md:15`, `docs/seo_growth_implementation_plan.md:49`, and `docs/seo_growth_implementation_plan.md:121`.
+The SEO docs are **mostly good and mostly current**, especially the strategic logic in `docs/marketing/seo/seo_growth_implementation_plan.md:15`, `docs/marketing/seo/seo_growth_implementation_plan.md:49`, and `docs/marketing/seo/seo_growth_implementation_plan.md:121`.
 
 The biggest issue is not that the docs are wrong.
 The biggest issue is that they now need one more layer of realism from live GSC:

@@ -146,7 +146,7 @@ The control console/product DB should be treated as the business source of truth
 
 `compose/supabase.yaml` defines Supabase Studio on host port `4000`, PostgREST, Postgres Meta, and Postgres DB. Docker is not available in this shell, so I could not open the local dashboard, but the compose and SQL export are present.
 
-Important confirmed tables/functions from `docs/db/global.sql`:
+Important confirmed tables/functions from `docs/shared/data/db/global.sql`:
 
 - `subscriptions`: user email, created time, ended/cancelled/cleaned/allocated timestamps, cluster, total usage, total data credit, usage limit.
 - `payment_request`: subscription, plan, transaction, pocket, verified time, discount, total usage, data credit.

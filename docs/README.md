@@ -1,15 +1,39 @@
 # Thinkmay Docs
 
-This folder contains product, technical, marketing, research, analytics, and SEO documentation for Thinkmay.
+This folder is organized by audience and purpose.
 
-## Main folders
+## Main sections
 
-- `competitor_analysis/` - competitor research reports and generated competitor screenshots.
-- `snapshots/` - generated screenshots, DOM captures, and local runtime captures from audits/research.
-- `google_search/` - Google Search Console analysis scripts/reports. Raw exports are ignored by Git.
-- `rybbit/` - Rybbit analysis scripts/reports. Raw exports are ignored by Git.
-- `images/` - curated documentation images.
-- `db/` - local database schema/dumps. Ignored by Git because it may contain sensitive schema or operational data.
+- `product/` — product architecture, user guides, and feature/system docs.
+- `employee/` — internal playbooks for support, ops, and staff.
+- `marketing/` — strategy, campaigns, SEO, analytics, and research.
+- `shared/` — shared assets, snapshots, DB artifacts, and support tools.
+
+## Quick links
+
+### Product
+- [Product index](./product/README.md)
+- [Technical architecture](./product/architecture/technical_doc.md)
+- [Mobile architecture](./product/architecture/mobile_architecture.md)
+- [Native app architecture](./product/architecture/native_app.md)
+- [User guide](./product/guides/user_doc.md)
+
+### Employee
+- [Employee index](./employee/README.md)
+- [Employee playbook](./employee/playbooks/employee_doc.md)
+
+### Marketing
+- [Marketing index](./marketing/README.md)
+- [Marketing playbook](./marketing/strategy/marketing_doc.md)
+- [SEO plan](./marketing/seo/seo_growth_implementation_plan.md)
+- [Local competitor research](./marketing/research/local_competitors_research_summary.md)
+- [Facebook giveaway template](./marketing/campaigns/facebook_giveaway_program_template.md)
+
+### Shared
+- [Shared index](./shared/README.md)
+- [Images](./shared/assets/images/)
+- [Database artifacts](./shared/data/db/)
+- [Snapshots](./shared/snapshots/)
 
 ## Git hygiene
 

@@ -3,8 +3,8 @@
 _Date: 2026-05-21_
 
 Derived from:
-- `docs/website_seo_performance_docs_audit_2026-05-21.md`
-- `docs/seo_growth_implementation_plan.md`
+- `docs/marketing/seo/website_seo_performance_docs_audit_2026-05-21.md`
+- `docs/marketing/seo/seo_growth_implementation_plan.md`
 - live GSC data for `https://thinkmay.net/`
 - Rybbit site `12`
 
