@@ -219,6 +219,8 @@ Thinkmay response:
 
 ### Strengths
 
+Live GSC validation on 2026-05-21 reinforces this positioning: Thinkmay remains strongest on Cloud PC / CloudPC-style terms, shows meaningful traction for rental-intent variants such as `thuê cloud pc`, and already has a standout organic foothold in Indonesia through `https://thinkmay.net/id/`.
+
 1. **Strong fit with real Vietnam behavior**
    - mobile-first users;
    - weak laptop users;

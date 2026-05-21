@@ -9,6 +9,7 @@ This plan is based on:
 - Rybbit export: `docs/rybbit/rybbit.json`
 - Rybbit + SEO combined analysis: `docs/rybbit/rybbit_seo_combined_analysis_2026-05-17.md`
 - Frontend source inspection: `website/` Next.js app using `next-intl`, locales `vi`, `en`, `id`
+- Live GSC validation check on 2026-05-21 via MCP (`https://thinkmay.net/`, 2026-02-21 -> 2026-05-21)
 
 ## 1. Executive summary
 
@@ -45,6 +46,8 @@ Daily joined GSC + Rybbit window, `2026-02-16 -> 2026-05-15`:
 - GSC clicks vs session duration correlation: **0.39**
 
 Interpretation: SEO is a real traffic driver and does not appear to be low-quality traffic. When organic clicks rise, sessions and pageviews rise strongly, while bounce does not rise. This justifies investing in dedicated SEO landing pages.
+
+Live GSC spot-check on 2026-05-21 still supports the overall diagnosis: branded click share remains about **80.7%**, `cloud pc` remains the clearest category winner, and Indonesia remains a major organic market. The biggest newly-visible gap is **query noise / irrelevant overlap** (for example the `trumbox` cluster), which should be separated from true product-intent opportunities before prioritizing CTR work.
 
 The main strategic move: make Thinkmay own the Vietnam and Indonesia search space for **cloud gaming** and **cloud PC** first, then support those pillars with lower-volume but high-message pages such as **choi game PC tren dien thoai** and **quan net tren may**, then expand into game-specific intent pages like GTA V/FiveM, FC Online, and Black Myth: Wukong.
 
@@ -137,6 +140,8 @@ GSC country split:
 
 This supports a mobile-first Vietnam + Indonesia SEO strategy.
 
+Live GSC validation also shows `https://thinkmay.net/id/` is one of the strongest organic assets on the site, so Indonesia should be treated as an already-performing market, not only a future expansion experiment.
+
 ## 5. Current SEO problems
 
 ### 5.1 Branded traffic concentration
@@ -146,6 +151,8 @@ This supports a mobile-first Vietnam + Indonesia SEO strategy.
 Risk: if Facebook/TikTok demand slows, SEO may not yet capture enough fresh non-brand demand.
 
 Fix: build high-intent non-brand landing pages under `thinkmay.net`, not separate microsites first.
+
+Also separate true category opportunities from irrelevant-query overlap. Current live GSC shows a meaningful `trumbox` query cluster, which is large enough to distort low-CTR and page-2 opportunity reports if it is mixed with real Cloud PC / Cloud Gaming intent.
 
 ### 5.2 Discovery pages have large impressions but weak CTR
 
@@ -179,7 +186,7 @@ Some of this is normal navigational search, but reset-password/privacy/legal/reg
 
 Fix carefully:
 
-- Keep pricing indexable, but improve title/meta around `bang gia cloud pc`, `thue cloud pc`, and `cloud gaming gia re`.
+- Keep pricing indexable, but improve title/meta around `bang gia cloud pc`, `thue cloud pc`, `thuê cloud pc`, and `cloud gaming gia re`.
 - Consider `noindex` for reset-password, confirm-verification, login-otp, and other private utility pages.
 - Keep login indexable only if it captures branded navigational demand cleanly. Otherwise noindex login too and rely on homepage sitelinks.
 
