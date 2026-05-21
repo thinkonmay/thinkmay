@@ -40,22 +40,10 @@ worker/assistant/
 
 # Generated research captures and raw exports
 # Keep curated markdown reports, scripts, and README files tracked; ignore bulky/private raw artifacts.
-docs/shared/snapshots/**/*.png
-docs/shared/snapshots/**/*.jpg
-docs/shared/snapshots/**/*.jpeg
-docs/shared/snapshots/**/*.webp
-docs/shared/snapshots/**/*.gif
-docs/shared/snapshots/**/*.html
-docs/shared/snapshots/**/*.txt
-!docs/shared/snapshots/**/README.md
+docs/shared/snapshots/
+!docs/shared/snapshots/README.md
 
-docs/marketing/research/competitor_analysis/screenshots/**/*.png
-docs/marketing/research/competitor_analysis/screenshots/**/*.jpg
-docs/marketing/research/competitor_analysis/screenshots/**/*.jpeg
-docs/marketing/research/competitor_analysis/screenshots/**/*.webp
-docs/marketing/research/competitor_analysis/screenshots/**/*.gif
-docs/marketing/research/competitor_analysis/screenshots/**/*.html
-docs/marketing/research/competitor_analysis/screenshots/**/*.txt
+docs/marketing/research/competitor_analysis/screenshots/
 
 docs/marketing/analytics/google_search/**/*.xlsx
 docs/marketing/analytics/google_search/**/*.xls
