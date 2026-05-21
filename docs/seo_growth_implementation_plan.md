@@ -46,7 +46,7 @@ Daily joined GSC + Rybbit window, `2026-02-16 -> 2026-05-15`:
 
 Interpretation: SEO is a real traffic driver and does not appear to be low-quality traffic. When organic clicks rise, sessions and pageviews rise strongly, while bounce does not rise. This justifies investing in dedicated SEO landing pages.
 
-The main strategic move: make Thinkmay own the Vietnam and Indonesia search space for **cloud gaming**, **cloud PC**, **choi game PC tren dien thoai**, and **quan net tren may**, then expand into game-specific intent pages like GTA V/FiveM, FC Online, and Black Myth: Wukong.
+The main strategic move: make Thinkmay own the Vietnam and Indonesia search space for **cloud gaming** and **cloud PC** first, then support those pillars with lower-volume but high-message pages such as **choi game PC tren dien thoai** and **quan net tren may**, then expand into game-specific intent pages like GTA V/FiveM, FC Online, and Black Myth: Wukong.
 
 ## 2. Strategic SEO position
 
@@ -56,7 +56,7 @@ Thinkmay has three overlapping search positions. Use all three, but assign them 
 |---|---|---|---|
 | Cloud gaming | Mainstream acquisition keyword | Users want to play games instantly | Easy to understand, broad demand |
 | Cloud PC | Accurate product/category keyword | Thinkmay gives users a full remote PC with data/session continuity | Strong for pricing, specs, serious users |
-| Quan net tren may / tiem net tren may | Vietnam-native emotional positioning | Like an internet cafe, but on any device | Relatable, memorable, TikTok/Facebook friendly |
+| Quan net tren may / tiem net tren may | Vietnam-native emotional positioning | Like an internet cafe, but on any device | Relatable, memorable, stronger for brand/social than core SEO demand |
 
 Recommended external message:
 
@@ -70,7 +70,7 @@ Do not choose only one phrase. Build a topical map where the homepage and core p
 
 1. Move from brand-led SEO to category-led SEO.
 2. Push `cloud pc` from position ~4 into top 1-3.
-3. Push `cloud gaming` from position ~9 into top 5, then top 3.
+3. Push `cloud gaming` from position ~9 into top 5 as the primary 90-day goal; treat top 3 as a stretch goal because the head SERP is crowded by larger brands and editorial pages.
 4. Create dedicated Vietnamese keyword pages for high-intent terms.
 5. Create first serious Indonesian keyword pages because Indonesia already contributes **21.8%** of GSC clicks.
 6. Fix low-CTR/high-impression pages such as `/discovery/`, `/en/discovery/`, `/pricing/how-it-works/`, and utility/auth pages.
@@ -203,7 +203,7 @@ Missing or weak:
 - `pricing/how-it-works` uses static metadata with non-localized canonical and placeholder OG image comments.
 - Root structured data includes `AggregateRating` hardcoded. This can be risky if not backed by visible, verifiable review data.
 - Organization/Service/Store schema can be improved into cleaner WebSite + Organization + Product/Service schemas.
-- No Rybbit tracking found in source search; if Rybbit is injected elsewhere, still add explicit SEO event instrumentation.
+- Rybbit tracking is present in source, but SEO-specific event instrumentation is still too implicit and should be wrapped/standardized for cleaner analysis.
 
 ## 6. URL architecture recommendation
 
@@ -416,9 +416,9 @@ Current `/discovery/` is probably too card/carousel-heavy for SEO. Add static, c
 |---:|---|---|---|---|
 | 1 | `/cloud-pc/` | cloud pc | cloud pc vietnam, thue cloud pc, pc cloud | Category/money |
 | 2 | `/cloud-gaming/` | cloud gaming | cloud game, cloud gaming pc, cloud gaming vietnam | Category/money |
-| 3 | `/choi-game-pc-tren-dien-thoai/` | choi game pc tren dien thoai | choi game tren dien thoai, game pc mobile | High-intent mobile |
+| 3 | `/choi-game-pc-tren-dien-thoai/` | choi game pc tren dien thoai | choi game tren dien thoai, game pc mobile | Supporting high-intent mobile page; message-fit is strong, exact-match demand is low |
 | 4 | `/thue-may-tinh-online/` | thue may tinh online | thue pc online, thue may tinh cau hinh cao | High-intent commercial |
-| 5 | `/quan-net-tren-may/` | quan net tren may | tiem net tren may, cloud cyber cafe | Brand/category |
+| 5 | `/quan-net-tren-may/` | quan net tren may | tiem net tren may, cloud cyber cafe | Brand/category support, stronger for messaging than proven SEO demand |
 
 ### Phase 2: game pages
 
@@ -762,7 +762,7 @@ Required terms:
 
 - cloud gaming
 - cloud game
-- cloud gaming vietnam
+- cloud gaming vietnam as a minor supporting modifier, not the page's main bet
 - choi game pc tren dien thoai
 - khong can tai game
 - khong can may cau hinh cao
@@ -781,6 +781,8 @@ FAQ:
 Primary keyword: `choi game pc tren dien thoai`
 
 Search intent: mobile user wants to play PC games.
+
+Priority note: this is a strong conversion/supporting page because the message matches Thinkmay well, but exact-match keyword demand is much smaller than `cloud gaming` or `cloud pc`.
 
 Title:
 
@@ -825,6 +827,8 @@ Angle:
 Primary keyword: `quan net tren may`
 
 Search intent: category creation / relatable positioning.
+
+Priority note: treat this as a branding and internal-linking page first; current keyword research supports the framing strongly as messaging, but not yet as a top-volume SEO term.
 
 Title:
 
@@ -915,7 +919,7 @@ Ask/export:
 
 ### 13.2 Add frontend SEO events
 
-Source search did not find explicit `rybbit` calls in `website/`. If Rybbit is injected elsewhere, still add a wrapper.
+Source search now shows explicit `rybbit` calls in `website/`, but Thinkmay should still add a wrapper so SEO/business events have a cleaner and more stable taxonomy.
 
 Create:
 
@@ -1232,11 +1236,12 @@ If engineering bandwidth is limited, do this exact order:
 3. Sitemap update
 4. Homepage internal links to both pages
 5. Rybbit CTA event tracking
-6. `/choi-game-pc-tren-dien-thoai/`
-7. Discovery page SEO copy + FAQ
-8. Pricing page FAQ + title/meta rewrite
-9. GTA V/FiveM page
-10. Indonesian `/id/cloud-gaming/` and `/id/cloud-pc/`
+6. `/thue-may-tinh-online/`
+7. `/choi-game-pc-tren-dien-thoai/`
+8. Discovery page SEO copy + FAQ
+9. Pricing page FAQ + title/meta rewrite
+10. GTA V/FiveM page
+11. Indonesian `/id/cloud-gaming/` and `/id/cloud-pc/`
 
 This order balances fastest ranking upside with strongest product-market fit.
 
