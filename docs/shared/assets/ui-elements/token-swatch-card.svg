@@ -1,0 +1,29 @@
+<svg width="720" height="420" viewBox="0 0 720 420" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Thinkmay Cloud Teal token swatch sample</title>
+  <desc id="desc">Design token swatches for the Figma Golden Purple teal ramp and neutral overlays.</desc>
+  <rect width="720" height="420" rx="32" fill="#0A2926"/>
+  <text x="56" y="64" fill="white" font-family="SF UI Display, Inter, Arial, sans-serif" font-size="28" font-weight="800">Cloud Teal palette</text>
+  <g font-family="SF UI Display, Inter, Arial, sans-serif" font-size="12" font-weight="700">
+    <g transform="translate(56 96)"><rect width="56" height="96" rx="14" fill="#0A2926" stroke="white" stroke-opacity="0.18"/><text x="28" y="122" fill="white" text-anchor="middle">10</text></g>
+    <g transform="translate(120 96)"><rect width="56" height="96" rx="14" fill="#134E48"/><text x="28" y="122" fill="white" text-anchor="middle">9</text></g>
+    <g transform="translate(184 96)"><rect width="56" height="96" rx="14" fill="#125D56"/><text x="28" y="122" fill="white" text-anchor="middle">8</text></g>
+    <g transform="translate(248 96)"><rect width="56" height="96" rx="14" fill="#107569"/><text x="28" y="122" fill="white" text-anchor="middle">7</text></g>
+    <g transform="translate(312 96)"><rect width="56" height="96" rx="14" fill="#0E9384"/><text x="28" y="122" fill="white" text-anchor="middle">6</text></g>
+    <g transform="translate(376 96)"><rect width="56" height="96" rx="14" fill="#15B79E"/><text x="28" y="122" fill="white" text-anchor="middle">5</text></g>
+    <g transform="translate(440 96)"><rect width="56" height="96" rx="14" fill="#2ED3B7"/><text x="28" y="122" fill="#0A2926" text-anchor="middle">4</text></g>
+    <g transform="translate(504 96)"><rect width="56" height="96" rx="14" fill="#5FE9D0"/><text x="28" y="122" fill="#0A2926" text-anchor="middle">3</text></g>
+    <g transform="translate(568 96)"><rect width="56" height="96" rx="14" fill="#99F6E0"/><text x="28" y="122" fill="#0A2926" text-anchor="middle">2</text></g>
+    <g transform="translate(632 96)"><rect width="56" height="96" rx="14" fill="#CCFBEF"/><text x="28" y="122" fill="#0A2926" text-anchor="middle">1</text></g>
+  </g>
+  <text x="56" y="268" fill="#D9DEDE" font-family="SF UI Display, Inter, Arial, sans-serif" font-size="18" font-weight="700">Surface recipes</text>
+  <rect x="56" y="292" width="176" height="72" rx="20" fill="url(#appBg)" stroke="white" stroke-opacity="0.08"/>
+  <text x="80" y="336" fill="white" font-family="SF UI Display, Inter, Arial, sans-serif" font-size="15" font-weight="700">App background</text>
+  <rect x="260" y="292" width="176" height="72" rx="20" fill="url(#cta)"/>
+  <text x="299" y="336" fill="white" font-family="SF UI Display, Inter, Arial, sans-serif" font-size="15" font-weight="700">CTA gradient</text>
+  <rect x="464" y="292" width="176" height="72" rx="20" fill="white" fill-opacity="0.04" stroke="white" stroke-opacity="0.10"/>
+  <text x="506" y="336" fill="white" font-family="SF UI Display, Inter, Arial, sans-serif" font-size="15" font-weight="700">Glass card</text>
+  <defs>
+    <linearGradient id="appBg" x1="144" y1="292" x2="144" y2="364" gradientUnits="userSpaceOnUse"><stop stop-color="#0F463F"/><stop offset="1" stop-color="#071F1C"/></linearGradient>
+    <linearGradient id="cta" x1="348" y1="292" x2="348" y2="364" gradientUnits="userSpaceOnUse"><stop stop-color="#2ED3B7"/><stop offset="1" stop-color="#134E48"/></linearGradient>
+  </defs>
+</svg>

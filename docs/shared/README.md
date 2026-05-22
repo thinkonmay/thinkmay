@@ -3,6 +3,7 @@
 Use this section for assets and supporting artifacts that are shared across product, employee, and marketing docs.
 
 ## Shared folders
+- [Thinkmay design language](./thinkmay_design_language.md)
 - [Images](./assets/images/)
 - [Database artifacts](./data/db/)
 - [Snapshots](./snapshots/)

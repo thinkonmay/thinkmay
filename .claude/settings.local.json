@@ -35,7 +35,9 @@
       "WebFetch(domain:www.ezycloudx.com)",
       "WebFetch(domain:pcrender.vn)",
       "WebFetch(domain:trumbox.net)",
-      "WebFetch(domain:revolt.vn)"
+      "WebFetch(domain:revolt.vn)",
+      "PowerShell(git check-ignore *)",
+      "PowerShell(Get-Content *)"
     ]
   }
 }

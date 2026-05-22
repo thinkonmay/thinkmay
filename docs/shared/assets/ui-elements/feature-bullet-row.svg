@@ -1,0 +1,29 @@
+<svg width="640" height="220" viewBox="0 0 640 220" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Thinkmay feature bullet row sample</title>
+  <desc id="desc">Four marketing feature bullets with electric teal icons and white Vietnamese benefit copy.</desc>
+  <rect width="640" height="220" rx="32" fill="#0A2926"/>
+  <g font-family="SF UI Display, Inter, Arial, sans-serif" font-weight="500" font-size="17" fill="white">
+    <g transform="translate(72 54)">
+      <rect width="36" height="36" rx="10" fill="#5FE9D0" fill-opacity="0.16"/>
+      <path d="M10 13h16v10H10zM14 26h8" stroke="#5FE9D0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="52" y="24">App browser trên mọi thiết bị</text>
+    </g>
+    <g transform="translate(72 122)">
+      <rect width="36" height="36" rx="10" fill="#5FE9D0" fill-opacity="0.16"/>
+      <path d="M10 21c0-4 3-7 8-7s8 3 8 7v3c0 2-2 3-4 1l-2-2h-4l-2 2c-2 2-4 1-4-1v-3z" stroke="#5FE9D0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="52" y="24">Hỗ trợ microphone, tay cầm</text>
+    </g>
+    <g transform="translate(352 54)">
+      <rect width="36" height="36" rx="10" fill="#5FE9D0" fill-opacity="0.16"/>
+      <path d="M18 9l10 5v7c0 6-4 9-10 11-6-2-10-5-10-11v-7l10-5z" stroke="#5FE9D0" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M14 20l3 3 6-7" stroke="#5FE9D0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="52" y="24">Cloud của bạn</text>
+    </g>
+    <g transform="translate(352 122)">
+      <rect width="36" height="36" rx="10" fill="#5FE9D0" fill-opacity="0.16"/>
+      <path d="M18 28c6-5 9-10 9-14a9 9 0 10-18 0c0 4 3 9 9 14z" stroke="#5FE9D0" stroke-width="2"/>
+      <circle cx="18" cy="14" r="3" fill="#5FE9D0"/>
+      <text x="52" y="24">Độ trễ tối ưu</text>
+    </g>
+  </g>
+</svg>
