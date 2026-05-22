@@ -158,7 +158,8 @@ Final polish priorities:
 2. Preserve the GameSir X5 Lite Wasabi controller shape and proportions.
 3. Keep the game screen generic and non-branded.
 4. Keep text sharp and readable on mobile.
-5. Avoid noisy or gibberish background UI text.
+5. Be explicit about giveaway value: GameSir X5 Lite value **500k** + Thinkmay Performance Plan value **599k**, total value **1.099.000đ**.
+6. Avoid noisy or gibberish background UI text.
 
 ---
 
@@ -194,8 +195,11 @@ Make these precise improvements only:
 “Xác minh profile”
 
 7. Keep the prize cards readable and exactly:
-“1x GameSir X5 Lite”
-“1x Thinkmay Performance Plan”
+“1x GameSir X5 Lite — 500k”
+“1x Thinkmay Performance Plan — 599k”
+
+Add a small value badge if layout allows:
+“Tổng giá trị 1.099.000đ”
 
 8. Keep the CTA button exactly:
 “THAM GIA GIVEAWAY”
@@ -281,8 +285,9 @@ Text must be exactly:
 “Comment game muốn chơi”
 “Tag 1 người bạn thật”
 “Xác minh profile”
-“1x GameSir X5 Lite”
-“1x Thinkmay Performance Plan”
+“1x GameSir X5 Lite — 500k”
+“1x Thinkmay Performance Plan — 599k”
+“Tổng giá trị 1.099.000đ”
 “THAM GIA GIVEAWAY”
 
 Brand consistency rules:
@@ -317,8 +322,9 @@ Follow Page
 Comment game muốn chơi
 Tag 1 người bạn thật
 Xác minh profile
-1x GameSir X5 Lite
-1x Thinkmay Performance Plan
+1x GameSir X5 Lite — 500k
+1x Thinkmay Performance Plan — 599k
+Tổng giá trị 1.099.000đ
 THAM GIA GIVEAWAY
 
 Style: 1080x1080 square Facebook feed post, premium dark emerald gaming UI, cyber green neon accents, clean mobile-readable sans-serif typography, trustworthy Vietnamese cloud-gaming feel.
