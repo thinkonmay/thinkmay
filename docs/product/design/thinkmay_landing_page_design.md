@@ -6,6 +6,28 @@ Source of truth: [Figma — Thinkmay Mobile App, Webapp, Landing page](https://w
 
 Only the Figma design is authoritative. Existing website implementation may drift and should not override this document.
 
+## Landing page system boundary
+
+The landing page uses the same Thinkmay brand language as the product apps, but it is **not** the same design system as the webapp, mobile app, or desktop app.
+
+Shared across landing page and apps:
+
+- Cloud Teal palette and dark premium mood.
+- White Thinkmay logo treatment.
+- Typography rhythm and Vietnamese-first copy style.
+- Teal primary CTA language.
+- Product proof through screenshots, devices, GPU, latency, and supported controls.
+
+Different from product app UI:
+
+- Landing pages use marketing sections, not app shells.
+- Landing pages can use oversized hero typography and cinematic device composition.
+- Landing pages prioritize persuasion, trust, and conversion instead of session control density.
+- Landing pages may use stronger glow, parallax, and proof cards than functional app screens.
+- Landing pages should not copy settings rows, desktop sidebars, dense diagnostics grids, or streaming control overlays as primary layout patterns.
+
+Use app screenshots and product cards as proof, but do not turn the whole landing page into the app dashboard.
+
 ## Landing page intent
 
 The landing page should convert curiosity into confidence and action. It must explain Thinkmay as a high-performance cloud PC / cloud gaming product quickly, prove that it works across devices, and lead users toward starting, choosing a plan, or learning enough to trust the product.
@@ -18,9 +40,10 @@ The page should feel like a premium gaming/workstation launch surface, not a gen
 2. **Show the product early** — use device mockups or screenshots above the fold; do not rely on abstract illustration only.
 3. **One dominant CTA** — each viewport should make the next action obvious.
 4. **Proof before detail** — show latency, GPU, local infrastructure, supported devices, controller/microphone, and ownership claims before long explanations.
-5. **Dark cinematic brand** — use deep Cloud Teal backgrounds, teal energy, and glass cards to match app/product surfaces.
-6. **Vietnamese-first copy** — keep copy short, practical, and easy to scan.
-7. **Reusable section system** — landing pages should compose from repeatable hero, proof, feature, pricing, FAQ, and CTA sections.
+5. **Dark cinematic brand** — use deep Cloud Teal backgrounds, teal energy, and glass proof cards while staying more expressive than product app screens.
+6. **Landing-specific components** — compose from hero, proof strip, feature cards, pricing cards, FAQ accordions, and final CTA sections; do not reuse app shell components as page structure.
+7. **Vietnamese-first copy** — keep copy short, practical, and easy to scan.
+8. **Reusable section system** — landing pages should compose from repeatable hero, proof, feature, pricing, FAQ, and CTA sections.
 
 ## Landing page design material
 
@@ -28,8 +51,8 @@ The page should feel like a premium gaming/workstation launch surface, not a gen
 | --- | --- | --- |
 | Landing page structure sample | `docs/shared/assets/ui-elements/landing-page-structure.svg` | Full landing page composition reference: nav, hero, proof cards, pricing, final CTA |
 | Shared design language | `docs/product/design/thinkmay_design_language.md` | Tokens, typography, components, visual philosophy |
-| Mobile design | `docs/product/design/thinkmay_mobile_design.md` | Mobile responsive behavior and app-specific semantics |
-| Desktop design | `docs/product/design/thinkmay_desktop_design.md` | Desktop shell and wide-screen app/product layouts |
+| Mobile design | `docs/product/design/thinkmay_mobile_design.md` | Mobile app semantics to reference only when landing becomes mobile-responsive; not the landing layout system |
+| Desktop design | `docs/product/design/thinkmay_desktop_design.md` | Desktop app semantics to reference only for product proof/screenshots; not the landing layout system |
 | Buttons sample | `docs/shared/assets/ui-elements/buttons-sample.svg` | CTA and secondary action styling |
 | Colors sample | `docs/shared/assets/ui-elements/colors-sample.svg` | Color/token reference |
 | Typography sample | `docs/shared/assets/ui-elements/typography-scale.svg` | Type scale reference |
@@ -44,11 +67,11 @@ A complete Thinkmay landing page should use this order unless a campaign has a m
 | Navigation | Trust, orientation, conversion access | Logo, short links, `Dùng ngay` CTA |
 | Hero | Immediate value proposition | GPU/price/device promise, product visual, primary CTA |
 | Proof strip | Fast trust signals | `5060Ti`, local infrastructure, latency, browser/mobile/desktop support |
-| Product preview | Show actual product | Device/browser mockups, Cloud PC card, streaming controls |
+| Product preview | Show actual product as proof | Device/browser mockups, selected Cloud PC card, streaming preview, not a full app dashboard |
 | Feature blocks | Explain benefits | Any device, controller/mic, data ownership, local latency |
 | Use cases | Broaden relevance | Gaming, work tools, remote Windows desktop, quick access |
 | Pricing/package | Convert intent | Price anchor, plan cards, renewal clarity, CTA |
-| Diagnostics/trust | Reduce anxiety | Network, keyboard, gamepad, microphone support |
+| Trust / diagnostics proof | Reduce anxiety | Network, keyboard, gamepad, microphone support as proof cards, not dense diagnostic tools |
 | FAQ | Resolve blockers | Device support, payment, latency, account/data, refund |
 | Final CTA | Close the page | Short restatement and action |
 
@@ -123,6 +146,19 @@ Visual treatment:
 - Icons use electric teal.
 - Copy stays short and literal.
 - Avoid abstract claims without concrete product proof.
+
+## Landing components versus app components
+
+Landing page components are marketing sections. They may visually reference product UI, but their job is conversion.
+
+| Landing component | Use | Related app component | Boundary |
+| --- | --- | --- | --- |
+| Hero | State the main promise and CTA | Cloud PC card / device screenshot | Use product UI as visual proof, not as the page layout |
+| Proof strip | Show quick trust signals | Status chips / diagnostics states | Keep as short marketing claims, not operational controls |
+| Feature card | Explain a benefit | App card / settings row | Use larger copy and iconography; avoid dense row lists |
+| Pricing card | Help choose a plan | Package/payment card | Simplify app renewal/payment detail into conversion copy |
+| FAQ accordion | Resolve blockers | Support/settings content | Use readable answers, not settings-page structure |
+| Final CTA | Close conversion | Primary app button | Use same CTA style, but with campaign-level copy |
 
 ## Product preview section
 
@@ -341,6 +377,7 @@ For developers:
 - Map tokens to the shared design language.
 - Build sections as reusable landing components.
 - Keep product screenshots and marketing assets separated from core UI components.
+- Do not import app shell/sidebar/settings-row patterns as landing page structure.
 - Preserve typography sizes/line-height relationships.
 - Implement responsive behavior intentionally instead of only scaling desktop down.
 - Use accessible headings, focus states, image alt text, and readable contrast.

@@ -1,69 +1,92 @@
-# Sewa Cloud PC - Affordable High-Performance Remote Desktop Rental in Indonesia
+# Sewa Cloud PC - Rental Windows Cloud PC untuk Gaming dan Kerja
 
-Rent a high-end Windows 11 virtual machine directly from your browser. Thinkmay brings powerful, low-latency Cloud PC rentals to Indonesian gamers and professionals. Enjoy a full remote desktop equipped with dedicated RTX graphics cards without buying expensive hardware.
+Thinkmay menyediakan layanan sewa Cloud PC berbasis Windows 11 yang bisa diakses langsung dari browser. Jalankan game PC, software kerja, aplikasi Windows, atau workload kreatif dari HP, laptop, tablet, atau Mac tanpa membeli perangkat gaming mahal.
 
 ---
 
 ## SEO Metadata
 - **Target URL/Slug**: `/id/sewa-cloud-pc`
 - **Primary Keyword**: Sewa cloud PC
-- **Secondary Keywords**: Rent cloud PC Indonesia, sewa komputer online, virtual computer rental Indonesia, sewa PC gaming murah, cloud desktop Jakarta.
-- **Meta Title**: Sewa Cloud PC: Virtual Computer Rental Indonesia | Thinkmay
-- **Meta Description**: Sewa Cloud PC berspesifikasi tinggi langsung dari browser HP atau laptop Anda. Nikmati virtual PC berbasis Windows 11 dengan kartu grafis NVIDIA RTX di Indonesia.
+- **Secondary Keywords**: rent cloud PC Indonesia, sewa komputer online, virtual computer rental Indonesia, sewa PC gaming, cloud desktop Indonesia
+- **Meta Title**: Sewa Cloud PC: Rental Windows PC Online | Thinkmay
+- **Meta Description**: Sewa Cloud PC Windows 11 dari browser untuk gaming, kerja, dan software berat. Thinkmay mendukung virtual gamepad, persistent storage, dan wallet billing lokal.
 
 ---
 
-## The Gaming & Productivity Challenge in Indonesia
-High-end hardware costs are sky-high in Indonesia, making it difficult for casual gamers, designers, and students to access powerful computers.
-- **Is your laptop lagging on heavy software?** Sewa Cloud PC to run it smoothly.
-- **Need Windows on your Mac?** Run a virtual Windows 11 instance in Chrome.
-- **Want to play AAA games on your HP?** Stream dedicated GPU power.
+## Kenapa Memilih Sewa Cloud PC?
+
+Tidak semua orang perlu membeli PC mahal. Dengan Thinkmay, Anda dapat menggunakan komputer Windows berperforma tinggi saat dibutuhkan, lalu mengaksesnya dari perangkat yang sudah Anda punya.
+
+- **Laptop lemot untuk software berat?** Jalankan aplikasi di Cloud PC.
+- **Ingin main game PC di HP?** Streaming desktop Windows ke browser mobile.
+- **Butuh Windows di Mac atau tablet?** Akses mesin Windows 11 dari browser.
+- **Ingin biaya lebih fleksibel?** Gunakan wallet dan bayar sesuai pemakaian atau plan.
 
 ---
 
-## Why Rent a Cloud PC with Thinkmay Indonesia?
+## Keunggulan Thinkmay Cloud PC
 
-### 1. Ultra-Low Latency Connections
-Input delay is the enemy of cloud streaming. Thinkmay is built on an advanced WebRTC protocol, delivering sub-millisecond response times. Our server routing is optimized for local networks across Indonesia, ensuring smooth performance on Telkomsel, Indosat, Biznet, and other local ISPs.
+### 1. Akses Langsung dari Browser
 
-### 2. High-Performance Hardware Configs
-Get access to dedicated graphic rigs:
-- **Standard Tier**: Powered by AMD EPYC CPUs and NVIDIA RTX 5060Ti allocations, perfect for daily tasks, development, and standard gaming.
-- **Performance Tier**: Powered by Intel Xeon CPUs and NVIDIA RTX 3060Ti GPUs, optimized for demanding AAA titles and heavy rendering tasks.
+Tidak perlu setup remote desktop yang rumit. Buka Thinkmay di Chrome atau Safari, login, nyalakan Cloud PC, dan masuk ke desktop Windows 11. Di HP, Anda bisa menambahkan Thinkmay ke home screen agar terasa seperti aplikasi.
 
-### 3. Persistent Storage and Session Memory (NDisk)
-Subscribed plans feature dedicated persistent storage (NDisk). Install your own tools, games, and templates. We preserve your files for up to 2 days after your plan expires, so you can easily top up and resume work.
+### 2. Streaming WebRTC Berlatensi Rendah
+
+Thinkmay menggunakan WebRTC untuk mengirim video, audio, keyboard, mouse, touch input, gamepad, dan mikrofon secara real time. Chrome direkomendasikan untuk pengalaman paling stabil dan responsif.
+
+### 3. Plan untuk Gaming dan Produktivitas
+
+Pilih plan sesuai kebutuhan: trial untuk mencoba koneksi, plan standar untuk penggunaan reguler, atau tier performa lebih tinggi untuk workload dan game yang lebih berat.
+
+### 4. Persistent Storage untuk Plan Berbayar
+
+Plan berbayar menyimpan file, game, mod, setting, dan workspace Anda di disk pribadi. Jika plan kedaluwarsa, Thinkmay memberi masa tenggang terbatas agar Anda bisa memperpanjang sebelum data dihapus.
+
+### 5. Kontrol Mobile dan Controller
+
+Untuk pengguna HP, Thinkmay menyediakan virtual gamepad yang dapat disesuaikan. Controller Bluetooth juga dapat digunakan jika didukung oleh browser dan perangkat Anda.
 
 ---
 
-## Flexible Billing & Indonesian Payment Gateways
-We make high-spec virtual machines accessible with flexible local payment options:
-- **3-Hour Free Trial**: Sign up and test the latency from your location with 3 hours of free access.
-- **Wallet-Based Pay-As-You-Go**: Top up your balance via **QRIS**, **Dana**, **OVO**, **LinkAja**, or bank transfer. Pay only for the active hours your VM is online.
+## Billing dan Pembayaran
+
+- **Free trial**: Coba kualitas streaming dan latency sebelum upgrade.
+- **Wallet system**: Top up saldo akun, lalu gunakan untuk plan atau waktu aktif mesin.
+- **Metode lokal**: Gunakan payment gateway yang tersedia seperti QRIS, Dana, OVO, LinkAja, PayOS, atau transfer bank sesuai wilayah.
+- **Billing berhenti saat shutdown**: Matikan Cloud PC ketika selesai untuk menghentikan pemakaian aktif.
 
 ---
 
-## How to Get Started
-1. **1-Click Login**: Log in with Google OAuth or Email OTP on your browser.
-2. **Launch VM**: Select standard or performance tier and spin up your remote PC.
-3. **Connect**: Open your Windows 11 workspace directly in a Chrome browser tab.
+## Cara Mulai Sewa Cloud PC
+
+1. **Login** dengan Google, email/password, atau Email OTP.
+2. **Top up wallet dan pilih plan** sesuai kebutuhan Anda.
+3. **Nyalakan Cloud PC**, tunggu booting, lalu connect dari browser.
 
 ---
 
 ## Frequently Asked Questions
 
-### What is Sewa Cloud PC?
-Sewa Cloud PC is a service where you rent a virtual computer hosted in a datacenter. You access it through your browser, sending mouse/keyboard controls and receiving a high-definition video stream of the desktop.
+### Apa itu sewa Cloud PC?
 
-### Can I install any software?
-Yes. You get full administrator rights on your remote Windows 11 instance. You can download and install any software, games, and tools (such as Steam, Epic Games, Blender, or VS Code).
+Sewa Cloud PC adalah layanan rental komputer virtual yang berjalan di datacenter. Anda menerima stream desktop Windows ke browser dan mengirim input dari keyboard, mouse, touch, controller, atau mikrofon.
 
-### What happens if I forget to turn off the VM?
-To protect your wallet, Thinkmay implements automated idle timeouts that shut down the virtual machine when no user interaction is detected, stopping the hourly charge.
+### Bisa install software sendiri?
+
+Ya. Anda mendapatkan lingkungan Windows 11 untuk menginstal launcher game, software produktivitas, tools desain, editor kode, dan aplikasi lain yang Anda miliki lisensinya.
+
+### Apakah data saya tersimpan?
+
+Pada trial, data bersifat sementara. Pada plan berbayar, file tersimpan di disk persisten pribadi selama plan aktif dan masa tenggang terbatas setelah plan berakhir.
+
+### Apakah cocok untuk Indonesia?
+
+Thinkmay dirancang untuk pengguna Asia Tenggara dengan akses browser, pembayaran lokal, dan fitur routing yang membantu mencari koneksi lebih stabil dari jaringan pengguna.
 
 ---
 
-## Rent a Virtual High-Spec PC in Indonesia Today
-Join our growing Indonesian community on Discord, sign up for your free trial, and boost your gaming and work experience now.
+## Sewa Cloud PC Sekarang
+
+Coba Thinkmay, uji performa dari lokasi Anda, dan gunakan Windows Cloud PC untuk game maupun kerja.
 
 [Sewa Cloud PC Sekarang](https://thinkmay.net/)

@@ -34,6 +34,20 @@ Use this package as the canonical handoff index for designers, frontend develope
 
 When adding new design material, place the written specification in `docs/product/design` and place reusable exported SVG/PNG samples in `docs/shared/assets`.
 
+## Surface system model
+
+Thinkmay has one shared brand language, but multiple surface-specific design systems. Do not force app UI, landing pages, and marketing creative to reuse the same layout/component patterns one-to-one.
+
+| Surface system | Primary purpose | Design expression | What it should reuse | What it should not copy blindly |
+| --- | --- | --- | --- | --- |
+| Product App UI | Help users control cloud PCs, sessions, plans, settings, and diagnostics | Functional, calmer, denser, state-driven | Cloud Teal tokens, typography rows, logo, buttons, cards, status colors | Landing-page hero composition, oversized marketing headlines, decorative floating elements |
+| Mobile App UI | Thumb-first cloud PC control from phone screens | Compact, focused, safe-area aware | Product app semantics, mobile spacing, shared tokens/components | Desktop sidebars, wide grids, dense tables |
+| Desktop/Webapp UI | Wide-screen cloud PC command center | Spacious control shell with sidebar/top bar, metrics, diagnostics | Product app semantics, shared tokens/components, desktop interaction states | Landing-page conversion sections as core app navigation |
+| Landing Page UI | Acquisition, education, and conversion | Cinematic, persuasive, spacious, proof-led | Brand tokens, typography rhythm, logo, CTA language, product screenshots | Product app shell, settings rows, dense diagnostics, desktop sidebar patterns |
+| Marketing Creative | Banners, social posts, video, ads | Most expressive and motion-friendly | Brand tokens, headline rhythm, device continuity, product proof | Functional app layouts as-is; detailed settings/payment UI |
+
+Use this rule of thumb: **the brand stays consistent, but each surface has its own layout system, density, and component emphasis**.
+
 ## Design philosophy
 
 Thinkmay should feel like a personal high-performance cloud computer: powerful, fast, private, and ready to launch from any device. The visual language combines a dark cloud-control-room base with bright teal energy to suggest low latency, GPU performance, and always-on access.

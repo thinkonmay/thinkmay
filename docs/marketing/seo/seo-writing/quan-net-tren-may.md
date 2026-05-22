@@ -1,67 +1,92 @@
-# Cloud Internet Cafe - Relive the Net Cafe Experience Anywhere, Anytime
+# Cloud Internet Cafe - A Virtual Net Cafe You Can Open Anywhere
 
-Step into your own virtual cyber cafe. Thinkmay brings the social, high-performance experience of a traditional internet cafe ("quán nét") directly to your web browser. Play heavy multiplayer games with your friends, access a vast library of pre-cached games, and enjoy RTX-level graphics on any mobile device or laptop.
+Thinkmay brings the “quán nét” internet cafe experience to the cloud. Instead of traveling to a physical cyber cafe, you can open a browser, launch a Windows 11 Cloud PC, and play multiplayer PC games with friends from your phone, laptop, tablet, or Mac.
 
 ---
 
 ## SEO Metadata
 - **Target URL/Slug**: `/quan-net-tren-may`
 - **Primary Keyword**: Internet cafe in the cloud
-- **Secondary Keywords**: Cloud net cafe, virtual cyber cafe, online cyber cafe, play PC games on phone, play co-op games on browser, quán nét trên mây.
-- **Meta Title**: Cloud Internet Cafe: Virtual Cyber Cafe on the Cloud | Thinkmay
-- **Meta Description**: Experience the ultimate virtual cyber cafe. Stream high-end PC gaming setups directly to your browser and play multiplayer games with friends on any device with Thinkmay.
+- **Secondary Keywords**: cloud net cafe, virtual cyber cafe, online cyber cafe, play PC games on phone, quán nét trên mây, cloud gaming cafe
+- **Meta Title**: Cloud Internet Cafe: Play PC Games Anywhere | Thinkmay
+- **Meta Description**: Open a virtual internet cafe from your browser. Thinkmay streams Windows gaming PCs to phones and laptops with virtual controls, persistent storage, and local payment options.
 
 ---
 
-## The Nostalgic Net Cafe Experience, Modernized
-In Vietnam and Southeast Asia, the "quán nét" (internet cafe) is more than just a place with computers—it's a social hub where friends gather to play League of Legends, GTA V, and FC Online. But finding the time to go to a physical net cafe can be difficult, and building a gaming rig at home is expensive.
-- **Want to gather your gaming squad tonight?** Create virtual rooms.
-- **No time to visit a physical cyber cafe?** Open a cloud net cafe in your browser.
-- **Only have a phone or weak laptop?** Connect to our RTX remote gaming rigs.
+## The Net Cafe Experience, Modernized
+
+In Vietnam and Southeast Asia, the internet cafe is more than a room full of computers. It is where friends gather for FC Online, GTA V, FiveM, League of Legends, and late-night multiplayer sessions. Thinkmay turns that familiar experience into a cloud service.
+
+- **Want to play with friends tonight?** Start a Cloud PC session from home.
+- **No time to visit a physical cyber cafe?** Open your virtual seat in the browser.
+- **Only have a phone or weak laptop?** Stream from remote gaming hardware.
+- **Need saved settings and mods?** Use persistent storage on paid plans.
 
 ---
 
-## Features of the Thinkmay Cloud Net Cafe
+## Thinkmay Cloud Net Cafe Features
 
-### 1. Zero Downloads with Pre-Cached Libraries
-Waiting for game updates is the worst part of gaming. Just like a physical cyber cafe, Thinkmay keeps popular multiplayer games pre-cached in our system, allowing you to skip long downloads and jump straight into your favorite matches.
+### 1. Browser-Based PC Gaming
 
-### 2. Tailored Touch-Controls & Gamepad Support
-Play complex PC games from your mobile phone with ease. Our system includes a custom virtual gamepad overlay that you can map to suit any genre. You can also connect physical Bluetooth gamepads or use a USB keyboard and mouse on your laptop.
+Connect from Chrome or Safari and use a full Windows 11 desktop. Log in to your own game accounts, open launchers, join voice chat, and play the same PC versions you would use at a physical net cafe.
 
-### 3. Edge Server Infrastructure for Low-Ping Play
-Enjoy smooth, zero-stutter gameplay. Thinkmay's edge datacenters (located in major hubs like Ho Chi Minh City and Hai Phong) deliver ultra-low latency WebRTC streams, keeping your ping low and your inputs responsive during clutch gaming moments.
+### 2. Faster Setup with Game Templates
+
+Thinkmay supports pre-cached game templates for selected popular titles. When available, templates reduce setup time by avoiding full local downloads and letting users start from a prepared cloud drive.
+
+### 3. Mobile Virtual Gamepad
+
+If you join from a phone, Thinkmay provides a customizable virtual gamepad and keyboard overlay. You can map buttons for sports games, racing, GTA roleplay, RPGs, or action games.
+
+### 4. Multiplayer-Friendly Inputs
+
+Keyboard, mouse, touch, controller, and microphone pass-through help recreate the social gaming setup of a net cafe, including voice chat and gamepad support where browsers allow it.
+
+### 5. Persistent Personal Disk
+
+Paid tiers include persistent storage, so your installed games, launcher settings, mods, saves, and control layouts can remain available between sessions.
 
 ---
 
-## Simple Wallet & Play Options
-- **3-Hour Free Trial**: Discover the cloud net cafe experience risk-free. Create an account and get 3 free hours on our trial tier to test response times and browse games.
-- **Hourly Pay-As-You-Go**: Top up your wallet using local payment channels (like PayOS, VietQR, and local bank transfers) and pay only for the exact hours you hang out in the cloud cafe.
-- **Persistent Mod and Save Support (NDisk)**: Subscribing to our Standard or Performance tiers unlocks persistent storage, meaning all your custom settings, game progress, and mods are preserved between logins.
+## Wallet and Play Options
+
+- **Free trial**: Test latency and stream quality before paying.
+- **Hourly or plan-based usage**: Use wallet balance for active machine time and renewals.
+- **Local payments**: Top up with supported regional gateways such as PayOS, VietQR, bank transfer, or local wallets where available.
+- **Route testing**: Try alternate network routes if your ISP path feels unstable.
 
 ---
 
-## Get Your Squad Together in 3 Steps
-1. **Quick Login**: Register in one click using Google OAuth or Email OTP.
-2. **Select Your Specification**: Choose between the Standard (AMD EPYC + RTX 5060Ti) or Performance (Intel Xeon + RTX 3060Ti) tiers.
-3. **Launch and Play**: Boot your VM, log into Steam or Epic Games, and invite your friends to join the lobby.
+## Get Your Squad Online in 3 Steps
+
+1. **Sign in** with Google, email/password, or Email OTP.
+2. **Start your Cloud PC** and connect from phone, laptop, tablet, or Mac.
+3. **Open your launcher**, join your friends’ lobby or server, and play.
 
 ---
 
 ## Frequently Asked Questions
 
 ### What is a Cloud Internet Cafe?
-A Cloud Internet Cafe is a service that hosts high-end gaming computers in remote datacenters, allowing users to stream the gameplay directly to their browsers on phones, tablets, or low-spec computers. It provides a pre-configured gaming environment similar to a physical net cafe.
 
-### Do I need to buy the games?
-Yes. To play licensed games like GTA V, you must own the game on Steam or Epic Games Store. However, free-to-play games like League of Legends or FC Online can be played simply by logging into your game publisher account.
+A Cloud Internet Cafe is a virtual version of a gaming cyber cafe. The gaming PCs run remotely, and users stream the desktop to their own devices through a browser.
 
-### How does the persistent storage work?
-When you buy a persistent tier plan, we allocate a private virtual network disk (NDisk) that saves all your configurations and files. If your balance runs out, we hold onto your data for 2 days to give you plenty of time to top up.
+### Do I still need my own game accounts?
+
+Yes. Thinkmay provides the remote PC and streaming platform. You must sign in with your own game accounts and own paid games where required.
+
+### Can I play from a phone?
+
+Yes. Thinkmay supports mobile browser access, virtual gamepad overlays, and physical controllers when supported by the device and browser.
+
+### Will my settings be saved?
+
+Trial sessions are temporary. Paid plans include persistent storage for game files, saves, mods, and configuration.
 
 ---
 
-## Gather Your Friends and Play on the Cloud Today
-Join our Discord community, grab your virtual seat, and stream the best PC games directly to your browser.
+## Open Your Cloud Net Cafe Seat Today
+
+Bring your friends together online and play PC games from the device you already own.
 
 [Enter the Cloud Net Cafe Now](https://thinkmay.net/)
