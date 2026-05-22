@@ -4,6 +4,9 @@ name: CI
 on:
   push:
     branches: [main]
+    paths:
+      - 'worker/**'
+      - 'assets/**'
   workflow_dispatch:
 
 concurrency:
