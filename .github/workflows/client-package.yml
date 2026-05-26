@@ -287,13 +287,24 @@ jobs:
       - name: Extract tar package
         run: |
           tar -xzf artifacts/thinkmay-client-linux-amd64.tar.gz -C artifacts
-
       - name: Run client --help
         run: |
           chmod +x artifacts/thinkmay-client-linux-amd64/thinkmay-client
           chmod +x artifacts/thinkmay-client-linux-amd64/thinkmay-client-bin
           artifacts/thinkmay-client-linux-amd64/thinkmay-client --help || true
 
+      - name: Test custom URL handler registration
+        run: |
+          mkdir -p ~/.local/share/applications
+          cp artifacts/thinkmay-client-linux-amd64/thinkmay-client.desktop ~/.local/share/applications/
+          update-desktop-database ~/.local/share/applications
+          DEFAULT_HANDLER=$(xdg-mime query default x-scheme-handler/thinkmay)
+          echo "Registered default handler: $DEFAULT_HANDLER"
+          if [ "$DEFAULT_HANDLER" != "thinkmay-client.desktop" ]; then
+              echo "Custom URL handler registration failed!"
+              exit 1
+          fi
+          echo "Custom URL handler verification passed."
   test_macos:
     name: Test macOS Client
     runs-on: macos-latest
@@ -321,6 +332,17 @@ jobs:
           chmod +x "test-client/Thinkmay Client.app/Contents/MacOS/thinkmay-client"
           "test-client/Thinkmay Client.app/Contents/MacOS/thinkmay-client" --help || true
 
+      - name: Test custom URL handler registration
+        run: |
+          /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -f "test-client/Thinkmay Client.app"
+          HANDLER_ID=$(osascript -e 'id of application to open "thinkmay://"')
+          echo "Registered default handler ID: $HANDLER_ID"
+          if [ "$HANDLER_ID" != "net.thinkmay.client" ]; then
+              echo "Custom URL handler registration failed!"
+              exit 1
+          fi
+          echo "Custom URL handler verification passed."
+
   test_windows:
     name: Test Windows Client
     runs-on: windows-latest
@@ -343,6 +365,72 @@ jobs:
           & ./test-client/thinkmay-client.exe --help
           Write-Host "Exit code: $LASTEXITCODE"
           exit 0
+
+      - name: Test custom URL handler registration via installer
+        shell: pwsh
+        run: |
+          $installerPath = "artifacts/thinkmay-client-windows-amd64-installer.exe"
+          if (-not (Test-Path $installerPath)) {
+              Write-Error "Installer not found at $installerPath"
+              exit 1
+          }
+          
+          Write-Host "Running installer silently..."
+          Start-Process -FilePath $installerPath -ArgumentList "/S" -Wait
+          
+          $expectedPath = "$env:LOCALAPPDATA\Thinkmay\Client\thinkmay-client.exe"
+          $expectedCmd = "`"$expectedPath`" -url `"%1`""
+          
+          Write-Host "Verifying registry keys..."
+          if (-not (Test-Path "HKCU:\Software\Classes\thinkmay")) {
+              Write-Error "Registry key HKCU:\Software\Classes\thinkmay was not created!"
+              exit 1
+          }
+          
+          $key = Get-Item -Path "HKCU:\Software\Classes\thinkmay"
+          $protocolDefault = $key.GetValue("")
+          $urlProtocol = $key.GetValue("URL Protocol")
+          
+          if (-not (Test-Path "HKCU:\Software\Classes\thinkmay\shell\open\command")) {
+              Write-Error "Registry key HKCU:\Software\Classes\thinkmay\shell\open\command was not created!"
+              exit 1
+          }
+          $cmdKey = Get-Item -Path "HKCU:\Software\Classes\thinkmay\shell\open\command"
+          $commandDefault = $cmdKey.GetValue("")
+          
+          Write-Host "Registry Description: $protocolDefault"
+          Write-Host "Registry URL Protocol: $urlProtocol"
+          Write-Host "Registry Command: $commandDefault"
+          
+          if ($protocolDefault -ne "URL:thinkmay Protocol") {
+              Write-Error "Protocol description mismatch. Got: $protocolDefault"
+              exit 1
+          }
+          if ($urlProtocol -ne "") {
+              Write-Error "URL Protocol flag mismatch. Got: $urlProtocol"
+              exit 1
+          }
+          if ($commandDefault -ne $expectedCmd) {
+              Write-Error "Protocol command mismatch. Expected: $expectedCmd, Got: $commandDefault"
+              exit 1
+          }
+          Write-Host "Registry verification passed successfully."
+          
+          Write-Host "Running uninstaller silently..."
+          $uninstallerPath = "$env:LOCALAPPDATA\Thinkmay\Client\uninstall.exe"
+          if (-not (Test-Path $uninstallerPath)) {
+              Write-Error "Uninstaller not found at $uninstallerPath"
+              exit 1
+          }
+          
+          Start-Process -FilePath $uninstallerPath -ArgumentList "/S", "_?=$env:LOCALAPPDATA\Thinkmay\Client" -Wait
+          
+          Write-Host "Verifying registry clean-up..."
+          if (Test-Path "HKCU:\Software\Classes\thinkmay") {
+              Write-Error "Registry key HKCU:\Software\Classes\thinkmay still exists after uninstall!"
+              exit 1
+          }
+          Write-Host "Uninstallation registry clean-up verification passed."
 
   publish_linux:
     name: Publish Linux Client
