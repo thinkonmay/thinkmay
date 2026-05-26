@@ -131,7 +131,7 @@ graph TD
     %% Reverse Telemetry & Control (RTCP -> GCC -> IVSHMEM)
     Browser -.->|RTCP PLI and FIR Packet Loss| WebRTCFwd
     WebRTCFwd -.->|Target Bitrate GCC| GatewayProxy
-    GatewayProxy -.->|ControlMsg QUIC| WorkerProxy
+    GatewayProxy -.->|Reliable control QUIC unistream| WorkerProxy
     WorkerProxy -.->|Push Control Events| IVSHMEM
     IVSHMEM -.->|Resolution or Bitrate Drop| Guest
 ```
@@ -178,7 +178,7 @@ flowchart LR
 
     Input -->|HID DataChannel| WebRTC
     WebRTC -->|Binary controls: IDR/bitrate/input| EdgeQUIC
-    EdgeQUIC -->|QUIC control datagrams| WorkerQUIC
+    EdgeQUIC -->|Reliable control QUIC unistream| WorkerQUIC
     WorkerQUIC -->|Binary controls only| ControlQueue
     ControlQueue -->|Encoder commands| Sunshine
     Input -->|HID events| HIDQueue
@@ -198,7 +198,7 @@ flowchart LR
     class Stats,Health,Metrics health;
 ```
 
-The media payload format remains unchanged across IVSHMEM, QUIC streams, RTP, and HID data channels. Health signals are side-channel JSON messages shaped as `{"event":"status","data":...}` and are carried over QUIC datagrams between proxies and WebRTC/WebSocket signaling to clients. These messages are never forwarded into Sunshine; only existing binary IVSHMEM controls such as IDR, bitrate, and resolution enter the guest control queue.
+The media payload format remains unchanged across IVSHMEM, QUIC streams, RTP, and HID data channels. Binary IVSHMEM controls such as IDR, bitrate, and resolution use a reliable QUIC unidirectional control stream between proxies so send failures are detected and the stream can be reopened. Health signals are side-channel JSON messages shaped as `{"event":"status","data":...}` and are carried over QUIC datagrams between proxies and WebRTC/WebSocket signaling to clients. These messages are never forwarded into Sunshine; only binary IVSHMEM controls enter the guest control queue.
 
 Each multiplexed listener tracks sequence/timestamp metadata in proxy stats. The edge can use `listener_heartbeat` to compare per-listener sequence advancement and distinguish a live relay from a frozen video producer. Audio is treated as sample-driven only: silence is valid, so the proxy does not emit audio stall events just because audio samples stop.
 
@@ -252,8 +252,8 @@ graph TD
     %% Control Flow
     Browser -.->|RTCP PLI and FIR| WebRTCFwd
     WebRTCFwd -.->|Target Bitrate GCC| PeerDialer
-    PeerDialer -.->|ControlMsg QUIC| MasterProxy
-    MasterProxy -.->|ControlMsg QUIC| WorkerProxy
+    PeerDialer -.->|Reliable control QUIC unistream| MasterProxy
+    MasterProxy -.->|Reliable control QUIC unistream| WorkerProxy
     WorkerProxy -.->|Push Control Events| IVSHMEM
     IVSHMEM -.->|Resolution or Bitrate Drop| Guest
 ```
