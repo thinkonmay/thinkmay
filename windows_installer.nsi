@@ -60,6 +60,9 @@ Section "Component Name"
   SetOutPath "$INSTDIR\directx\include"
   File ".\assets\directx\include\*"
 
+  SetOutPath "$INSTDIR\usbip"
+  File ".\assets\usbip\*"
+
 SectionEnd
 
 Section "Register protocol" ; 

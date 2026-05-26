@@ -192,7 +192,6 @@ jobs:
           cp go-bin/daemon.exe ./assets
           cp go-bin/pb.exe ./assets
           cp go-bin/*.dll ./assets
-          cp go-bin/*.dll ./assets
           
           # Sunshine
           cp sunshine/shmsunshine.exe ./assets
