@@ -56,15 +56,53 @@ jobs:
 
       - name: Build package
         run: |
-          mkdir -p artifacts/package/thinkmay-client-linux-amd64
+          mkdir -p artifacts/package/thinkmay-client-linux-amd64/lib
           cd ./worker/proxy
           go mod download
-          CGO_ENABLED=1 go build -trimpath -ldflags="-s -w" -o ../../artifacts/package/thinkmay-client-linux-amd64/thinkmay-client ./cmd/client
+          CGO_ENABLED=1 go build -trimpath -ldflags="-s -w" -o ../../artifacts/package/thinkmay-client-linux-amd64/thinkmay-client-bin ./cmd/client
           cd ../..
-          cp ./packaging/client/linux/README.txt ./artifacts/package/thinkmay-client-linux-amd64/README.txt
-          cp ./packaging/client/linux/thinkmay-client.desktop ./artifacts/package/thinkmay-client-linux-amd64/thinkmay-client.desktop
-          chmod +x ./artifacts/package/thinkmay-client-linux-amd64/thinkmay-client
-          ldd ./artifacts/package/thinkmay-client-linux-amd64/thinkmay-client | tee ./artifacts/package/thinkmay-client-linux-amd64/thinkmay-client-linux-ldd.txt
+          chmod +x ./artifacts/package/thinkmay-client-linux-amd64/thinkmay-client-bin
+
+      - name: Bundle shared libraries
+        run: |
+          PKGDIR=artifacts/package/thinkmay-client-linux-amd64
+          LIBDIR="${PKGDIR}/lib"
+          copy_deps() {
+            ldd "$1" 2>/dev/null | grep '=> /' | awk '{print $3}' | while read -r lib; do
+              # Skip system libraries that are always present
+              case "$lib" in
+                /lib/x86_64-linux-gnu/libc.so*) continue ;;
+                /lib/x86_64-linux-gnu/libm.so*) continue ;;
+                /lib/x86_64-linux-gnu/libdl.so*) continue ;;
+                /lib/x86_64-linux-gnu/librt.so*) continue ;;
+                /lib/x86_64-linux-gnu/libpthread.so*) continue ;;
+                /lib/x86_64-linux-gnu/ld-linux*) continue ;;
+                /lib64/ld-linux*) continue ;;
+              esac
+              local base=$(basename "$lib")
+              if [ ! -f "${LIBDIR}/${base}" ]; then
+                cp "$lib" "${LIBDIR}/"
+                copy_deps "$lib"
+              fi
+            done
+          }
+          copy_deps "${PKGDIR}/thinkmay-client-bin"
+          echo "Bundled libraries:"
+          ls -1 "${LIBDIR}/"
+
+      - name: Create launcher script
+        run: |
+          PKGDIR=artifacts/package/thinkmay-client-linux-amd64
+          cat > "${PKGDIR}/thinkmay-client" << 'LAUNCHER'
+          #!/bin/bash
+          SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+          export LD_LIBRARY_PATH="${SCRIPT_DIR}/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+          exec "${SCRIPT_DIR}/thinkmay-client-bin" "$@"
+          LAUNCHER
+          chmod +x "${PKGDIR}/thinkmay-client"
+          cp ./packaging/client/linux/README.txt "${PKGDIR}/README.txt"
+          cp ./packaging/client/linux/thinkmay-client.desktop "${PKGDIR}/thinkmay-client.desktop"
+          ldd "${PKGDIR}/thinkmay-client-bin" | tee "${PKGDIR}/thinkmay-client-linux-ldd.txt"
           tar -czf ./artifacts/thinkmay-client-linux-amd64.tar.gz -C ./artifacts/package thinkmay-client-linux-amd64
 
       - name: Upload artifact
@@ -96,16 +134,52 @@ jobs:
 
       - name: Build app bundle
         run: |
-          mkdir -p "artifacts/macos/Thinkmay Client.app/Contents/MacOS"
-          mkdir -p "artifacts/macos/Thinkmay Client.app/Contents/Resources"
-          cp ./packaging/client/macos/Info.plist "artifacts/macos/Thinkmay Client.app/Contents/Info.plist"
+          APP="artifacts/macos/Thinkmay Client.app"
+          MACOS_DIR="${APP}/Contents/MacOS"
+          FRAMEWORKS_DIR="${APP}/Contents/Frameworks"
+          mkdir -p "${MACOS_DIR}" "${APP}/Contents/Resources" "${FRAMEWORKS_DIR}"
+          cp ./packaging/client/macos/Info.plist "${APP}/Contents/Info.plist"
           cd ./worker/proxy
           go mod download
-          CGO_ENABLED=1 go build -trimpath -ldflags="-s -w" -o "../../artifacts/macos/Thinkmay Client.app/Contents/MacOS/thinkmay-client" ./cmd/client
+          CGO_ENABLED=1 go build -trimpath -ldflags="-s -w" -o "../../${MACOS_DIR}/thinkmay-client" ./cmd/client
           cd ../..
-          chmod +x "artifacts/macos/Thinkmay Client.app/Contents/MacOS/thinkmay-client"
-          otool -L "artifacts/macos/Thinkmay Client.app/Contents/MacOS/thinkmay-client" | tee "artifacts/macos/thinkmay-client-macos-otool.txt"
-          ditto -c -k --sequesterRsrc --keepParent "artifacts/macos/Thinkmay Client.app" "artifacts/thinkmay-client-darwin.zip"
+          chmod +x "${MACOS_DIR}/thinkmay-client"
+
+      - name: Bundle dylibs
+        run: |
+          APP="artifacts/macos/Thinkmay Client.app"
+          BINARY="${APP}/Contents/MacOS/thinkmay-client"
+          FRAMEWORKS="${APP}/Contents/Frameworks"
+
+          copy_deps() {
+            local deps
+            deps=$(otool -L "$1" 2>/dev/null | tail -n +2 | awk '{print $1}' | grep -v '^/usr/lib/' | grep -v '^/System/' | grep -v '@executable_path' | grep -v '@rpath' || true)
+            for lib in $deps; do
+              local base=$(basename "$lib")
+              if [ ! -f "${FRAMEWORKS}/${base}" ]; then
+                cp "$lib" "${FRAMEWORKS}/"
+                chmod 644 "${FRAMEWORKS}/${base}"
+                # Rewrite the dylib's own id
+                install_name_tool -id "@executable_path/../Frameworks/${base}" "${FRAMEWORKS}/${base}"
+                # Recursively process this dylib's dependencies
+                copy_deps "${FRAMEWORKS}/${base}"
+              fi
+              # Rewrite the reference in the calling binary/dylib
+              install_name_tool -change "$lib" "@executable_path/../Frameworks/${base}" "$1" 2>/dev/null || true
+            done
+          }
+
+          copy_deps "${BINARY}"
+          # Also fix cross-references between bundled dylibs
+          for dylib in "${FRAMEWORKS}"/*.dylib; do
+            copy_deps "$dylib"
+          done
+
+          echo "Bundled frameworks:"
+          ls -1 "${FRAMEWORKS}/"
+          echo "Final otool -L:"
+          otool -L "${BINARY}" | tee "artifacts/macos/thinkmay-client-macos-otool.txt"
+          ditto -c -k --sequesterRsrc --keepParent "${APP}" "artifacts/thinkmay-client-darwin.zip"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
