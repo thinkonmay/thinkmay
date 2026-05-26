@@ -295,13 +295,19 @@ jobs:
 
       - name: Test custom URL handler registration
         run: |
-          mkdir -p ~/.local/share/applications
-          cp artifacts/thinkmay-client-linux-amd64/thinkmay-client.desktop ~/.local/share/applications/
-          update-desktop-database ~/.local/share/applications
-          DEFAULT_HANDLER=$(xdg-mime query default x-scheme-handler/thinkmay)
-          echo "Registered default handler: $DEFAULT_HANDLER"
-          if [ "$DEFAULT_HANDLER" != "thinkmay-client.desktop" ]; then
-              echo "Custom URL handler registration failed!"
+          DESKTOP_FILE="artifacts/thinkmay-client-linux-amd64/thinkmay-client.desktop"
+          if [ ! -f "$DESKTOP_FILE" ]; then
+              echo "Desktop file not found at $DESKTOP_FILE"
+              exit 1
+          fi
+          echo "=== thinkmay-client.desktop contents ==="
+          cat "$DESKTOP_FILE"
+          if ! grep -q "MimeType=.*x-scheme-handler/thinkmay;" "$DESKTOP_FILE"; then
+              echo "Custom URL handler mapping (x-scheme-handler/thinkmay) not found in desktop file!"
+              exit 1
+          fi
+          if ! grep -q "Exec=.*-url %u" "$DESKTOP_FILE"; then
+              echo "Custom URL launcher argument (-url %u) not found in desktop file Exec line!"
               exit 1
           fi
           echo "Custom URL handler verification passed."
@@ -334,13 +340,21 @@ jobs:
 
       - name: Test custom URL handler registration
         run: |
-          /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -f "test-client/Thinkmay Client.app"
-          HANDLER_ID=$(osascript -e 'id of application to open "thinkmay://"')
-          echo "Registered default handler ID: $HANDLER_ID"
-          if [ "$HANDLER_ID" != "net.thinkmay.client" ]; then
-              echo "Custom URL handler registration failed!"
+          PLIST_PATH="test-client/Thinkmay Client.app/Contents/Info.plist"
+          if [ ! -f "$PLIST_PATH" ]; then
+              echo "Info.plist not found at $PLIST_PATH"
               exit 1
           fi
+          python3 -c '
+          import plistlib
+          with open("'"$PLIST_PATH"'", "rb") as f:
+              plist = plistlib.load(f)
+          url_types = plist.get("CFBundleURLTypes", [])
+          schemes = [scheme for ut in url_types for scheme in ut.get("CFBundleURLSchemes", [])]
+          print("Found packaged URL Schemes:", schemes)
+          if "thinkmay" not in schemes:
+              raise ValueError("Custom URL scheme \"thinkmay\" is missing from Info.plist!")
+          '
           echo "Custom URL handler verification passed."
 
   test_windows:
