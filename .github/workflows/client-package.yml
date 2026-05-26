@@ -140,7 +140,7 @@ jobs:
             mingw-w64-x86_64-nsis
             mingw-w64-x86_64-pkgconf
             mingw-w64-x86_64-SDL2
-            mingw-w64-x86_64-openal-soft
+            mingw-w64-x86_64-openal
 
       - name: Build client
         shell: msys2 {0}
