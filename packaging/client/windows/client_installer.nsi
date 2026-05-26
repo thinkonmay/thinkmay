@@ -23,6 +23,11 @@ Section "Thinkmay Client"
   CreateShortcut "$SMPROGRAMS\Thinkmay\Thinkmay Client.lnk" "$INSTDIR\thinkmay-client.exe"
   CreateShortcut "$DESKTOP\Thinkmay Client.lnk" "$INSTDIR\thinkmay-client.exe"
 
+  ; Register custom URL protocol handler (thinkmay:)
+  WriteRegStr HKCU "Software\Classes\thinkmay" "" "URL:thinkmay Protocol"
+  WriteRegStr HKCU "Software\Classes\thinkmay" "URL Protocol" ""
+  WriteRegStr HKCU "Software\Classes\thinkmay\shell\open\command" "" '"$INSTDIR\thinkmay-client.exe" -url "%1"'
+
   WriteUninstaller "$INSTDIR\uninstall.exe"
 SectionEnd
 
@@ -34,4 +39,7 @@ Section "Uninstall"
   Delete "$DESKTOP\Thinkmay Client.lnk"
   Delete "$INSTDIR\uninstall.exe"
   RMDir /r "$INSTDIR"
+
+  ; Unregister custom URL protocol handler
+  DeleteRegKey HKCU "Software\Classes\thinkmay"
 SectionEnd

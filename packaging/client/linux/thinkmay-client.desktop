@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Thinkmay Client
+Comment=Thinkmay Client Application
+Exec=thinkmay-client -url %u
+Icon=thinkmay-client
+Terminal=false
+Categories=Utility;
+MimeType=x-scheme-handler/thinkmay;

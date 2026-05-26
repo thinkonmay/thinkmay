@@ -62,6 +62,7 @@ jobs:
           CGO_ENABLED=1 go build -trimpath -ldflags="-s -w" -o ../../artifacts/package/thinkmay-client-linux-amd64/thinkmay-client ./cmd/client
           cd ../..
           cp ./packaging/client/linux/README.txt ./artifacts/package/thinkmay-client-linux-amd64/README.txt
+          cp ./packaging/client/linux/thinkmay-client.desktop ./artifacts/package/thinkmay-client-linux-amd64/thinkmay-client.desktop
           chmod +x ./artifacts/package/thinkmay-client-linux-amd64/thinkmay-client
           ldd ./artifacts/package/thinkmay-client-linux-amd64/thinkmay-client | tee ./artifacts/package/thinkmay-client-linux-amd64/thinkmay-client-linux-ldd.txt
           tar -czf ./artifacts/thinkmay-client-linux-amd64.tar.gz -C ./artifacts/package thinkmay-client-linux-amd64
