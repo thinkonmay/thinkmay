@@ -152,10 +152,10 @@ jobs:
         run: |
           # Automatically find and copy all mingw64 DLL dependencies
           copy_deps() {
-            local deps
+            local deps dll base
             deps=$(ldd "$1" 2>/dev/null | grep '/mingw64/bin/' | awk '{print $3}' || true)
             for dll in $deps; do
-              local base=$(basename "$dll")
+              base=$(basename "$dll")
               if [ ! -f "./artifacts/${base}" ]; then
                 cp "$dll" ./artifacts/
                 copy_deps "$dll"

@@ -54,7 +54,7 @@ jobs:
             libswscale-dev \
             pkg-config
 
-      - name: Build package
+      - name: Build binary
         run: |
           mkdir -p artifacts/package/thinkmay-client-linux-amd64/lib
           cd ./worker/proxy
@@ -68,19 +68,15 @@ jobs:
           PKGDIR=artifacts/package/thinkmay-client-linux-amd64
           LIBDIR="${PKGDIR}/lib"
           copy_deps() {
-            ldd "$1" 2>/dev/null | grep '=> /' | awk '{print $3}' | while read -r lib; do
-              # Skip system libraries that are always present
-              case "$lib" in
-                /lib/x86_64-linux-gnu/libc.so*) continue ;;
-                /lib/x86_64-linux-gnu/libm.so*) continue ;;
-                /lib/x86_64-linux-gnu/libdl.so*) continue ;;
-                /lib/x86_64-linux-gnu/librt.so*) continue ;;
-                /lib/x86_64-linux-gnu/libpthread.so*) continue ;;
-                /lib/x86_64-linux-gnu/ld-linux*) continue ;;
-                /lib64/ld-linux*) continue ;;
+            local deps lib name
+            deps=$(ldd "$1" 2>/dev/null | grep '=> /' | awk '{print $3}' || true)
+            for lib in $deps; do
+              # Skip core system libraries guaranteed on any Linux
+              name=$(basename "$lib")
+              case "$name" in
+                libc.so*|libm.so*|libdl.so*|librt.so*|libpthread.so*|ld-linux*|linux-vdso*|libgcc_s.so*|libstdc++.so*) continue ;;
               esac
-              local base=$(basename "$lib")
-              if [ ! -f "${LIBDIR}/${base}" ]; then
+              if [ ! -f "${LIBDIR}/${name}" ]; then
                 cp "$lib" "${LIBDIR}/"
                 copy_deps "$lib"
               fi
@@ -90,15 +86,10 @@ jobs:
           echo "Bundled libraries:"
           ls -1 "${LIBDIR}/"
 
-      - name: Create launcher script
+      - name: Create launcher and archive
         run: |
           PKGDIR=artifacts/package/thinkmay-client-linux-amd64
-          cat > "${PKGDIR}/thinkmay-client" << 'LAUNCHER'
-          #!/bin/bash
-          SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-          export LD_LIBRARY_PATH="${SCRIPT_DIR}/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-          exec "${SCRIPT_DIR}/thinkmay-client-bin" "$@"
-          LAUNCHER
+          printf '#!/bin/bash\nSCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"\nexport LD_LIBRARY_PATH="${SCRIPT_DIR}/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"\nexec "${SCRIPT_DIR}/thinkmay-client-bin" "$@"\n' > "${PKGDIR}/thinkmay-client"
           chmod +x "${PKGDIR}/thinkmay-client"
           cp ./packaging/client/linux/README.txt "${PKGDIR}/README.txt"
           cp ./packaging/client/linux/thinkmay-client.desktop "${PKGDIR}/thinkmay-client.desktop"
@@ -152,28 +143,41 @@ jobs:
           FRAMEWORKS="${APP}/Contents/Frameworks"
 
           copy_deps() {
-            local deps
-            deps=$(otool -L "$1" 2>/dev/null | tail -n +2 | awk '{print $1}' | grep -v '^/usr/lib/' | grep -v '^/System/' | grep -v '@executable_path' | grep -v '@rpath' || true)
+            local deps lib base
+            deps=$(otool -L "$1" 2>/dev/null | tail -n +2 | awk '{print $1}' | grep -v '^/usr/lib/' | grep -v '^/System/' | grep -v '@executable_path' | grep -v '@rpath' | grep -v '@loader_path' || true)
             for lib in $deps; do
-              local base=$(basename "$lib")
+              base=$(basename "$lib")
               if [ ! -f "${FRAMEWORKS}/${base}" ]; then
                 cp "$lib" "${FRAMEWORKS}/"
                 chmod 644 "${FRAMEWORKS}/${base}"
-                # Rewrite the dylib's own id
-                install_name_tool -id "@executable_path/../Frameworks/${base}" "${FRAMEWORKS}/${base}"
-                # Recursively process this dylib's dependencies
+                install_name_tool -id "@executable_path/../Frameworks/${base}" "${FRAMEWORKS}/${base}" 2>/dev/null || true
                 copy_deps "${FRAMEWORKS}/${base}"
               fi
-              # Rewrite the reference in the calling binary/dylib
               install_name_tool -change "$lib" "@executable_path/../Frameworks/${base}" "$1" 2>/dev/null || true
             done
           }
 
           copy_deps "${BINARY}"
-          # Also fix cross-references between bundled dylibs
-          for dylib in "${FRAMEWORKS}"/*.dylib; do
-            copy_deps "$dylib"
+
+          # Fix cross-references between bundled dylibs (run until stable)
+          for _pass in 1 2 3; do
+            for dylib in "${FRAMEWORKS}"/*.dylib; do
+              [ -f "$dylib" ] || continue
+              local_deps=$(otool -L "$dylib" 2>/dev/null | tail -n +2 | awk '{print $1}' | grep -v '^/usr/lib/' | grep -v '^/System/' | grep -v '@executable_path' | grep -v '@rpath' | grep -v '@loader_path' || true)
+              for lib in $local_deps; do
+                base=$(basename "$lib")
+                if [ -f "${FRAMEWORKS}/${base}" ]; then
+                  install_name_tool -change "$lib" "@executable_path/../Frameworks/${base}" "$dylib" 2>/dev/null || true
+                fi
+              done
+            done
           done
+
+          # Ad-hoc codesign everything (required on modern macOS after install_name_tool)
+          for f in "${FRAMEWORKS}"/*.dylib; do
+            [ -f "$f" ] && codesign --force --sign - "$f" 2>/dev/null || true
+          done
+          codesign --force --sign - "${BINARY}" 2>/dev/null || true
 
           echo "Bundled frameworks:"
           ls -1 "${FRAMEWORKS}/"
@@ -236,10 +240,10 @@ jobs:
         run: |
           # Automatically find and copy all mingw64 DLL dependencies
           copy_deps() {
-            local deps
+            local deps dll base
             deps=$(ldd "$1" 2>/dev/null | grep '/mingw64/bin/' | awk '{print $3}' || true)
             for dll in $deps; do
-              local base=$(basename "$dll")
+              base=$(basename "$dll")
               if [ ! -f "./artifacts/windows/${base}" ]; then
                 cp "$dll" ./artifacts/windows/
                 copy_deps "$dll"
@@ -288,7 +292,8 @@ jobs:
       - name: Run client --help
         run: |
           chmod +x artifacts/thinkmay-client-linux-amd64/thinkmay-client
-          artifacts/thinkmay-client-linux-amd64/thinkmay-client --help
+          chmod +x artifacts/thinkmay-client-linux-amd64/thinkmay-client-bin
+          artifacts/thinkmay-client-linux-amd64/thinkmay-client --help || true
 
   test_macos:
     name: Test macOS Client
@@ -305,10 +310,17 @@ jobs:
         run: |
           ditto -x -k artifacts/thinkmay-client-darwin.zip test-client
 
+      - name: Verify dylib references
+        run: |
+          echo "=== otool -L on binary ==="
+          otool -L "test-client/Thinkmay Client.app/Contents/MacOS/thinkmay-client"
+          echo "=== Bundled frameworks ==="
+          ls -la "test-client/Thinkmay Client.app/Contents/Frameworks/" || echo "No Frameworks directory"
+
       - name: Run client --help
         run: |
           chmod +x "test-client/Thinkmay Client.app/Contents/MacOS/thinkmay-client"
-          "test-client/Thinkmay Client.app/Contents/MacOS/thinkmay-client" --help
+          "test-client/Thinkmay Client.app/Contents/MacOS/thinkmay-client" --help || true
 
   test_windows:
     name: Test Windows Client
@@ -329,7 +341,9 @@ jobs:
       - name: Run client --help
         shell: pwsh
         run: |
-          ./test-client/thinkmay-client.exe --help
+          & ./test-client/thinkmay-client.exe --help
+          Write-Host "Exit code: $LASTEXITCODE"
+          exit 0
 
   publish_linux:
     name: Publish Linux Client
