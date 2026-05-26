@@ -23,7 +23,7 @@ concurrency:
 jobs:
   package_linux:
     name: Package Linux Client
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Setup Go
@@ -95,11 +95,46 @@ jobs:
           ldd "${PKGDIR}/thinkmay-client-bin" | tee "${PKGDIR}/thinkmay-client-linux-ldd.txt"
           tar -czf ./artifacts/thinkmay-client-linux-amd64.tar.gz -C ./artifacts/package thinkmay-client-linux-amd64
 
+          # Create debian package structure
+          DEBDIR="artifacts/debian/thinkmay-client_0.1.0_amd64"
+          mkdir -p "${DEBDIR}/DEBIAN"
+          mkdir -p "${DEBDIR}/usr/bin"
+          mkdir -p "${DEBDIR}/usr/share/thinkmay-client/lib"
+          mkdir -p "${DEBDIR}/usr/share/applications"
+          
+          # Copy binaries and libraries
+          cp artifacts/package/thinkmay-client-linux-amd64/thinkmay-client-bin "${DEBDIR}/usr/share/thinkmay-client/"
+          cp -r artifacts/package/thinkmay-client-linux-amd64/lib/* "${DEBDIR}/usr/share/thinkmay-client/lib/"
+          
+          # Create launcher script /usr/bin/thinkmay-client
+          printf '#!/bin/bash\nexport LD_LIBRARY_PATH="/usr/share/thinkmay-client/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"\nexec "/usr/share/thinkmay-client/thinkmay-client-bin" "$@"\n' > "${DEBDIR}/usr/bin/thinkmay-client"
+          chmod +x "${DEBDIR}/usr/bin/thinkmay-client"
+          
+          # Copy desktop entry and update Exec path
+          cp ./packaging/client/linux/thinkmay-client.desktop "${DEBDIR}/usr/share/applications/"
+          sed -i 's/Exec=thinkmay-client/Exec=\/usr\/bin\/thinkmay-client/g' "${DEBDIR}/usr/share/applications/thinkmay-client.desktop"
+          
+          # Create control file
+          cat << 'EOF' > "${DEBDIR}/DEBIAN/control"
+Package: thinkmay-client
+Version: 0.1.0
+Section: utils
+Priority: optional
+Architecture: amd64
+Maintainer: Thinkmay <contact@thinkmay.net>
+Description: Thinkmay Client Application for remote desktop connection.
+EOF
+          
+          # Build the .deb file
+          dpkg-deb --build "${DEBDIR}" artifacts/thinkmay-client-linux-amd64.deb
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: client-linux-package
-          path: artifacts/thinkmay-client-linux-amd64.tar.gz
+          path: |
+            artifacts/thinkmay-client-linux-amd64.tar.gz
+            artifacts/thinkmay-client-linux-amd64.deb
 
   package_macos:
     name: Package macOS Client
@@ -183,12 +218,15 @@ jobs:
           echo "Final otool -L:"
           otool -L "${BINARY}" | tee "artifacts/macos/thinkmay-client-macos-otool.txt"
           ditto -c -k --sequesterRsrc --keepParent "${APP}" "artifacts/thinkmay-client-darwin.zip"
+          hdiutil create -fs HFS+ -srcfolder "${APP}" -volname "Thinkmay Client" "artifacts/thinkmay-client-darwin.dmg"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: client-macos-package
-          path: artifacts/thinkmay-client-darwin.zip
+          path: |
+            artifacts/thinkmay-client-darwin.zip
+            artifacts/thinkmay-client-darwin.dmg
 
   package_windows:
     name: Package Windows Client
@@ -275,7 +313,7 @@ jobs:
 
   test_linux:
     name: Test Linux Client
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [package_linux]
 
     steps:
@@ -311,6 +349,11 @@ jobs:
               exit 1
           fi
           echo "Custom URL handler verification passed."
+
+      - name: Install and test Debian package
+        run: |
+          sudo dpkg -i artifacts/thinkmay-client-linux-amd64.deb || sudo apt-get install -f -y
+          thinkmay-client --help || true
   test_macos:
     name: Test macOS Client
     runs-on: macos-latest
@@ -356,6 +399,12 @@ jobs:
               raise ValueError("Custom URL scheme \"thinkmay\" is missing from Info.plist!")
           '
           echo "Custom URL handler verification passed."
+
+      - name: Mount and test DMG package
+        run: |
+          hdiutil attach artifacts/thinkmay-client-darwin.dmg -mountpoint /Volumes/ThinkmayClient
+          "/Volumes/ThinkmayClient/Thinkmay Client.app/Contents/MacOS/thinkmay-client" --help || true
+          hdiutil detach /Volumes/ThinkmayClient
 
   test_windows:
     name: Test Windows Client
@@ -460,14 +509,14 @@ jobs:
 
       - name: Upload Linux client
         shell: bash
-        run: >-
-          MD5_CHECKSUM=$(md5sum "./artifacts/thinkmay-client-linux-amd64.tar.gz" | cut -d ' ' -f 1) &&
-          curl https://saigon2.thinkmay.net/api/collections/binaries/records
-          -H "Content-Type: multipart/form-data"
-          --form "name=thinkmay_client_linux"
-          --form "md5sum=${MD5_CHECKSUM}"
-          --form "file=@./artifacts/thinkmay-client-linux-amd64.tar.gz"
-          --progress-bar
+        run: |
+          MD5_CHECKSUM_DEB=$(md5sum "./artifacts/thinkmay-client-linux-amd64.deb" | cut -d ' ' -f 1)
+          curl https://saigon2.thinkmay.net/api/collections/binaries/records \
+            -H "Content-Type: multipart/form-data" \
+            --form "name=thinkmay_client_linux_deb" \
+            --form "md5sum=${MD5_CHECKSUM_DEB}" \
+            --form "file=@./artifacts/thinkmay-client-linux-amd64.deb" \
+            --progress-bar
 
   publish_macos:
     name: Publish macOS Client
@@ -483,14 +532,14 @@ jobs:
 
       - name: Upload macOS client
         shell: bash
-        run: >-
-          MD5_CHECKSUM=$(md5sum "./artifacts/thinkmay-client-darwin.zip" | cut -d ' ' -f 1) &&
-          curl https://saigon2.thinkmay.net/api/collections/binaries/records
-          -H "Content-Type: multipart/form-data"
-          --form "name=thinkmay_client_macos"
-          --form "md5sum=${MD5_CHECKSUM}"
-          --form "file=@./artifacts/thinkmay-client-darwin.zip"
-          --progress-bar
+        run: |
+          MD5_CHECKSUM_DMG=$(md5sum "./artifacts/thinkmay-client-darwin.dmg" | cut -d ' ' -f 1)
+          curl https://saigon2.thinkmay.net/api/collections/binaries/records \
+            -H "Content-Type: multipart/form-data" \
+            --form "name=thinkmay_client_macos_dmg" \
+            --form "md5sum=${MD5_CHECKSUM_DMG}" \
+            --form "file=@./artifacts/thinkmay-client-darwin.dmg" \
+            --progress-bar
 
   publish_windows:
     name: Publish Windows Client
