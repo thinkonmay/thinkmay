@@ -52,6 +52,7 @@ jobs:
 
       - name: Build client
         run: |
+          mkdir -p artifacts
           cd ./worker/proxy
           go mod download
           CGO_ENABLED=1 go build -trimpath -ldflags="-s -w" -o ../../artifacts/thinkmay-client ./cmd/client

@@ -140,6 +140,7 @@ jobs:
             mingw-w64-x86_64-nsis
             mingw-w64-x86_64-pkgconf
             mingw-w64-x86_64-SDL2
+            mingw-w64-x86_64-openal-soft
 
       - name: Build client
         shell: msys2 {0}
@@ -163,6 +164,8 @@ jobs:
           cp /mingw64/bin/avutil-*.dll ./artifacts/windows/
           cp /mingw64/bin/swresample-*.dll ./artifacts/windows/
           cp /mingw64/bin/swscale-*.dll ./artifacts/windows/
+          cp /mingw64/bin/libx265-*.dll ./artifacts/windows/
+          cp /mingw64/bin/libopenal-*.dll ./artifacts/windows/
           for dll in libgcc_s_seh-1.dll libstdc++-6.dll libwinpthread-1.dll; do
             if [ -f "/mingw64/bin/${dll}" ]; then
               cp "/mingw64/bin/${dll}" ./artifacts/windows/
