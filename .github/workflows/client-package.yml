@@ -122,6 +122,26 @@ jobs:
           echo "Architecture: amd64" >> "${DEBDIR}/DEBIAN/control"
           echo "Maintainer: Thinkmay <contact@thinkmay.net>" >> "${DEBDIR}/DEBIAN/control"
           echo "Description: Thinkmay Client Application for remote desktop connection." >> "${DEBDIR}/DEBIAN/control"
+
+          # Create postinst script
+          echo '#!/bin/sh' > "${DEBDIR}/DEBIAN/postinst"
+          echo 'set -e' >> "${DEBDIR}/DEBIAN/postinst"
+          echo 'if [ "$1" = "configure" ]; then' >> "${DEBDIR}/DEBIAN/postinst"
+          echo '    if which update-desktop-database >/dev/null 2>&1; then' >> "${DEBDIR}/DEBIAN/postinst"
+          echo '        update-desktop-database -q /usr/share/applications || true' >> "${DEBDIR}/DEBIAN/postinst"
+          echo '    fi' >> "${DEBDIR}/DEBIAN/postinst"
+          echo 'fi' >> "${DEBDIR}/DEBIAN/postinst"
+          chmod +x "${DEBDIR}/DEBIAN/postinst"
+
+          # Create postrm script
+          echo '#!/bin/sh' > "${DEBDIR}/DEBIAN/postrm"
+          echo 'set -e' >> "${DEBDIR}/DEBIAN/postrm"
+          echo 'if [ "$1" = "remove" ] || [ "$1" = "purge" ]; then' >> "${DEBDIR}/DEBIAN/postrm"
+          echo '    if which update-desktop-database >/dev/null 2>&1; then' >> "${DEBDIR}/DEBIAN/postrm"
+          echo '        update-desktop-database -q /usr/share/applications || true' >> "${DEBDIR}/DEBIAN/postrm"
+          echo '    fi' >> "${DEBDIR}/DEBIAN/postrm"
+          echo 'fi' >> "${DEBDIR}/DEBIAN/postrm"
+          chmod +x "${DEBDIR}/DEBIAN/postrm"
           
           # Build the .deb file
           dpkg-deb --build "${DEBDIR}" artifacts/thinkmay-client-linux-amd64.deb
