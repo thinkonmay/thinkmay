@@ -132,6 +132,9 @@ jobs:
             mingw-w64-x86_64-gcc
             mingw-w64-x86_64-pkgconf
             mingw-w64-x86_64-SDL2
+            mingw-w64-x86_64-libcaca
+            mingw-w64-x86_64-libva
+            mingw-w64-x86_64-libvpl
 
       - name: Build client
         shell: msys2 {0}
@@ -155,6 +158,11 @@ jobs:
           cp /mingw64/bin/avutil-*.dll ./artifacts/
           cp /mingw64/bin/swresample-*.dll ./artifacts/
           cp /mingw64/bin/swscale-*.dll ./artifacts/
+          cp /mingw64/bin/libbz2-*.dll ./artifacts/
+          cp /mingw64/bin/libcaca-*.dll ./artifacts/
+          cp /mingw64/bin/libva-*.dll ./artifacts/
+          cp /mingw64/bin/libva_win32-*.dll ./artifacts/
+          cp /mingw64/bin/libvpl*.dll ./artifacts/
           for dll in libgcc_s_seh-1.dll libstdc++-6.dll libwinpthread-1.dll; do
             if [ -f "/mingw64/bin/${dll}" ]; then
               cp "/mingw64/bin/${dll}" ./artifacts/
