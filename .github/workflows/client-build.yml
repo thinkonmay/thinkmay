@@ -1,0 +1,167 @@
+---
+name: Client Build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'worker/proxy/**'
+      - '.github/workflows/client-build.yml'
+  pull_request:
+    paths:
+      - 'worker/proxy/**'
+      - '.github/workflows/client-build.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build_linux:
+    name: Client Linux
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.26
+          cache-dependency-path: worker/proxy/go.sum
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            ffmpeg \
+            libavcodec-dev \
+            libavdevice-dev \
+            libavfilter-dev \
+            libavformat-dev \
+            libavutil-dev \
+            libsdl2-dev \
+            libswresample-dev \
+            libswscale-dev \
+            pkg-config
+
+      - name: Build client
+        run: |
+          cd ./worker/proxy
+          go mod download
+          CGO_ENABLED=1 go build -trimpath -ldflags="-s -w" -o ../../artifacts/thinkmay-client ./cmd/client
+
+      - name: Inspect dependencies
+        run: |
+          ldd ./artifacts/thinkmay-client | tee ./artifacts/thinkmay-client-linux-ldd.txt
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-linux
+          path: artifacts/
+
+  build_macos:
+    name: Client macOS
+    runs-on: macos-latest
+
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.26
+          cache-dependency-path: worker/proxy/go.sum
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Install dependencies
+        run: |
+          brew update
+          brew install ffmpeg pkg-config sdl2
+
+      - name: Build client
+        run: |
+          mkdir -p artifacts
+          cd ./worker/proxy
+          go mod download
+          CGO_ENABLED=1 go build -trimpath -ldflags="-s -w" -o ../../artifacts/thinkmay-client ./cmd/client
+
+      - name: Inspect dependencies
+        run: |
+          otool -L ./artifacts/thinkmay-client | tee ./artifacts/thinkmay-client-macos-otool.txt
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-macos
+          path: artifacts/
+
+  build_windows:
+    name: Client Windows
+    runs-on: windows-2025
+
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.26
+          cache-dependency-path: worker/proxy/go.sum
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Setup mingw dependencies
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: mingw64
+          update: true
+          path-type: inherit
+          install: >-
+            mingw-w64-x86_64-ffmpeg
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-pkgconf
+            mingw-w64-x86_64-SDL2
+
+      - name: Build client
+        shell: msys2 {0}
+        run: |
+          export CGO_ENABLED=1
+          export CC=gcc
+          export PKG_CONFIG=pkg-config
+          mkdir -p artifacts
+          cd ./worker/proxy
+          go mod download
+          go build -trimpath -ldflags="-s -w -H windowsgui" -o ../../artifacts/thinkmay-client.exe ./cmd/client
+
+      - name: Copy runtime DLLs
+        shell: msys2 {0}
+        run: |
+          cp /mingw64/bin/SDL2.dll ./artifacts/
+          cp /mingw64/bin/avcodec-*.dll ./artifacts/
+          cp /mingw64/bin/avdevice-*.dll ./artifacts/
+          cp /mingw64/bin/avfilter-*.dll ./artifacts/
+          cp /mingw64/bin/avformat-*.dll ./artifacts/
+          cp /mingw64/bin/avutil-*.dll ./artifacts/
+          cp /mingw64/bin/swresample-*.dll ./artifacts/
+          cp /mingw64/bin/swscale-*.dll ./artifacts/
+          for dll in libgcc_s_seh-1.dll libstdc++-6.dll libwinpthread-1.dll; do
+            if [ -f "/mingw64/bin/${dll}" ]; then
+              cp "/mingw64/bin/${dll}" ./artifacts/
+            fi
+          done
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-windows
+          path: artifacts/

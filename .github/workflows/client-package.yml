@@ -1,0 +1,259 @@
+---
+name: Client Package
+
+on:
+  push:
+    tags:
+      - 'v*'
+    paths:
+      - 'worker/proxy/**'
+      - 'packaging/client/**'
+      - '.github/workflows/client-package.yml'
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Upload packaged clients to binary storage
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  package_linux:
+    name: Package Linux Client
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.26
+          cache-dependency-path: worker/proxy/go.sum
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            ffmpeg \
+            libavcodec-dev \
+            libavdevice-dev \
+            libavfilter-dev \
+            libavformat-dev \
+            libavutil-dev \
+            libsdl2-dev \
+            libswresample-dev \
+            libswscale-dev \
+            pkg-config
+
+      - name: Build package
+        run: |
+          mkdir -p artifacts/package/thinkmay-client-linux-amd64
+          cd ./worker/proxy
+          go mod download
+          CGO_ENABLED=1 go build -trimpath -ldflags="-s -w" -o ../../artifacts/package/thinkmay-client-linux-amd64/thinkmay-client ./cmd/client
+          cd ../..
+          cp ./packaging/client/linux/README.txt ./artifacts/package/thinkmay-client-linux-amd64/README.txt
+          chmod +x ./artifacts/package/thinkmay-client-linux-amd64/thinkmay-client
+          ldd ./artifacts/package/thinkmay-client-linux-amd64/thinkmay-client | tee ./artifacts/package/thinkmay-client-linux-amd64/thinkmay-client-linux-ldd.txt
+          tar -czf ./artifacts/thinkmay-client-linux-amd64.tar.gz -C ./artifacts/package thinkmay-client-linux-amd64
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-linux-package
+          path: artifacts/thinkmay-client-linux-amd64.tar.gz
+
+  package_macos:
+    name: Package macOS Client
+    runs-on: macos-latest
+
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.26
+          cache-dependency-path: worker/proxy/go.sum
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Install dependencies
+        run: |
+          brew update
+          brew install ffmpeg pkg-config sdl2
+
+      - name: Build app bundle
+        run: |
+          mkdir -p "artifacts/macos/Thinkmay Client.app/Contents/MacOS"
+          mkdir -p "artifacts/macos/Thinkmay Client.app/Contents/Resources"
+          cp ./packaging/client/macos/Info.plist "artifacts/macos/Thinkmay Client.app/Contents/Info.plist"
+          cd ./worker/proxy
+          go mod download
+          CGO_ENABLED=1 go build -trimpath -ldflags="-s -w" -o "../../artifacts/macos/Thinkmay Client.app/Contents/MacOS/thinkmay-client" ./cmd/client
+          cd ../..
+          chmod +x "artifacts/macos/Thinkmay Client.app/Contents/MacOS/thinkmay-client"
+          otool -L "artifacts/macos/Thinkmay Client.app/Contents/MacOS/thinkmay-client" | tee "artifacts/macos/thinkmay-client-macos-otool.txt"
+          ditto -c -k --sequesterRsrc --keepParent "artifacts/macos/Thinkmay Client.app" "artifacts/thinkmay-client-darwin.zip"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-macos-package
+          path: artifacts/thinkmay-client-darwin.zip
+
+  package_windows:
+    name: Package Windows Client
+    runs-on: windows-2025
+
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.26
+          cache-dependency-path: worker/proxy/go.sum
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Setup mingw dependencies
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: mingw64
+          update: true
+          path-type: inherit
+          install: >-
+            mingw-w64-x86_64-ffmpeg
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-nsis
+            mingw-w64-x86_64-pkgconf
+            mingw-w64-x86_64-SDL2
+
+      - name: Build client
+        shell: msys2 {0}
+        run: |
+          export CGO_ENABLED=1
+          export CC=gcc
+          export PKG_CONFIG=pkg-config
+          mkdir -p artifacts/windows
+          cd ./worker/proxy
+          go mod download
+          go build -trimpath -ldflags="-s -w -H windowsgui" -o ../../artifacts/windows/thinkmay-client.exe ./cmd/client
+
+      - name: Copy runtime DLLs
+        shell: msys2 {0}
+        run: |
+          cp /mingw64/bin/SDL2.dll ./artifacts/windows/
+          cp /mingw64/bin/avcodec-*.dll ./artifacts/windows/
+          cp /mingw64/bin/avdevice-*.dll ./artifacts/windows/
+          cp /mingw64/bin/avfilter-*.dll ./artifacts/windows/
+          cp /mingw64/bin/avformat-*.dll ./artifacts/windows/
+          cp /mingw64/bin/avutil-*.dll ./artifacts/windows/
+          cp /mingw64/bin/swresample-*.dll ./artifacts/windows/
+          cp /mingw64/bin/swscale-*.dll ./artifacts/windows/
+          for dll in libgcc_s_seh-1.dll libstdc++-6.dll libwinpthread-1.dll; do
+            if [ -f "/mingw64/bin/${dll}" ]; then
+              cp "/mingw64/bin/${dll}" ./artifacts/windows/
+            fi
+          done
+
+      - name: Build zip package
+        shell: pwsh
+        run: |
+          Compress-Archive -Path artifacts/windows/* -DestinationPath artifacts/thinkmay-client-windows-amd64.zip
+
+      - name: Build NSIS installer
+        shell: msys2 {0}
+        run: |
+          cp ./packaging/client/windows/client_installer.nsi ./client_installer.nsi
+          makensis ./client_installer.nsi
+          mv ./thinkmay-client-windows-amd64-installer.exe ./artifacts/thinkmay-client-windows-amd64-installer.exe
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-windows-package
+          path: |
+            artifacts/thinkmay-client-windows-amd64.zip
+            artifacts/thinkmay-client-windows-amd64-installer.exe
+
+  publish_linux:
+    name: Publish Linux Client
+    runs-on: ubuntu-latest
+    needs: [package_linux]
+    if: github.event_name == 'push' || inputs.publish
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: client-linux-package
+          path: artifacts
+
+      - name: Upload Linux client
+        shell: bash
+        run: >-
+          MD5_CHECKSUM=$(md5sum "./artifacts/thinkmay-client-linux-amd64.tar.gz" | cut -d ' ' -f 1) &&
+          curl https://saigon2.thinkmay.net/api/collections/binaries/records
+          -H "Content-Type: multipart/form-data"
+          --form "name=thinkmay_client_linux"
+          --form "md5sum=${MD5_CHECKSUM}"
+          --form "file=@./artifacts/thinkmay-client-linux-amd64.tar.gz"
+          --progress-bar
+
+  publish_macos:
+    name: Publish macOS Client
+    runs-on: ubuntu-latest
+    needs: [package_macos]
+    if: github.event_name == 'push' || inputs.publish
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: client-macos-package
+          path: artifacts
+
+      - name: Upload macOS client
+        shell: bash
+        run: >-
+          MD5_CHECKSUM=$(md5sum "./artifacts/thinkmay-client-darwin.zip" | cut -d ' ' -f 1) &&
+          curl https://saigon2.thinkmay.net/api/collections/binaries/records
+          -H "Content-Type: multipart/form-data"
+          --form "name=thinkmay_client_macos"
+          --form "md5sum=${MD5_CHECKSUM}"
+          --form "file=@./artifacts/thinkmay-client-darwin.zip"
+          --progress-bar
+
+  publish_windows:
+    name: Publish Windows Client
+    runs-on: ubuntu-latest
+    needs: [package_windows]
+    if: github.event_name == 'push' || inputs.publish
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: client-windows-package
+          path: artifacts
+
+      - name: Upload Windows client installer
+        shell: bash
+        run: >-
+          MD5_CHECKSUM=$(md5sum "./artifacts/thinkmay-client-windows-amd64-installer.exe" | cut -d ' ' -f 1) &&
+          curl https://saigon2.thinkmay.net/api/collections/binaries/records
+          -H "Content-Type: multipart/form-data"
+          --form "name=thinkmay_client_window"
+          --form "md5sum=${MD5_CHECKSUM}"
+          --form "file=@./artifacts/thinkmay-client-windows-amd64-installer.exe"
+          --progress-bar
