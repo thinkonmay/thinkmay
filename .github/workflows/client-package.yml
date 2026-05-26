@@ -162,7 +162,9 @@ jobs:
         run: |
           # Automatically find and copy all mingw64 DLL dependencies
           copy_deps() {
-            ldd "$1" | grep '/mingw64/bin/' | awk '{print $3}' | while read -r dll; do
+            local deps
+            deps=$(ldd "$1" 2>/dev/null | grep '/mingw64/bin/' | awk '{print $3}' || true)
+            for dll in $deps; do
               local base=$(basename "$dll")
               if [ ! -f "./artifacts/windows/${base}" ]; then
                 cp "$dll" ./artifacts/windows/
@@ -194,6 +196,46 @@ jobs:
             artifacts/thinkmay-client-windows-amd64.zip
             artifacts/thinkmay-client-windows-amd64-installer.exe
 
+  test_linux:
+    name: Test Linux Client
+    runs-on: ubuntu-latest
+    needs: [package_linux]
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: client-linux-package
+          path: artifacts
+
+      - name: Extract tar package
+        run: |
+          tar -xzf artifacts/thinkmay-client-linux-amd64.tar.gz -C artifacts
+
+      - name: Run client --help
+        run: |
+          chmod +x artifacts/thinkmay-client-linux-amd64/thinkmay-client
+          artifacts/thinkmay-client-linux-amd64/thinkmay-client --help
+
+  test_macos:
+    name: Test macOS Client
+    runs-on: macos-latest
+    needs: [package_macos]
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: client-macos-package
+          path: artifacts
+
+      - name: Extract zip package
+        run: |
+          ditto -x -k artifacts/thinkmay-client-darwin.zip test-client
+
+      - name: Run client --help
+        run: |
+          chmod +x "test-client/Thinkmay Client.app/Contents/MacOS/thinkmay-client"
+          "test-client/Thinkmay Client.app/Contents/MacOS/thinkmay-client" --help
+
   test_windows:
     name: Test Windows Client
     runs-on: windows-latest
@@ -218,7 +260,7 @@ jobs:
   publish_linux:
     name: Publish Linux Client
     runs-on: ubuntu-latest
-    needs: [package_linux]
+    needs: [package_linux, test_linux]
     if: github.event_name == 'push' || inputs.publish
 
     steps:
@@ -241,7 +283,7 @@ jobs:
   publish_macos:
     name: Publish macOS Client
     runs-on: ubuntu-latest
-    needs: [package_macos]
+    needs: [package_macos, test_macos]
     if: github.event_name == 'push' || inputs.publish
 
     steps:
