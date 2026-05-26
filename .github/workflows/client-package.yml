@@ -3,8 +3,7 @@ name: Client Package
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches: [main]
     paths:
       - 'worker/proxy/**'
       - 'packaging/client/**'
