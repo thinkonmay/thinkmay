@@ -115,15 +115,13 @@ jobs:
           sed -i 's/Exec=thinkmay-client/Exec=\/usr\/bin\/thinkmay-client/g' "${DEBDIR}/usr/share/applications/thinkmay-client.desktop"
           
           # Create control file
-          cat << 'EOF' > "${DEBDIR}/DEBIAN/control"
-Package: thinkmay-client
-Version: 0.1.0
-Section: utils
-Priority: optional
-Architecture: amd64
-Maintainer: Thinkmay <contact@thinkmay.net>
-Description: Thinkmay Client Application for remote desktop connection.
-EOF
+          echo "Package: thinkmay-client" > "${DEBDIR}/DEBIAN/control"
+          echo "Version: 0.1.0" >> "${DEBDIR}/DEBIAN/control"
+          echo "Section: utils" >> "${DEBDIR}/DEBIAN/control"
+          echo "Priority: optional" >> "${DEBDIR}/DEBIAN/control"
+          echo "Architecture: amd64" >> "${DEBDIR}/DEBIAN/control"
+          echo "Maintainer: Thinkmay <contact@thinkmay.net>" >> "${DEBDIR}/DEBIAN/control"
+          echo "Description: Thinkmay Client Application for remote desktop connection." >> "${DEBDIR}/DEBIAN/control"
           
           # Build the .deb file
           dpkg-deb --build "${DEBDIR}" artifacts/thinkmay-client-linux-amd64.deb
