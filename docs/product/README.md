@@ -6,6 +6,8 @@ Use this section for product-facing and engineering-facing documentation about h
 - [Technical architecture](./architecture/technical_doc.md)
 - [Mobile architecture](./architecture/mobile_architecture.md)
 - [Native app architecture](./architecture/native_app.md)
+- [Desktop client URL handler](./architecture/desktop_client_url_handler.md)
+- [Desktop client launch arguments](./architecture/desktop_client_launch_arguments.md)
 - [Design doc](./architecture/design_doc.md)
 - [Windows bundle](./architecture/windows_bundle.md)
 

@@ -16,6 +16,8 @@ This folder is organized by audience and purpose.
 - [Technical architecture](./product/architecture/technical_doc.md)
 - [Mobile architecture](./product/architecture/mobile_architecture.md)
 - [Native app architecture](./product/architecture/native_app.md)
+- [Desktop client URL handler](./product/architecture/desktop_client_url_handler.md)
+- [Desktop client launch arguments](./product/architecture/desktop_client_launch_arguments.md)
 - [User guide](./product/guides/user_doc.md)
 
 ### Employee
