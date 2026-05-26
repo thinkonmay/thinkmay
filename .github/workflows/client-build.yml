@@ -150,24 +150,19 @@ jobs:
       - name: Copy runtime DLLs
         shell: msys2 {0}
         run: |
-          cp /mingw64/bin/SDL2.dll ./artifacts/
-          cp /mingw64/bin/avcodec-*.dll ./artifacts/
-          cp /mingw64/bin/avdevice-*.dll ./artifacts/
-          cp /mingw64/bin/avfilter-*.dll ./artifacts/
-          cp /mingw64/bin/avformat-*.dll ./artifacts/
-          cp /mingw64/bin/avutil-*.dll ./artifacts/
-          cp /mingw64/bin/swresample-*.dll ./artifacts/
-          cp /mingw64/bin/swscale-*.dll ./artifacts/
-          cp /mingw64/bin/libbz2-*.dll ./artifacts/
-          cp /mingw64/bin/libcaca-*.dll ./artifacts/
-          cp /mingw64/bin/libva.dll ./artifacts/
-          cp /mingw64/bin/libva_win32-*.dll ./artifacts/
-          cp /mingw64/bin/libvpl*.dll ./artifacts/
-          for dll in libgcc_s_seh-1.dll libstdc++-6.dll libwinpthread-1.dll; do
-            if [ -f "/mingw64/bin/${dll}" ]; then
-              cp "/mingw64/bin/${dll}" ./artifacts/
-            fi
-          done
+          # Automatically find and copy all mingw64 DLL dependencies
+          copy_deps() {
+            ldd "$1" | grep '/mingw64/bin/' | awk '{print $3}' | while read -r dll; do
+              local base=$(basename "$dll")
+              if [ ! -f "./artifacts/${base}" ]; then
+                cp "$dll" ./artifacts/
+                copy_deps "$dll"
+              fi
+            done
+          }
+          copy_deps ./artifacts/thinkmay-client.exe
+          echo "Copied DLLs:"
+          ls -1 ./artifacts/*.dll
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
