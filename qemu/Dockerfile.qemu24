@@ -26,11 +26,26 @@ RUN make install
 RUN find /qemu -name "ivshmem-server" -type f -executable -exec cp {} /prefix/bin/ \;
 RUN test -x /prefix/bin/ivshmem-server || (echo "ERROR: ivshmem-server not found!" && exit 1)
 
-# Bundle shared libraries for all executables
+# Bundle shared libraries for all executables, excluding core glibc components
 RUN mkdir -p /prefix/lib && \
-    find /prefix/bin /prefix/libexec -type f -executable -exec ldd {} \; 2>/dev/null | grep "=> /" | awk '{print $3}' | sort -u | xargs -I '{}' cp -n '{}' /prefix/lib/ || true
+    find /prefix/bin /prefix/libexec -type f -executable -exec ldd {} \; 2>/dev/null | grep "=> /" | awk '{print $3}' | sort -u | \
+    grep -v -E '/libc\.so|/libm\.so|/libdl\.so|/libpthread\.so|/librt\.so|/libresolv\.so|ld-linux' | \
+    xargs -I '{}' cp -f '{}' /prefix/lib/ || true
 
 # Set RPATH for all executables so they find the bundled libraries relative to their location
 RUN find /prefix/bin /prefix/libexec -type f -executable -exec patchelf --set-rpath '$ORIGIN/../lib' {} \; || true
 
+# Set RPATH for all bundled libraries so they can find each other
+RUN find /prefix/lib -type f -name "*.so*" -exec patchelf --set-rpath '$ORIGIN' {} \; || true
+
+# TEST STAGE: verify self-containment in a completely fresh container
+FROM ubuntu:24.04 AS test
+COPY --from=0 /prefix /prefix
+# Run qemu help to ensure no missing shared libraries
+RUN /prefix/bin/qemu-system-x86_64 --help > /dev/null
+RUN /prefix/bin/ivshmem-server --help > /dev/null
+
+# FINAL STAGE
+FROM ubuntu:24.04
+COPY --from=0 /prefix /prefix
 CMD [ "cp","-r","/prefix","/mnt/host" ]
