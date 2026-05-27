@@ -163,6 +163,66 @@ ref, log, vnc
 
 This is intentional because the native desktop client joins the internal QUIC streaming path, not the browser WebRTC path.
 
+## Website setting migration
+
+When the website's **Open sessions in the Thinkmay desktop app** advanced setting is enabled, `GetStarted` builds a `thinkmay:` launch URL with `BuildDesktopLaunchURL` in `website/core/api/index.ts`. The helper converts the current browser remote state into desktop-supported search parameters.
+
+### Migrated session credentials
+
+| Website source | Desktop search parameter | Notes |
+| --- | --- | --- |
+| `remote.auth.vmid` or `vmid` from `remote.auth.videoUrl` | `vmid` | Required. |
+| `token` from `remote.auth.videoUrl` | `video` | Required video listener token. |
+| `token` from `remote.auth.audioUrl` | `audio` | Included when available. |
+| `token` from `remote.auth.hidUrl` | `data` | Included when available; used for keyboard, mouse, controller, and USB paths. |
+| `token` from `remote.auth.microUrl` | `mic` | Included only when `enable_microphone` is true and a microphone listener exists. |
+| `remote.domain` or current worker address | `server` | Included as the desktop QUIC server hint. |
+
+### Migrated remote settings
+
+| Website setting | Desktop search parameter | Mapping rule |
+| --- | --- | --- |
+| `preferred_codec` | `codec` | Sends `h264` or `h265`. |
+| `vsync` | `vsync` | Sends `true` or `false`; this keeps the desktop presenter VSync behavior aligned with the browser setting. |
+| `framerate` | `fps` | Sends the rounded FPS value. |
+| `disable_gcc`, `min_bitrate`, `max_bitrate` | `bitrate` | Sends Kbps. If `disable_gcc` is true, uses `min_bitrate`; otherwise uses `max_bitrate`. Website values are Mbps, so the helper multiplies by `1000`. |
+| `enable_microphone` | `mic` inclusion | Does not create a boolean param; it controls whether the microphone token is passed. |
+| `always_1080p` | `width`, `height` | When true, sends `width=1920&height=1080`. When false, omits both. |
+
+Example migration:
+
+```text
+preferred_codec=h265
+vsync=true
+framerate=120
+disable_gcc=true
+min_bitrate=10
+enable_microphone=true
+always_1080p=true
+```
+
+becomes:
+
+```text
+codec=h265&vsync=true&fps=120&bitrate=10000&mic=<mic-token>&width=1920&height=1080
+```
+
+### Settings intentionally not migrated
+
+These browser settings are currently omitted because the desktop app has no documented equivalent launch argument:
+
+| Website setting | Reason |
+| --- | --- |
+| `objectFitFill` | Browser video element scaling only. |
+| `client_cursor` | Browser cursor rendering behavior only. |
+| `auto_relative_mouse` | Browser pointer-lock behavior only. |
+| `keyboard_lock` | Browser keyboard lock behavior only. |
+| `scancode` | Browser HID compatibility mode; desktop HID uses native SDL translation. |
+| `touch_gamepad` | Browser/mobile virtual control setting. |
+| `native_touch` | Browser/mobile touch behavior. |
+| `hq` | It mutates `framerate`, bitrate, and `vsync`; the resulting concrete values are migrated instead. |
+| `watchMode` | Browser status UI preference. |
+
 ## Recommended launch URLs
 
 ### Minimal video-only launch

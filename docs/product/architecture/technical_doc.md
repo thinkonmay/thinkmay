@@ -72,15 +72,40 @@ This physical memory bridge inherently bypasses the guest's Windows network stac
 To understand how video reaches the client, here is the exact data path from the guest OS to the browser WebRTC socket:
 1. **Video Capture (Guest OS)**: Inside the Windows instance, the `sunshine` binary (`worker/sunshine/src/main.cpp`) hooks into the desktop session. It captures frames and encodes them (e.g., using NVENC for H.264/H.265).
 2. **IVSHMEM Delivery**: Sunshine bypasses the guest network stack. It copies the raw encoded payloads, along with frame indices and timestamps, directly into the `MediaMemory` struct bound to the IVSHMEM (Inter-VM Shared Memory) segment (`worker/proxy/util/memory/cgo.go`).
-3. **Proxy Ingestion (Host OS)**: On the host, the Go-based proxy constantly polls (`Pop()`) this shared memory block. As video chunks arrive, they are wrapped as `multiplexer.Sample` streams and pushed over channels to the WebRTC layer.
+3. **Proxy Ingestion (Host OS)**: On the host, the Go-based proxy reads this shared memory block. In doorbell mode it waits on IVSHMEM eventfds and then re-checks queue indices; in fallback mode it polls (`Pop()`). As video chunks arrive, they are wrapped as `multiplexer.Sample` streams and pushed over channels to the WebRTC layer.
 4. **Packetization & WebRTC Transmission**: Inside `worker/proxy/forwarder/webrtc/forwarder.go` (`readLoopRTP`), the WebRTC Forwarder decodes the C-struct byte array to extract the timestamp and data payload. It then runs this payload through a Pion `Packetizer` (segmenting it into MTU-compliant RTP units) and executes `track.WriteRTP()` to transmit the packets across the UDP internet socket to the end-user browser.
 5. **Reverse Telemetry (RTCP -> IVSHMEM)**: If the browser's Google Congestion Control (GCC) detects jitter, or if packet loss triggers an RTCP PLI/FIR (Picture Loss Indication), the Forwarder writes control frames (`1` for Bitrate, `3` for IDR) directly back into the IVSHMEM `ctrlChann`. Sunshine polls this memory in reverse and actively downscales the video encoder bitrate or forces an IDR keyframe reset instantly.
 
-##### Shared-memory polling cadence
+##### Shared-memory doorbell protocol
 
-The shared-memory bridge uses polling at the queue boundary, so wait periods are tuned by path sensitivity rather than set globally:
+The shared-memory bridge can run in either plain polling mode or doorbell-assisted mode. The proxy first attempts to launch `ivshmem-server` for each IVSHMEM segment using QEMU's interrupt-capable `ivshmem-doorbell` device. If the server binary is missing, exits early, or does not become ready, the proxy logs the failure and falls back to the previous `ivshmem-plain` memory device for that segment.
 
-| Pipeline | Direction | Queue/method | Wait period | Reason |
+The doorbell protocol keeps the queue memory layout as the source of truth: producers still write the packet and advance the queue index before signaling, and consumers always re-check the queue index after waking. Doorbells are only wake hints; missed or unavailable doorbells degrade to bounded polling.
+
+Media shared memory uses one doorbell device for Sunshine and the proxy:
+
+| Vector | Direction | Purpose |
+| --- | --- | --- |
+| 0 | proxy -> Sunshine | Encoder/control queue wakeups: bitrate, framerate, IDR, pointer, resolution/reset controls. |
+| 1..3 | Sunshine -> proxy | Per-display video frame wakeups, mapped as `displayIndex + 1`. |
+| 4 | Sunshine -> proxy | Audio packet wakeups from `MediaMemory.audio`. |
+
+Data shared memory uses a separate doorbell device for the daemon and proxy:
+
+| Vector | Direction | Queue |
+| --- | --- | --- |
+| 0 | proxy -> daemon | `DataMemory.audio` microphone packets consumed by daemon `WriterPop`. |
+| 1 | proxy -> daemon | `DataMemory.data` HID input consumed by daemon `WriterPop`. |
+| 2 | proxy -> daemon | `DataMemory.session` session commands consumed by daemon `WriterPop`. |
+| 3 | daemon -> proxy | `DataMemory.audio` reverse/proxy-side wakeups. |
+| 4 | daemon -> proxy | `DataMemory.data` HID feedback wakeups. |
+| 5 | daemon -> proxy | `DataMemory.session` log/analytics wakeups. |
+
+##### Shared-memory polling cadence and fallback
+
+When doorbells are active, latency-sensitive queue waits block on the registered event and then re-check the shared-memory index. When doorbells are not available, or while eventfds are not ready, the bridge falls back to the polling cadence below.
+
+| Pipeline | Direction | Queue/method | Fallback wait period | Reason |
 | --- | --- | --- | --- | --- |
 | Video media | Sunshine -> proxy -> WebRTC RTP | proxy `DisplayQueueImpl.Pop` | 1 ms | Supports high-FPS streaming up to 240fps; frame interval can be ~4.17 ms. |
 | Video control | proxy/GCC/RTCP -> Sunshine | Sunshine `pull` loop on media queue `outindex` | 1 ms | Bitrate, framerate, resolution, pointer, and IDR controls should reach the encoder quickly. |
