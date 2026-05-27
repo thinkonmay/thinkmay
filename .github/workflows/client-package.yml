@@ -289,6 +289,7 @@ jobs:
           cd ./worker/proxy
           go mod download
           go build -trimpath -ldflags="-s -w -H windowsgui" -o ../../artifacts/windows/thinkmay-client.exe ./cmd/client
+          go build -trimpath -ldflags="-s -w" -o ../../artifacts/windows/thinkmay-cli.exe ./cmd/client
 
       - name: Copy runtime DLLs
         shell: msys2 {0}
@@ -306,6 +307,7 @@ jobs:
             done
           }
           copy_deps ./artifacts/windows/thinkmay-client.exe
+          copy_deps ./artifacts/windows/thinkmay-cli.exe
           echo "Copied DLLs:"
           ls -1 ./artifacts/windows/*.dll
 
