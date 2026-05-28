@@ -23,6 +23,7 @@ This folder is organized by audience and purpose.
 ### Employee
 - [Employee index](./employee/README.md)
 - [Employee playbook](./employee/playbooks/employee_doc.md)
+- [KVM WRMSR host freeze (Intel nodes)](./employee/playbooks/kvm_wrmsr_host_freeze.md)
 
 ### Marketing
 - [Marketing index](./marketing/README.md)
