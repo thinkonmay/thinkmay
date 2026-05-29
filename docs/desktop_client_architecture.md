@@ -1,306 +1,338 @@
-# Go Desktop Client Architecture Deep Dive
+# Desktop client architecture
 
-This document describes the native Go remote desktop client implemented under `worker/proxy/client` and launched by `worker/proxy/cmd/client`. It is a desktop application for Thinkmay CloudPC that consumes the proxy's internal QUIC media/control relay directly, rather than joining the browser/mobile WebRTC signaling path.
+The native Go remote desktop client lives under [`worker/proxy/client`](../worker/proxy/client) and is built from [`worker/proxy/cmd/client`](../worker/proxy/cmd/client). It connects to Thinkmay CloudPC over **QUIC** (not WebRTC), decodes H.264/H.265/AV1 locally with FFmpeg/astiav, presents through platform GPU paths, and sends HID/audio/control traffic back to the proxy.
 
-The existing production architecture documentation focuses on browser and Flutter clients using WebRTC. This Go desktop client is architecturally different: it is closer to a native edge relay consumer. It opens QUIC streams to the Thinkmay proxy, receives the same encoded media samples that normally feed the WebRTC packetizer, decodes them locally with FFmpeg/astiav, presents frames through SDL or D3D11, and sends HID/audio/control data back through QUIC datagrams or sample streams.
+Browser and Flutter clients use WebRTC signaling, ICE, and RTP. The desktop client is a **QUIC relay consumer**: it dials the same proxy forwarder, authenticates with `{vmid, listenerID}`, and receives whole encoded samples on bidirectional streams.
 
-## Where it fits in Thinkmay CloudPC
-
-Thinkmay CloudPC runs Windows VMs on worker nodes. The guest capture stack writes encoded frames and control queues through IVSHMEM shared memory; the Go proxy reads those queues and routes media through QUIC internally before the public edge normally packetizes them into WebRTC RTP for browser and mobile clients. The platform flow is documented in `docs/product/architecture/technical_doc.md`, especially the IVSHMEM streaming path and cross-node QUIC routing.
-
-The desktop client inserts itself at the QUIC relay layer:
+## Platform context
 
 ```mermaid
 flowchart LR
     subgraph Guest[Windows guest VM]
-        Sunshine[Sunshine capture and encode]
+        Sunshine[Sunshine capture/encode]
     end
 
     subgraph Worker[Worker proxy]
-        IVSHMEM[IVSHMEM media and HID queues]
-        LocalProxy[Proxy relay]
+        IVSHMEM[IVSHMEM media + HID queues]
+        Proxy[Proxy relay]
     end
 
-    subgraph Edge[Edge or route proxy]
+    subgraph Edge[Edge proxy]
         QUIC[QUIC forwarder]
         WebRTC[WebRTC packetizer]
     end
 
-    subgraph Browser[Browser/mobile path]
-        BrowserClient[WebRTC client]
+    subgraph Browser[Browser / mobile]
+        WebClient[WebRTC client]
     end
 
-    subgraph Desktop[Go desktop path]
-        NativeClient[worker/proxy/client]
-        FFmpeg[FFmpeg decode]
-        SDL[D3D11 or SDL presentation]
+    subgraph Desktop[Go desktop client]
+        Client[worker/proxy/client]
+        Decode[FFmpeg HW decode]
+        Present[D3D11 / Metal / VAAPI / SDL]
     end
 
-    Sunshine --> IVSHMEM
-    IVSHMEM --> LocalProxy
-    LocalProxy --> QUIC
-    QUIC --> WebRTC --> BrowserClient
-    QUIC --> NativeClient --> FFmpeg --> SDL
-    NativeClient -. HID, IDR, bitrate, audio reset .-> QUIC
-    BrowserClient -. RTCP/DataChannel controls .-> WebRTC
+    Sunshine --> IVSHMEM --> Proxy --> QUIC
+    QUIC --> WebRTC --> WebClient
+    QUIC --> Client --> Decode --> Present
+    Client -. HID, IDR, FPS, bitrate, mic .-> QUIC
 ```
 
-The important consequence is that the Go desktop app does not use Pion WebRTC, SDP, ICE, TURN, RTP, or browser media APIs. It trusts the existing proxy routing/auth layer and receives whole encoded samples over QUIC streams.
+See also [`docs/product/architecture/technical_doc.md`](product/architecture/technical_doc.md) for the full CloudPC stack.
 
-## Entrypoint and process model
+## Package layout
 
-The executable entrypoint is `worker/proxy/cmd/client/main.go`. It locks the main goroutine to the OS thread before SDL is initialized, parses command-line configuration, constructs `app.App`, and runs it (`worker/proxy/cmd/client/main.go:12`, `worker/proxy/cmd/client/main.go:17`, `worker/proxy/cmd/client/main.go:23`).
+| Package | Role |
+|---------|------|
+| [`cmd/client`](../worker/proxy/cmd/client) | Entrypoint: config parse, connect UI, `app.NewApp`, SDL main loop |
+| [`client/app`](../worker/proxy/client/app) | Composition root, SDL event loop, reconnect, window/cursor/HID wiring |
+| [`client/pipeline`](../worker/proxy/client/pipeline) | Decode + present orchestration (`pipeline.Host` interface) |
+| [`client/decoder`](../worker/proxy/client/decoder) | FFmpeg/astiav HW decode, bitstream normalization, runtime fallback |
+| [`client/presenter`](../worker/proxy/client/presenter) | GPU presentation backends (D3D11, Metal, VAAPI-EGL, SDL, software-debug) |
+| [`client/stream`](../worker/proxy/client/stream) | QUIC `Client` abstraction over `forwarder/quic` |
+| [`client/sample`](../worker/proxy/client/sample) | 17-byte sample envelope parser |
+| [`client/hid`](../worker/proxy/client/hid) | SDL → Thinkmay HID binary protocol |
+| [`client/audio`](../worker/proxy/client/audio) | Opus playback (SDL) and mic capture (FFmpeg encoder) |
+| [`client/connectui`](../worker/proxy/client/connectui) | Local HTTP progress page + browser open during connect |
+| [`client/config`](../worker/proxy/client/config) | CLI flags and `thinkmay://` URL parsing |
+| [`client/perf`](../worker/proxy/client/perf) | Metrics tracker + optional HTTP stats dashboard |
+| [`client/update`](../worker/proxy/client/update) | Windows auto-update check (PocketBase binaries collection) |
+| [`client/usb`](../worker/proxy/client/usb) | Optional USB device forwarding over HID data channel |
+| [`client/bootlog`](../worker/proxy/client/bootlog) | Structured startup step logging |
 
-`app.App` is the composition root. It owns:
+Detailed video pipeline behavior: [`worker/proxy/client/docs/pipeline.md`](../worker/proxy/client/docs/pipeline.md).
 
-- the mandatory video QUIC client;
-- optional audio, microphone, and HID/data QUIC clients;
-- the FFmpeg decoder;
-- the SDL window;
-- the selected presenter;
-- optional SDL audio playback and microphone capture;
-- a terminal performance tracker;
-- controller/gamepad bookkeeping (`worker/proxy/client/app/app.go:27`).
+## Process and thread model
 
-The desktop application is mostly single-window and event-loop driven. Background goroutines read media/control streams and decode audio/video, while the SDL event loop stays on the main thread for windowing, input, and presentation (`worker/proxy/client/app/app.go:233`).
+`cmd/client/main.go` calls `runtime.LockOSThread()` before SDL init so the **main goroutine owns the SDL window and input loop**.
 
-## Configuration and launch contract
+| Thread | Priority | Responsibility |
+|--------|----------|----------------|
+| **Main (SDL)** | Normal | Window events, HID capture, show/dismiss window, resize requests, clipboard |
+| **Decode** | Time-critical | QUIC samples → parse → FFmpeg decode → frame channel |
+| **Presentation** | Highest | Frame pacer → `WaitToRender` → GPU present |
+| **Cursor** | Normal | Fullscreen composited cursor state (position polled at display Hz) |
+| **Per QUIC client** | Normal | Sample reader + control/status reader |
+| **Audio / mic** | Normal | Opus decode/encode loops when tokens provided |
+| **HID writer** | Normal | Batches pending HID payloads at video FPS |
+| **Gamepad poll** | Normal | Periodic controller state sync |
 
-Runtime configuration is defined in `client/config.Config` (`worker/proxy/client/config/config.go:25`). The client can be configured with explicit flags or a remote URL:
+Cross-thread coordination uses buffered channels (`showWindowReq`, `presenterResizeReq`, `dismissWindowReq`) plus SDL **user events** to wake the main thread without blocking decode/present loops.
 
-| Setting | Purpose |
-| --- | --- |
-| `-url` | Thinkmay remote URL containing target and listener query params. |
-| `-addr` | QUIC address override; defaults to remote URL host with port `443`. |
-| `-vmid` | Target VM ID. |
-| `-token` | Video listener token. |
-| `-audio-token` | Optional audio listener token. |
-| `-mic-token` | Optional microphone listener token. |
-| `-data-token` | Optional HID/data listener token. |
-| `-codec` | `h264`, `h265`, or `av1`; defaults to `h264`. |
-| `-hwaccel` | Hardware decoder selection; defaults to `auto`. |
-| `-present` | Presenter selection; defaults to `d3d11` on Windows and `sdl` on Linux/macOS. |
-| `-width`, `-height` | Initial SDL window size. |
-| `-fullscreen` | Start in fullscreen desktop mode. |
-| `-vsync` | Enable presenter vsync. |
-| `-fps`, `-bitrate` | Initial remote encoder controls sent after connect. |
-| `-stats` | Enable terminal performance dashboard. |
+```mermaid
+flowchart TB
+    subgraph Main[Main SDL thread]
+        Events[PollEvent / WaitEventTimeout]
+        HID[Translate SDL → HID]
+        Window[Show / resize / dismiss]
+    end
 
-`applyRemoteURL` extracts `vmid`, `video`, `audio`, `mic`, `data`, `codec`, `vsync`, and `stats` from the URL query string (`worker/proxy/client/config/config.go:69`). This URL shape mirrors the listener-token concept used by web/mobile clients, but the desktop client maps those listener tokens to QUIC `FinalTarget` handshakes rather than WebRTC signaling sessions.
+    subgraph Pipeline[client/pipeline]
+        Decode[decodeLoop]
+        Present[presentationLoop]
+    end
 
-## QUIC transport architecture
+    QUIC[QUIC video samples] --> Decode
+    Decode --> Frames[frames chan]
+    Frames --> Present
+    Present --> GPU[D3D11 / Metal / VAAPI]
+    Present -->|showWindowReq| Main
+    Main -->|presenterResizeReq| Present
+```
 
-The client abstracts transport behind `stream.Client` (`worker/proxy/client/stream/stream.go:5`). The interface exposes inbound sample delivery, close/done signals, outbound samples, and control helpers for IDR, video reset, and audio reset.
+The app implements `pipeline.Host` in [`client/app/pipeline_host.go`](../worker/proxy/client/app/pipeline_host.go) so the pipeline package stays free of SDL imports.
 
-The concrete implementation is `quicClient` (`worker/proxy/client/stream/quic_client.go:19`). Each media/control lane creates a `forwarder.FinalTarget` with `{VmID, ListenerID}` and dials the proxy address (`worker/proxy/client/app/app.go:51`). The underlying `forwarder/quic.QUICDialer` performs the actual wire protocol:
+## Startup lifecycle
 
-1. Dial QUIC with datagrams enabled and ALPN `thinkmay-quic` (`worker/proxy/forwarder/quic/dialer.go:84`).
-2. Send a JSON-encoded `FinalTarget` on a unidirectional auth stream (`worker/proxy/forwarder/quic/dialer.go:113`).
-3. Use bidirectional QUIC streams for media/sample frames (`worker/proxy/forwarder/quic/dialer.go:125`, `worker/proxy/forwarder/quic/dialer.go:164`).
-4. Frame stream payloads as `[4-byte big-endian length][payload]` (`worker/proxy/forwarder/quic/util.go:10`).
-5. Use QUIC datagrams for control messages and JSON status envelopes (`worker/proxy/forwarder/quic/dialer.go:77`, `worker/proxy/forwarder/quic/dialer.go:188`).
+### `main`
 
-`quicClient.Start` starts two goroutines: one reads complete sample streams into the client channel, and the other reads datagram control/status messages (`worker/proxy/client/stream/quic_client.go:56`). Status envelopes are parsed but currently discarded (`worker/proxy/client/stream/quic_client.go:126`). That means the desktop client does not yet surface backend health statuses such as `video_stalled`, `backend_disconnected`, or `control_path_blocked`, even though the shared `forwarder.StatusMessage` model supports them (`worker/proxy/forwarder/forwarder.go:33`).
+1. Parse config (`config.Parse`) from flags or `thinkmay://host/path?vmid=…&video=…`.
+2. Optional Windows update check (`update.Start`).
+3. Optional connect UI HTTP server + browser open (`connectui.Start`).
+4. `app.NewApp(cfg)` — blocking initialization.
+5. `app.Run()` — SDL event loop until quit.
 
-### Logical channels
+### `NewApp`
 
-The desktop client opens up to four independent QUIC clients:
+Parallel QUIC dials for video (required) and optional audio, mic, HID channels (`connect_streams.go`). Then, in order:
 
-| Channel | Direction | Required | Data carried |
-| --- | --- | --- | --- |
-| Video | proxy -> client, client -> proxy controls | Yes | Encoded H.264/H.265/AV1 samples plus IDR/FPS/bitrate controls. |
-| Audio | proxy -> client, client -> proxy reset controls | No | Opus audio samples. |
-| Microphone | client -> proxy | No | Opus microphone packets with session/timestamp headers. |
-| HID/data | client -> proxy controls | No | Mouse, keyboard, wheel, and gamepad HID packets. |
+1. Open FFmpeg hardware decoder (`decoder.New`).
+2. Init SDL subsystems; create **hidden** resizable window.
+3. Create and init presenter, sharing decoder HW device context when available.
+4. Optional stats HTTP server, SDL audio player, mic capture, USB forwarder.
 
-The optional clients are disabled independently if their token is absent or if initialization fails (`worker/proxy/client/app/app.go:57`, `worker/proxy/client/app/app.go:66`, `worker/proxy/client/app/app.go:75`).
+Failure on required video dial or decoder init aborts startup and reports through connect UI.
 
-## Application startup sequence
+### `Run`
 
-`NewApp` wires components in dependency order:
+1. Start QUIC clients; request IDR on video.
+2. Start audio/mic loops, data receiver, HID writer, gamepad poll.
+3. `pipeline.New(a).Start()` — decode + presentation threads.
+4. Send initial FPS, bitrate, pointer-mode controls.
+5. Enter SDL event loop (`run.go`).
 
-1. Create the video QUIC client using the video listener token (`worker/proxy/client/app/app.go:51`).
-2. Optionally create audio, microphone, and HID/data QUIC clients (`worker/proxy/client/app/app.go:57`, `worker/proxy/client/app/app.go:66`, `worker/proxy/client/app/app.go:75`).
-3. Create the hardware decoder with codec, hardware acceleration, and presenter constraints (`worker/proxy/client/app/app.go:84`).
-4. Initialize SDL video, events, game controller, and audio subsystems (`worker/proxy/client/app/app.go:100`).
-5. Create the SDL window and set fullscreen flags if requested (`worker/proxy/client/app/app.go:118`).
-6. Create and initialize the selected presenter, passing the decoder hardware device context when available (`worker/proxy/client/app/app.go:153`, `worker/proxy/client/app/app.go:158`).
-7. Create the performance tracker (`worker/proxy/client/app/app.go:174`).
-8. Optionally create SDL/Opus audio playback and SDL/FFmpeg microphone capture (`worker/proxy/client/app/app.go:176`, `worker/proxy/client/app/app.go:186`).
+First visible frame: presentation thread calls `EnsureStreamWindowShown()` → main thread handles `showWindowReq` → `connectui.Ready()`.
 
-`Run` then starts the active streams, immediately requests an IDR frame, starts audio/mic/decode loops, synchronizes cursor/fullscreen state, sends initial pointer/FPS/bitrate controls, and enters the SDL event loop (`worker/proxy/client/app/app.go:233`).
+## QUIC transport
 
-## Video sample format and decode pipeline
+Each media lane is an independent `stream.Client` (`quicClient`) dialing `{Addr}` with `forwarder.FinalTarget{VmID, ListenerID}`.
 
-Inbound video and audio packets are parsed by `client/sample.Parse`. The wire envelope is a 17-byte little-endian header followed by codec payload (`worker/proxy/client/sample/sample.go:8`):
+| Channel | Token flag | Buffer | Direction |
+|---------|------------|--------|-----------|
+| Video | `-token` | 8 | Proxy → client (+ control datagrams) |
+| Audio | `-audio-token` | 64 | Proxy → client |
+| Microphone | `-mic-token` | 64 | Client → proxy |
+| HID/data | `-data-token` | 8 | Bidirectional (HID out, cursor/rumble/clipboard/USB in) |
 
-| Bytes | Field | Meaning |
-| --- | --- | --- |
-| `0..7` | `Header0` | Upstream metadata/reserved field. |
-| `8..15` | `Timestamp` | Media timestamp used as FFmpeg PTS/DTS. |
-| `16` | `Flag` | Per-sample flag byte. |
-| `17..` | `Payload` | Encoded video NAL units or Opus audio payload. |
+Wire protocol (see `forwarder/quic`):
 
-The decode loop consumes raw samples from the video QUIC client, parses them, decodes them, records metrics, and pushes decoded frames into a bounded presentation queue (`worker/proxy/client/app/app.go:455`). The presentation queue intentionally keeps only the newest frame; if the renderer falls behind, older decoded frames are freed instead of accumulating latency (`worker/proxy/client/app/app.go:561`).
+1. QUIC dial with ALPN `thinkmay-quic`, datagrams enabled.
+2. JSON `FinalTarget` on a unidirectional auth stream.
+3. Length-prefixed samples on bidirectional streams: `[4-byte BE len][payload]`.
+4. IVSHMEM-style control messages and JSON status envelopes on datagrams.
+
+`quicClient.Start` runs sample and control readers. Control helpers wrap IDR, video reset, audio reset, and generic `SendControl` for FPS/bitrate/pointer.
+
+### Reconnection
+
+On video stream close, decode stall (3 s without samples), or network drop notification, the pipeline schedules **async** `ReconnectAllClients()` so decode/present threads never block on dial I/O.
+
+Successful reconnect:
+
+- Swap QUIC clients under `quicMu`.
+- `ResetAfterReconnect()`: decoder flush, drain frame queue, `waitingForIDR`.
+- Re-send FPS, bitrate, IDR; restart optional audio/mic/data loops.
+
+Auth failures abort reconnect and surface through connect UI.
+
+## Video pipeline
+
+Orchestration is in [`client/pipeline`](../worker/proxy/client/pipeline):
+
+- **`decodeLoop`** — reads QUIC samples, parses envelope, decodes, pushes `*decoder.Frame` to channel.
+- **`presentationLoop`** — pacer (optional), `presentFrame`, resize handling, metrics.
+
+### Sample envelope
+
+[`client/sample`](../worker/proxy/client/sample): 17-byte LE header + codec payload.
+
+| Offset | Field |
+|--------|-------|
+| 0–7 | Header0 (upstream metadata) |
+| 8–15 | Timestamp → FFmpeg PTS/DTS |
+| 16 | Flag byte |
+| 17+ | Encoded NAL/OBU data |
 
 ### Bitstream normalization
 
-Before sending packets to FFmpeg, the decoder normalizes H.264/H.265 bitstreams (`worker/proxy/client/decoder/bitstream.go:20`). It supports:
+[`decoder/bitstream.go`](../worker/proxy/client/decoder/bitstream.go) handles length-prefixed and Annex B H.264/H.265, parameter-set caching, and keyframe prepending. AV1 OBU keyframe detection lives in `bitstream_av1.go`.
 
-- 4-byte length-prefixed NAL units;
-- 2-byte length-prefixed NAL units;
-- Annex B start-code-delimited NAL units;
-- parameter-set caching;
-- prepending cached parameter sets before keyframes when needed (`worker/proxy/client/decoder/bitstream.go:44`).
+### Hardware decode selection
 
-This matters because upstream samples may not always carry SPS/PPS/VPS with every keyframe, and hardware decoders are sensitive to missing parameter sets after stream reset or packetization boundary changes.
+`decoder.Select` enumerates FFmpeg HW configs, filters by presenter compatibility, and applies platform preference order.
 
-### Hardware decoder selection
+**Windows + D3D11 presenter + HEVC/AV1 + `-hwaccel=auto`:** CUDA (NVDEC → D3D11 map) is tried **before** D3D11VA because native D3D11VA HEVC is unreliable on many NVIDIA GPUs.
 
-Decoder selection is centralized in `decoder.Select` (`worker/proxy/client/decoder/decoder.go:66`). It maps the configured codec to an FFmpeg codec ID, enumerates hardware configs exposed by FFmpeg, filters them through presenter compatibility, and chooses from this preference order:
+**Runtime fallback** (`hwaccel=auto` only): after 8 consecutive decode errors, `TryDecoderFallback()` swaps to the next compatible device (e.g. CUDA → D3D11VA) without restarting the app.
 
-1. D3D11VA
-2. DXVA2
-3. CUDA
-4. QSV
-5. VideoToolbox
-6. VAAPI
-7. VDPAU
-8. Vulkan
+Presenters and zero-copy paths:
 
-Presenter compatibility is explicit: the D3D11 presenter accepts D3D11VA frames and CUDA frames that can be mapped to D3D11, while the SDL presenter is allowed to render CPU-transferred frames (`worker/proxy/client/decoder/decoder.go:146`). Software decode is intentionally rejected for the normal zero-copy path; `software-debug` is the diagnostic escape hatch (`worker/proxy/client/decoder/decoder.go:95`).
+| OS | `-present` default | Decoder | Path |
+|----|-------------------|---------|------|
+| Windows | `d3d11` | D3D11VA or CUDA | HW texture → VideoProcessorBlt → swapchain |
+| macOS | `metal` | VideoToolbox | CVPixelBuffer → Metal |
+| Linux | `vaapi-egl` | VAAPI | EGL import |
+| Any | `sdl` / `software-debug` | Any | CPU transfer → SDL (diagnostics) |
 
-### Windows decode path
+### Backpressure
 
-On Windows with cgo, `decoder/astiav_d3d11va_windows.go` is the optimized path. It can create D3D11VA hardware contexts, derive CUDA from D3D11 when CUDA is selected, decode into hardware frames, and map CUDA frames back to D3D11 when possible (`worker/proxy/client/decoder/astiav_d3d11va_windows.go:31`, `worker/proxy/client/decoder/astiav_d3d11va_windows.go:45`, `worker/proxy/client/decoder/astiav_d3d11va_windows.go:212`).
+- QUIC video samples: buffer **8**
+- Decoded frames: **1** with `-vsync` (no frame-pacing), else **5**
+- Queue push drops oldest frame when presentation is blocked
 
-The decoder tracks how many frames stayed D3D11-native, how many CUDA frames mapped to D3D11, and how many fell back to CPU transfer (`worker/proxy/client/decoder/astiav_d3d11va_windows.go:147`). These counters feed the terminal zero-copy dashboard.
+### Recovery
 
-### Unix/macOS decode path
+See [`client/docs/pipeline.md`](../worker/proxy/client/docs/pipeline.md) for the full matrix. Highlights:
 
-On non-Windows cgo builds, `decoder/astiav_unix.go` initializes the selected FFmpeg hardware device and decodes with the same normalized packet flow (`worker/proxy/client/decoder/astiav_unix.go:26`). Hardware frames are transferred back to software frames before presentation (`worker/proxy/client/decoder/astiav_unix.go:205`), so this path is hardware-accelerated decode but not zero-copy presentation.
+- Decode error → flush, 50 ms backoff, IDR, skip non-keyframes
+- Decode stall 3 s → async reconnect
+- Resolution change → flush presentation queues
+- Window resize → presentation thread drains GPU, resizes swapchain
+- D3D11 device lost → swapchain recreate + IDR
 
-## Presentation layer
+## Presentation
 
-Presentation is abstracted behind `presenter.Presenter` (`worker/proxy/client/presenter/presenter.go:21`). Implementations register themselves by name and are selected through the `-present` config flag (`worker/proxy/client/presenter/presenter.go:30`).
+`presenter.Presenter` interface: `Init`, `WaitToRender`, `Present`, cursor overlay hooks, `Resize`, `Capabilities`.
 
-### SDL presenter
+Registered backends:
 
-The SDL presenter is the cross-platform copy-based renderer (`worker/proxy/client/presenter/sdl.go:14`). It creates an accelerated SDL renderer, optionally with vsync (`worker/proxy/client/presenter/sdl.go:26`). It supports NV12 and YUV420P frames by copying FFmpeg frame data into SDL streaming textures and rendering them to the window (`worker/proxy/client/presenter/sdl.go:73`). `ZeroCopy` returns false (`worker/proxy/client/presenter/sdl.go:148`).
+| Name | Platform | Zero-copy |
+|------|----------|-----------|
+| `d3d11` | Windows | Yes (D3D11VA/CUDA frames) |
+| `metal` | macOS | Yes (VideoToolbox) |
+| `vaapi-egl` | Linux | Yes (VAAPI EGL) |
+| `sdl` | Cross-platform | No |
+| `software-debug` | Cross-platform | No (CPU upload diagnostic path) |
 
-### D3D11 presenter
+**VSync** (`-vsync`): present tied to display refresh; decode buffer depth = 1.
 
-The D3D11 presenter is the Windows zero-copy renderer (`worker/proxy/client/presenter/d3d11_windows.go:1`). It uses the SDL window's native HWND, creates or reuses a D3D11 device, creates a DXGI swap chain, configures D3D11 video processing, and presents decoded frames with `VideoProcessorBlt` and swap-chain present (`worker/proxy/client/presenter/d3d11_windows.go:114`, `worker/proxy/client/presenter/d3d11_windows.go:283`).
+**Frame pacing** (`-frame-pacing`, requires `-vsync`): Moonlight-style dual-queue pacer for smoother cadence.
 
-If the decoder passed a D3D11VA hardware device context, the presenter reuses that device so decoded hardware textures can be presented without a CPU readback (`worker/proxy/client/presenter/d3d11_windows.go:135`). It also supports CPU NV12 frames by uploading them into a D3D11 texture as a fallback (`worker/proxy/client/presenter/d3d11_windows.go:293`). Runtime stats expose D3D11 frames, NV12 uploads, processor recreations, and input-view cache activity (`worker/proxy/client/presenter/d3d11_windows.go:369`).
+**Cursor:** In windowed mode, remote cursor sprites are drawn as SDL client cursors. In fullscreen, cursor position is composited onto the video frame by the presenter (one present path; avoids a second DXGI present that stalls video).
 
-## Input and HID pipeline
+Video is stretch-scaled to the window (no letterboxing).
 
-The HID client is optional and exists only when a data listener token is provided. SDL input events are translated to the Thinkmay HID binary protocol by `hid.TranslateEvent` (`worker/proxy/client/hid/hid.go:49`). Each HID message is a 16-byte little-endian packet of four `uint32` values: event type, first argument, second argument, and third argument (`worker/proxy/client/hid/hid.go:167`).
+## Input, HID, and clipboard
 
-Supported outbound event groups include:
+SDL events on the main thread are translated by [`client/hid`](../worker/proxy/client/hid) into 16-byte LE packets (type + three `uint32` args). Keyboard scancodes map to Windows virtual keys (`keycode.go`).
 
-| Input | Encoding behavior |
-| --- | --- |
-| Mouse motion | Absolute coordinates scaled to `uint32` range, or relative deltas offset by `16384` when SDL relative mouse mode is enabled. |
-| Mouse buttons | SDL buttons mapped to Thinkmay button indices: left, middle, right, X1, X2. |
-| Mouse wheel | X/Y wheel deltas offset by `2048`. |
-| Keyboard | SDL scancodes mapped to Windows virtual-key/scancode values, then sent as key-up/key-down scancode events. |
-| Gamepad connect/disconnect | SDL controller device events mapped to per-session gamepad IDs. |
-| Gamepad axes/triggers/buttons | SDL controller axes normalized to the HTML5/gamepad-like numeric range used by the existing HID protocol. |
+HID outbound path:
 
-The app handles ESC specially before HID translation. ESC toggles fullscreen after guard intervals, updates cursor state, and sends a pointer-mode control to the video channel (`worker/proxy/client/app/app.go:289`). On macOS, fullscreen also enables SDL relative mouse mode; fullscreen hides the local cursor on all platforms (`worker/proxy/client/app/app.go:215`).
+1. Main loop collects translated payloads.
+2. `appendHIDPending` coalesces into a batch buffer.
+3. `startHIDWriter` flushes batches at ~video FPS over the data QUIC client.
 
-Key mapping is explicit in `client/hid/keycode.go`, which maps SDL scancodes to Windows virtual key values for alphanumeric keys, punctuation, function keys, navigation keys, and keypad keys (`worker/proxy/client/hid/keycode.go:1`).
+Inbound on the data channel (`data_receiver.go`):
 
-## Audio playback
+- Gamepad rumble (`grum`)
+- Remote cursor position/update (`cp` / `cu`)
+- Clipboard sync
+- USB forwarding payloads (when `-usb` enabled)
 
-Audio playback is optional and uses a separate QUIC listener token. `audio.NewPlayer` creates a Pion Opus decoder and opens an SDL playback device at 48 kHz stereo S16 (`worker/proxy/client/audio/player.go:30`).
+Hotkeys: double-Esc toggles fullscreen; focus loss releases stuck keys/buttons.
 
-The audio loop reads sample envelopes from the audio QUIC channel, decodes Opus into `int16` PCM, converts samples to little-endian bytes, and queues them into SDL (`worker/proxy/client/audio/player.go:86`). If the SDL queue exceeds roughly 200 ms, it is cleared to favor low latency over perfect continuity (`worker/proxy/client/audio/player.go:19`, `worker/proxy/client/audio/player.go:86`). Decode or queue errors trigger a rate-limited audio reset control (`worker/proxy/client/app/app.go:501`).
+## Audio and microphone
 
-## Microphone capture
+**Playback** (optional): Pion Opus decoder → SDL 48 kHz stereo. Queue capped ~200 ms; overflow clears for low latency. Errors trigger rate-limited audio reset.
 
-Microphone support is optional and uses a client-to-proxy sample stream. `audio.NewMic` opens an SDL capture device at 48 kHz stereo, creates an FFmpeg Opus encoder, and configures S16-to-FLTP resampling (`worker/proxy/client/audio/mic.go:23`). The capture frame size is 480 samples, matching a 10 ms Opus frame at 48 kHz (`worker/proxy/client/audio/mic.go:11`).
+**Microphone** (optional): SDL capture → FFmpeg Opus encoder → 32-byte header (session UUID, timestamp, RTP ts, seq) → `SendSample` on mic QUIC stream.
 
-The mic loop generates a UUID session ID, dequeues captured SDL audio, encodes Opus packets, and wraps each payload with a 32-byte header before sending it via `SendSample` (`worker/proxy/client/app/app.go:520`):
+## Connect UI, bootlog, and stats
 
-| Bytes | Field |
-| --- | --- |
-| `0..15` | Mic session UUID. |
-| `16..23` | Local capture timestamp in Unix nanoseconds. |
-| `24..27` | RTP-style timestamp. |
-| `28..29` | Sequence number. |
-| `30..31` | Reserved/padding. |
-| `32..` | Opus payload. |
+**Connect UI** (`-connect-ui`, default on): local HTTP server (`-connect-ui-addr`, default `127.0.0.1:8766`) showing dial/decoder/display/first-frame progress. Browser opens automatically; user can abort from the page.
 
-## Control messages and recovery behavior
+**Bootlog**: structured step/OK/Fail logging through startup for packaged builds and CI artifacts.
 
-The desktop client sends binary control datagrams through the QUIC dialer. Helpers in `stream.Client` wrap common IVSHMEM control messages: IDR request, video reset, and audio reset (`worker/proxy/client/stream/quic_client.go:65`). During startup the client sends:
+**Stats** (`-stats`): terminal metrics via `perf.Tracker` plus optional HTTP dashboard (`-stats-addr`, default `127.0.0.1:8765`) with decode/present FPS, jitter, bandwidth, and zero-copy counters.
 
-- IDR request, rate-limited to avoid storms;
-- pointer/fullscreen state;
-- target FPS;
-- target bitrate (`worker/proxy/client/app/app.go:236`, `worker/proxy/client/app/app.go:270`).
+## Configuration reference
 
-During playback:
+| Flag | Purpose |
+|------|---------|
+| `-url` | `thinkmay://host/path?vmid=&video=&…` |
+| `-addr` | QUIC server (default from URL host:443) |
+| `-vmid`, `-token` | Target VM and video listener (required) |
+| `-audio-token`, `-mic-token`, `-data-token` | Optional channels |
+| `-codec` | `h264`, `h265`, `av1` (default `h264`) |
+| `-hwaccel` | `auto`, `cuda`, `d3d11va`, `videotoolbox`, `vaapi`, … |
+| `-present` | `d3d11`, `metal`, `vaapi-egl`, `sdl`, `software-debug` |
+| `-fullscreen` | Start fullscreen desktop (default true) |
+| `-vsync` | Tear-free present tied to display refresh |
+| `-frame-pacing` | Moonlight pacer (requires `-vsync`) |
+| `-fps`, `-bitrate` | Initial IVSHMEM controls sent after connect |
+| `-connect-ui`, `-connect-ui-addr` | Browser progress page |
+| `-update-check`, `-update-base-url` | Windows update check |
+| `-stats`, `-stats-addr` | Metrics dashboard |
+| `-usb`, `-usb-all`, `-usb-vidpid` | USB forwarding over data channel |
 
-- presentation errors request a fresh IDR frame (`worker/proxy/client/app/app.go:385`);
-- audio decode/playback errors request an audio reset (`worker/proxy/client/app/app.go:512`);
-- QUIC stream write failures inside the shared dialer also request IDR (`worker/proxy/forwarder/quic/dialer.go:155`).
+Platform defaults for `-present`: `d3d11` (Windows), `metal` (macOS), `vaapi-egl` (Linux).
 
-The app currently does not implement automatic reconnection, route switching, or user-facing backend health reporting. Stream closure ends the relevant loop, and the main video stream closure eventually stops decode/presentation progress.
+Build and test:
 
-## Performance instrumentation
-
-`perf.Tracker` collects a one-second rolling dashboard when `-stats` is enabled (`worker/proxy/client/perf/perf.go:84`). It records:
-
-- presented FPS;
-- frame interval and jitter;
-- decode duration;
-- present duration;
-- packet count, bytes, and estimated bandwidth;
-- last packet size and whether an IDR frame was seen;
-- zero-copy counters from decoder and presenter (`worker/proxy/client/perf/perf.go:37`).
-
-The app updates decode metrics in the decode loop and present/zero-copy metrics after each successful frame presentation (`worker/proxy/client/app/app.go:489`, `worker/proxy/client/app/app.go:391`).
+```bash
+cd worker/proxy
+go build -o client ./cmd/client/
+go test ./client/...
+```
 
 ## Source map
 
-| Area | Key files |
-| --- | --- |
-| Entrypoint | `worker/proxy/cmd/client/main.go` |
-| App orchestration | `worker/proxy/client/app/app.go` |
-| CLI/URL config | `worker/proxy/client/config/config.go` |
-| QUIC client wrapper | `worker/proxy/client/stream/stream.go`, `worker/proxy/client/stream/quic_client.go` |
-| Shared QUIC wire protocol | `worker/proxy/forwarder/quic/dialer.go`, `worker/proxy/forwarder/quic/util.go` |
-| Sample envelope | `worker/proxy/client/sample/sample.go` |
-| Decode selection and frame model | `worker/proxy/client/decoder/decoder.go` |
-| Bitstream normalization | `worker/proxy/client/decoder/bitstream.go` |
-| Platform decoders | `worker/proxy/client/decoder/astiav_d3d11va_windows.go`, `worker/proxy/client/decoder/astiav_unix.go`, `worker/proxy/client/decoder/cuda_windows.go` |
-| Presentation | `worker/proxy/client/presenter/presenter.go`, `worker/proxy/client/presenter/sdl.go`, `worker/proxy/client/presenter/d3d11_windows.go` |
-| HID/input | `worker/proxy/client/hid/hid.go`, `worker/proxy/client/hid/keycode.go` |
-| Audio playback/capture | `worker/proxy/client/audio/player.go`, `worker/proxy/client/audio/mic.go` |
-| Metrics | `worker/proxy/client/perf/perf.go` |
-| Tests | `worker/proxy/client/config/config_test.go`, `worker/proxy/client/decoder/bitstream_test.go` |
+| Concern | Primary files |
+|---------|---------------|
+| Entry | `cmd/client/main.go` |
+| App lifecycle | `client/app/app_new.go`, `run.go`, `lifecycle.go`, `shutdown.go` |
+| Pipeline host | `client/app/pipeline_host.go`, `decoder_fallback.go`, `main_thread_wake.go` |
+| QUIC connect/reconnect | `client/app/connect_streams.go`, `stream/quic_client.go` |
+| Video pipeline | `client/pipeline/*.go` |
+| Decode | `client/decoder/decoder.go`, `astiav_d3d11va_windows.go`, `astiav_unix.go`, `fallback.go` |
+| Present | `client/presenter/d3d11_windows.go`, `metal_darwin.go`, `vaapi_egl_linux.go`, `sdl.go` |
+| HID / cursor | `client/app/input.go`, `hid_writer.go`, `cursor*.go`, `client/hid/` |
+| Audio / mic | `client/app/media_loops.go`, `client/audio/` |
+| Config | `client/config/config.go` |
 
-## Implementation constraints and caveats
+## Constraints and caveats
 
-- **Native dependencies:** the useful builds require cgo, SDL2, FFmpeg/astiav, Opus, and platform graphics APIs. Stub files exist for unsupported builds, but they are not functional desktop clients.
-- **Windows is the primary zero-copy target:** D3D11VA/D3D11 has the deepest integration. Linux/macOS can use hardware decode but currently transfer frames to CPU memory for SDL presentation.
-- **The transport bypasses WebRTC features:** there is no ICE/TURN/NACK/FEC/GCC client-side behavior here. Congestion adaptation depends on explicit bitrate controls and proxy/backend behavior, not browser WebRTC feedback.
-- **Health statuses are not surfaced:** QUIC JSON status envelopes are parsed and discarded in the client transport wrapper.
-- **Frame dropping is deliberate:** the presentation queue keeps the newest decoded frame to minimize latency; this sacrifices visual continuity under load.
-- **Limited automated tests:** tests currently cover config parsing and bitstream normalization. App orchestration, QUIC transport behavior, HID translation, audio, mic, and presenters rely on manual/runtime validation.
+- **Native deps:** production builds need cgo, SDL2, FFmpeg/astiav, Opus, and platform graphics APIs.
+- **No WebRTC client features:** no ICE/TURN, NACK/FEC, or browser GCC — bitrate adaptation uses explicit IVSHMEM controls and proxy-side behavior.
+- **QUIC status envelopes** are read but not yet surfaced in UI.
+- **Frame dropping is intentional** under load to minimize latency.
+- **Linux host networking APIs** in the wider proxy module do not affect the desktop client build target; client CI builds native binaries per OS.
 
-## Practical mental model
+## Mental model
 
-Think of the Go desktop client as a native QUIC terminal for Thinkmay's internal streaming fabric:
-
-1. It authenticates to a specific VM listener by sending `{vmid, listenerID}` over QUIC.
-2. It receives complete encoded samples instead of RTP packets.
-3. It normalizes and decodes those samples with FFmpeg.
-4. It presents frames through SDL or zero-copy D3D11.
-5. It sends HID, microphone, and encoder controls back through the same proxy routing layer.
-
-This makes the client much closer to the proxy's media internals than the browser/mobile clients. The benefit is native decode/presentation control and potential Windows zero-copy latency improvements; the cost is that reliability features normally provided by WebRTC and the website's health UI must be reimplemented explicitly if this client becomes a production-supported access path.
+1. Authenticate to a VM listener over QUIC with `{vmid, listenerID}`.
+2. Receive complete encoded samples (not RTP).
+3. Normalize bitstreams and decode with FFmpeg hardware paths.
+4. Present through the platform zero-copy backend when available.
+5. Send HID, mic, and encoder controls on parallel QUIC channels.
+6. Recover from errors without freezing the SDL main thread — reconnect, IDR, and decoder fallback keep the window responsive.
