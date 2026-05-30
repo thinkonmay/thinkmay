@@ -155,7 +155,7 @@ Wire protocol (see `forwarder/quic`):
 
 ### Reconnection
 
-On video stream close, decode stall (3 s without samples), or network drop notification, the pipeline schedules **async** `ReconnectAllClients()` so decode/present threads never block on dial I/O.
+On video stream close, decode stall (8 s without QUIC samples after the first frame, 20 s before), or network drop notification, the pipeline schedules **async** `ReconnectAllClients()` so decode/present threads never block on dial I/O.
 
 Successful reconnect:
 
@@ -215,8 +215,8 @@ Presenters and zero-copy paths:
 See [`client/docs/pipeline.md`](../worker/proxy/client/docs/pipeline.md) for the full matrix. Highlights:
 
 - Decode error → flush, 50 ms backoff, IDR, skip non-keyframes
-- Decode stall 3 s → async reconnect
-- Resolution change → flush presentation queues
+- Decode stall 8 s without samples (after first frame) → async reconnect
+- Resolution change → `Resolution` control + IDR, flush presentation queues
 - Window resize → presentation thread drains GPU, resizes swapchain
 - D3D11 device lost → swapchain recreate + IDR
 

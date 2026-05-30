@@ -54,9 +54,9 @@ Windows HEVC/AV1 with `-hwaccel=auto` prefers **CUDA before D3D11VA** (see `deco
 ## Recovery flows
 
 1. **Decode error** → set `waitingForIDR`, request IDR, skip non-keyframes
-2. **Decode stall (3s)** → `[boot]` log, reconnect all QUIC channels
+2. **Decode stall (8s without QUIC samples after first frame, 20s before)** → `[boot]` log, async reconnect all QUIC channels
 3. **Stream close** → reconnect; on success `ResetAfterReconnect()` flushes decoder + frame queue + IDR
-4. **Resolution change** → flush presentation queues, `NotifyStreamSize`
+4. **Resolution change** → `Resolution` control + IDR, flush presentation queues, `NotifyStreamSize`
 5. **Window resize** → main thread queues resize; presentation thread drains GPU then `ResizeBuffers` (never during `Present`)
 6. **D3D11 device removed** → recreate swapchain, log, request IDR
 
@@ -82,7 +82,7 @@ Run on a discrete GPU machine (e.g. RTX 3060 Ti):
 - [ ] Esc×2 fullscreen toggle — no crash / exit status 5
 - [ ] Window resize during stream — no permanent black screen
 - [ ] Network drop → reconnect → video resumes after IDR
-- [ ] Pause encode 5s → decode stall triggers reconnect
+- [ ] Pause encode 10s → decode stall triggers reconnect
 
 ## Tests
 
