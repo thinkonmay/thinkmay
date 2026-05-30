@@ -63,6 +63,9 @@ Section "Component Name"
   SetOutPath "$INSTDIR\usbip"
   File ".\assets\usbip\*"
 
+  SetOutPath "$INSTDIR\images"
+  File ".\assets\images\*"
+
 SectionEnd
 
 Section "Register protocol" ; 

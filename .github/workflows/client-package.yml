@@ -313,6 +313,12 @@ jobs:
           echo "Copied DLLs:"
           ls -1 ./artifacts/windows/*.dll
 
+      - name: Copy logo image
+        shell: pwsh
+        run: |
+          mkdir -p artifacts/windows/images
+          cp images/logo.png artifacts/windows/images/logo.png
+
       - name: Build zip package
         shell: pwsh
         run: |

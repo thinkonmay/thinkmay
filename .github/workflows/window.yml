@@ -196,6 +196,10 @@ jobs:
           # Sunshine
           cp sunshine/shmsunshine.exe ./assets
 
+          # Logo image
+          mkdir -p ./assets/images
+          cp images/logo.png ./assets/images/logo.png
+
           ./nsis.ps1
           cp installer.exe ./artifacts
 
