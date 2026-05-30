@@ -585,3 +585,4 @@ jobs:
           --form "md5sum=${MD5_CHECKSUM}"
           --form "file=@./artifacts/thinkmay-client-windows-amd64-installer.exe"
           --progress-bar
+
