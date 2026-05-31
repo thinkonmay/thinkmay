@@ -114,6 +114,7 @@ jobs:
             mingw-w64-x86_64-gcc
             mingw-w64-x86_64-pkgconf
             mingw-w64-x86_64-opus
+            mingw-w64-x86_64-opusfile
             mingw-w64-x86_64-SDL2
 
       - name: build
@@ -122,6 +123,7 @@ jobs:
           export CGO_ENABLED=1
           export CC=gcc
           export PKG_CONFIG=pkg-config
+          export PKG_CONFIG_PATH=/mingw64/lib/pkgconfig:/mingw64/share/pkgconfig
           cd ./worker/daemon
           go mod download
           go build -ldflags="-s -w" -o daemon.exe      ./cmd/
