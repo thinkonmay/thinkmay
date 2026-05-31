@@ -151,19 +151,88 @@ Wire protocol (see `forwarder/quic`):
 3. Length-prefixed samples on bidirectional streams: `[4-byte BE len][payload]`.
 4. IVSHMEM-style control messages and JSON status envelopes on datagrams.
 
-`quicClient.Start` runs sample and control readers. Control helpers wrap IDR, video reset, audio reset, and generic `SendControl` for FPS/bitrate/pointer.
+`quicClient.Start` runs sample and control readers. Video control helpers send IDR (`SendIDR`), FPS/bitrate/pointer via `SendControl`, and audio reset on the audio channel only (`SendAudioReset`). The client never sends `ivshmem.VideoReset`; the proxy IVSHMEM forwarder sends that to the guest encoder when the listener stalls.
 
 ### Reconnection
 
-On video stream close, decode stall (8 s without QUIC samples after the first frame, 20 s before), or network drop notification, the pipeline schedules **async** `ReconnectAllClients()` so decode/present threads never block on dial I/O.
+The desktop client implements **per-channel** automatic reconnection to survive transient network failures, proxy restarts, and VM migrations without freezing the UI or crashing. Each QUIC channel (video, audio, mic, data) owns an independent lifecycle via [`clientSlot`](../worker/proxy/client/app/channel.go): lock-free reads, per-channel reconnect mutex, debounce, and exponential backoff. Reconnection I/O never blocks the SDL main thread or decode/present loops.
 
-Successful reconnect:
+#### Triggers
 
-- Swap QUIC clients under `quicMu`.
-- `ResetAfterReconnect()`: decoder flush, drain frame queue, `waitingForIDR`.
-- Re-send FPS, bitrate, IDR; restart optional audio/mic/data loops.
+| Trigger | Source | Channel |
+|---------|--------|---------|
+| **Video stream close / stall** | `decodeLoop` in [`decode_stage.go`](../worker/proxy/client/pipeline/decode_stage.go) | Video only — `ReconnectVideo()` |
+| **Video status** | [`status.go`](../worker/proxy/client/app/status.go) | `video_stalled`, `encoder_stalled` → reconnect; `waiting_for_keyframe` → IDR only (forwarder already sent `VideoReset`) |
+| **Audio/mic/data close** | [`stream_watch.go`](../worker/proxy/client/app/stream_watch.go) `onClientDone` | Matching channel only |
+| **Audio status** | [`status.go`](../worker/proxy/client/app/status.go) | `audio_stalled` |
+| **Backend disconnected** | QUIC status datagram | Routed by `ListenerID` / content token |
+| **Control path blocked** | QUIC status datagram | Data channel |
 
-Auth failures abort reconnect and surface through connect UI.
+Video reconnect updates the window title via `notifyVideoNetworkDrop()`. Title restore waits for the first post-reconnect keyframe (`onVideoKeyframeAfterReconnect` → `notifyNetworkRestored()`), not `StatusBackendReconnected`.
+
+#### Guard: `canReconnect()`
+
+[`canReconnect()`](../worker/proxy/client/app/shutdown.go) must be true at every step. Per-channel `reconnect.TryLock()` coalesces duplicate triggers for that channel; video failure does not close audio/mic/data.
+
+#### Video reconnect (make-before-break)
+
+[`reconnectVideo()`](../worker/proxy/client/app/channel.go):
+
+1. **TryLock** video slot reconnect mutex (skip if another video reconnect is in progress).
+2. **Dial** new video QUIC client (5 s timeout; exponential backoff on failure).
+3. **`PrepareForNewVideoStream()`** synchronously — set `waitingForIDR`, drain frames, `ResetStreamState()` (no decoder `Flush()`).
+4. **Atomic swap** + `publishVideoRecv(newClient)`.
+5. **Start**, send FPS/Bitrate/IDR on the new client.
+6. **Close old client** asynchronously.
+
+Audio, mic, and data use close-then-dial with channel-specific recovery ([`reconnectAudio`](../worker/proxy/client/app/channel.go), `reconnectMic`, `reconnectData`).
+
+```mermaid
+sequenceDiagram
+    participant DL as decodeLoop
+    participant Slot as videoSlot
+    participant Pipe as VideoPipeline
+    participant New as newClient
+
+    DL->>Slot: ReconnectVideo (goroutine)
+    Slot->>New: dial (5s timeout)
+    Slot->>Pipe: PrepareForNewVideoStream
+    Slot->>Slot: swap + publishVideoRecv
+    Slot->>New: Start, FPS, Bitrate, IDR
+    DL->>New: read Samples
+    DL->>DL: IDR decoded → notifyNetworkRestored
+```
+
+#### Per-channel recovery
+
+| Channel | Recovery |
+|---------|----------|
+| **Video** | `PrepareForNewVideoStream`, swap, IDR/FPS/bitrate, 90 s keyframe stall timer |
+| **Audio** | `audioPlayer.Reset()`, new `audioLoop` |
+| **Mic** | New `micLoop` with stable session UUID from app init |
+| **Data** | Cancel old receiver, `applyDataClient()` (USB, stuck inputs, gamepad sync) |
+
+#### Video pipeline reset (`PrepareForNewVideoStream`)
+
+[`recovery.go`](../worker/proxy/client/pipeline/recovery.go):
+
+1. Set `waitingForIDR = true`.
+2. `DrainFrames()`.
+3. `dec.ResetStreamState()` — clear parameter-set cache and unit queue.
+
+#### Stream handoff detection
+
+[`videoStreamHandedOff()`](../worker/proxy/client/pipeline/decode_stage.go) prevents duplicate video reconnects when the old stream's `Done` fires during an in-progress make-before-break swap.
+
+#### Auth failure handling
+
+Auth failures are terminal on any channel — no retry. Detected via dial errors, `CloseCause()`, or unauthorized status datagrams.
+
+#### User-visible feedback during reconnect
+
+- **Window title** changes to `"Thinkmay Remote Desktop — Đang kết nối lại…"` on video reconnect; restores on first post-reconnect keyframe.
+- The SDL window remains visible and responsive throughout.
+
 
 ## Video pipeline
 
@@ -215,7 +284,7 @@ Presenters and zero-copy paths:
 See [`client/docs/pipeline.md`](../worker/proxy/client/docs/pipeline.md) for the full matrix. Highlights:
 
 - Decode error → flush, 50 ms backoff, IDR, skip non-keyframes
-- Decode stall 8 s without samples (after first frame) → async reconnect
+- Decode stall **15 s** without samples (after first frame), **20 s** before first frame → async video reconnect
 - Resolution change → `Resolution` control + IDR, flush presentation queues
 - Window resize → presentation thread drains GPU, resizes swapchain
 - D3D11 device lost → swapchain recreate + IDR
