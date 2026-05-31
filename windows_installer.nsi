@@ -13,6 +13,8 @@ InstallDir "$DESKTOP\thinkmay"
 ;Request application privileges for user level privileges
 RequestExecutionLevel user
 
+Icon "images\logo.ico"
+UninstallIcon "images\logo.ico"
 
 ;--------------------------------
 ;Installer pages

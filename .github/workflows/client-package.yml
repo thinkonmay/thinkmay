@@ -313,6 +313,13 @@ jobs:
           echo "Copied DLLs:"
           ls -1 ./artifacts/windows/*.dll
 
+      - name: Set executable icons
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri "https://github.com/electron/rcedit/releases/download/v2.0.0/rcedit-x64.exe" -OutFile "rcedit.exe"
+          .\rcedit.exe "artifacts/windows/thinkmay-client.exe" --set-icon "images/logo.ico"
+          .\rcedit.exe "artifacts/windows/thinkmay-cli.exe" --set-icon "images/logo.ico"
+
       - name: Copy logo image
         shell: pwsh
         run: |

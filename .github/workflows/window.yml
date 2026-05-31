@@ -113,6 +113,8 @@ jobs:
           install: >-
             mingw-w64-x86_64-gcc
             mingw-w64-x86_64-pkgconf
+            mingw-w64-x86_64-opus
+            mingw-w64-x86_64-SDL2
 
       - name: build
         shell: msys2 {0}
@@ -133,9 +135,12 @@ jobs:
           cp ./worker/daemon/daemon.exe ./artifacts/daemon.exe
           cp ./worker/daemon/pb.exe ./artifacts/pb.exe
           
-          # Copy DLLs
-          if [ -f /mingw64/bin/libgcc_s_seh-1.dll ]; then cp /mingw64/bin/libgcc_s_seh-1.dll ./artifacts/libgcc_s_seh-1.dll; fi
-          if [ -f /mingw64/bin/libwinpthread-1.dll ]; then cp /mingw64/bin/libwinpthread-1.dll ./artifacts/libwinpthread-1.dll; fi
+          # Copy all MinGW runtime DLLs required by our binaries
+          for exe in ./worker/daemon/daemon.exe ./worker/daemon/pb.exe; do
+            ldd "$exe" | grep '/mingw64/' | awk '{print $3}' | while read -r dll; do
+              cp -n "$dll" ./artifacts/
+            done
+          done
 
 
       - name: Upload Artifacts
@@ -188,6 +193,10 @@ jobs:
         run: |
           mkdir -p artifacts
           
+          Invoke-WebRequest -Uri "https://github.com/electron/rcedit/releases/download/v2.0.0/rcedit-x64.exe" -OutFile "rcedit.exe"
+          .\rcedit.exe "go-bin/daemon.exe" --set-icon "images/logo.ico"
+          .\rcedit.exe "sunshine/shmsunshine.exe" --set-icon "images/logo.ico"
+
           # Daemon and dependencies
           cp go-bin/daemon.exe ./assets
           cp go-bin/pb.exe ./assets
@@ -199,6 +208,7 @@ jobs:
           # Logo image
           mkdir -p ./assets/images
           cp images/logo.png ./assets/images/logo.png
+          cp images/logo.ico ./assets/images/logo.ico
 
           ./nsis.ps1
           cp installer.exe ./artifacts

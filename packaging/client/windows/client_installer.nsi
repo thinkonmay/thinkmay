@@ -6,6 +6,9 @@ OutFile "thinkmay-client-windows-amd64-installer.exe"
 InstallDir "$LOCALAPPDATA\Thinkmay\Client"
 RequestExecutionLevel user
 
+Icon "images\logo.ico"
+UninstallIcon "images\logo.ico"
+
 ;--------------------------------
 ; Pages
 
