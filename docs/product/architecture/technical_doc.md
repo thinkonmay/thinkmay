@@ -369,6 +369,7 @@ The cluster utilizes a highly modified QEMU/KVM stack natively integrated using 
 * **Hardware CPU & NUMA Pinning**: To eliminate cache-level micro-stutters during heavy gaming, the hypervisor queries the Host physical topology to locate the exact NUMA node the claimed GPU belongs to (`numa_node`). It then actively pins the guest's `vCPUs` to align precisely parallel with the physical CPU threads handling that PCI-E lane using `cputune`.
 * **Dynamic Storage Pools**: Traced within `disk.go`, user data sets aren't mapped as standard virtual SATA drives. Instead, they are paravirtualized utilizing `virtio-blk-pci` and `io_uring`. Depending on network layouts, routing attaches either via localized Network Block Devices (`nbd`), distributed MooseFS mounts (`mfsmount`), or localized layered `qcow2` clone images.
 * **Ops: Intel MSR whole-node freeze**: On Intel Xeon nodes, a guest kernel driver may flood `dmesg` with `Unhandled WRMSR(0x1d9)` (IA32_DEBUGCTL / LBR). The resulting VM-exit storm can saturate the **entire physical host** — all VMs on the node freeze and SSH becomes unreachable. Amplified by the `host,kvm=off,hypervisor=off` CPU profile above. Mitigate with host `ignore_msrs` or guest LBR vPMU **without removing** anti-cheat CPU flags. See [KVM WRMSR host freeze](../../employee/playbooks/kvm_wrmsr_host_freeze.md).
+* **QEMU thread layout**: See [QEMU VM Thread Reference](./qemu_vm_threads.md) for `/proc` thread names (`CPU N/KVM`, `vnc_worker`, `iou-wrk-*`, etc.).
 
 ### 7. Cluster Configuration Manifest (`cluster.yaml`)
 
