@@ -262,16 +262,20 @@ Orchestration is in [`client/pipeline`](../worker/proxy/client/pipeline):
 
 **Windows + D3D11 presenter + HEVC/AV1 + `-hwaccel=auto`:** CUDA (NVDEC → D3D11 map) is tried **before** D3D11VA because native D3D11VA HEVC is unreliable on many NVIDIA GPUs.
 
-**Runtime fallback** (`hwaccel=auto` only): after 8 consecutive decode errors, `TryDecoderFallback()` swaps to the next compatible device (e.g. CUDA → D3D11VA) without restarting the app.
+**Runtime fallback** (`hwaccel=auto` only): after 8 consecutive decode errors, `TryDecoderFallback()` swaps to the next compatible device (e.g. CUDA → D3D11VA → DXVA2 → QSV → Vulkan → AMF) without restarting the app.
+
+**QSV and AMF on Windows:** `-hwaccel=qsv` and `-hwaccel=amf` create a D3D11VA parent device, then derive the Intel/AMD decode device from it (same pattern as CUDA). Decoded frames are mapped to D3D11 when possible; otherwise they take the CPU NV12 upload path.
 
 Presenters and zero-copy paths:
 
-| OS | `-present` default | Decoder | Path |
-|----|-------------------|---------|------|
-| Windows | `d3d11` | D3D11VA or CUDA | HW texture → VideoProcessorBlt → swapchain |
+| OS / GPU | `-present` default | Auto decoder order | Zero-copy path |
+|----------|-------------------|-------------------|----------------|
+| Windows NVIDIA (HEVC/AV1) | `d3d11` | CUDA → D3D11VA → … | CUDA NVDEC → D3D11 map, or native D3D11VA |
+| Windows Intel/AMD (H.264) | `d3d11` | D3D11VA → DXVA2 → QSV → … | D3D11VA textures (QSV/AMF fallback may CPU-upload) |
+| Windows (forced QSV/AMF) | `d3d11` | user override | D3D11 map when supported, else NV12 upload |
 | macOS | `metal` | VideoToolbox | CVPixelBuffer → Metal |
-| Linux | `vaapi-egl` | VAAPI | EGL import |
-| Any | `sdl` / `software-debug` | Any | CPU transfer → SDL (diagnostics) |
+| Linux Intel/AMD | `vaapi-egl` | VAAPI | EGL import (QSV device not used; VAAPI is the Intel path) |
+| Any diagnostics | `sdl` / `software-debug` | any compatible | CPU transfer → SDL |
 
 ### Backpressure
 
@@ -353,7 +357,7 @@ Hotkeys: double-Esc toggles fullscreen; focus loss releases stuck keys/buttons.
 | `-vmid`, `-token` | Target VM and video listener (required) |
 | `-audio-token`, `-mic-token`, `-data-token` | Optional channels |
 | `-codec` | `h264`, `h265`, `av1` (default `h264`) |
-| `-hwaccel` | `auto`, `cuda`, `d3d11va`, `videotoolbox`, `vaapi`, … |
+| `-hwaccel` | `auto`, `cuda`, `d3d11va`, `dxva2`, `qsv`, `amf`, `videotoolbox`, `vaapi`, … |
 | `-present` | `d3d11`, `metal`, `vaapi-egl`, `sdl`, `software-debug` |
 | `-fullscreen` | Start fullscreen desktop (default true) |
 | `-vsync` | Tear-free present tied to display refresh |

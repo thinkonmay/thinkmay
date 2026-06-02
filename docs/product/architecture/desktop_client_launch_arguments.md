@@ -58,7 +58,7 @@ USB forwarding also requires a HID/data listener token:
 | `-mic-token` | string | empty | `mic`, `mic-token` | Microphone listener token. Enables microphone capture when present. |
 | `-data-token` | string | empty | `data`, `data-token` | HID/data listener token. Enables input and USB forwarding path when present. |
 | `-codec` | string | `h264` | `codec` | Video codec. Accepted values: `h264`, `avc`, `h265`, `hevc`, `av1`. Normalized to `h264`, `h265`, or `av1`. |
-| `-hwaccel` | string | `auto` | `hwaccel` | FFmpeg hardware decoder preference. Accepted by help text: `auto`, `d3d11va`, `dxva2`, `cuda`, `qsv`, `videotoolbox`, `vaapi`, `vdpau`, `vulkan`, `none`. |
+| `-hwaccel` | string | `auto` | `hwaccel` | FFmpeg hardware decoder preference. Accepted by help text: `auto`, `d3d11va`, `dxva2`, `cuda`, `qsv`, `amf`, `videotoolbox`, `vaapi`, `vdpau`, `vulkan`, `none`. |
 | `-present` | string | `d3d11` on Windows; `sdl` on Linux/macOS | `present` | Presenter backend. Current values include `d3d11`, `sdl`, and `software-debug`. |
 | `-width` | integer | `1280` | `width` | Initial window width. |
 | `-height` | integer | `720` | `height` | Initial window height. |
