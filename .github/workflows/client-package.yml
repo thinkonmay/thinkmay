@@ -7,6 +7,9 @@ on:
     paths:
       - 'worker/proxy'
       - 'packaging/client/**'
+      - 'packaging/homebrew/**'
+      - 'Formula/**'
+      - 'Casks/**'
       - '.github/workflows/client-package.yml'
   workflow_dispatch:
     inputs:
@@ -36,6 +39,10 @@ jobs:
         with:
           submodules: recursive
           token: ${{ secrets.GH_TOKEN }}
+
+      - name: Read client version
+        id: version
+        run: echo "value=$(tr -d '[:space:]' < packaging/client/VERSION)" >> "$GITHUB_OUTPUT"
 
       - name: Install dependencies
         run: |
@@ -98,7 +105,7 @@ jobs:
           tar -czf ./artifacts/thinkmay-client-linux-amd64.tar.gz -C ./artifacts/package thinkmay-client-linux-amd64
 
           # Create debian package structure
-          DEBDIR="artifacts/debian/thinkmay-client_0.1.0_amd64"
+          DEBDIR="artifacts/debian/thinkmay-client_${{ steps.version.outputs.value }}_amd64"
           mkdir -p "${DEBDIR}/DEBIAN"
           mkdir -p "${DEBDIR}/usr/bin"
           mkdir -p "${DEBDIR}/usr/share/thinkmay-client/lib"
@@ -118,7 +125,7 @@ jobs:
           
           # Create control file
           echo "Package: thinkmay-client" > "${DEBDIR}/DEBIAN/control"
-          echo "Version: 0.1.0" >> "${DEBDIR}/DEBIAN/control"
+          echo "Version: ${{ steps.version.outputs.value }}" >> "${DEBDIR}/DEBIAN/control"
           echo "Section: utils" >> "${DEBDIR}/DEBIAN/control"
           echo "Priority: optional" >> "${DEBDIR}/DEBIAN/control"
           echo "Architecture: amd64" >> "${DEBDIR}/DEBIAN/control"
@@ -172,10 +179,19 @@ jobs:
           submodules: recursive
           token: ${{ secrets.GH_TOKEN }}
 
+      - name: Read client version
+        id: version
+        run: echo "value=$(tr -d '[:space:]' < packaging/client/VERSION)" >> "$GITHUB_OUTPUT"
+
       - name: Install dependencies
         run: |
           brew update
           brew install ffmpeg pkg-config sdl2
+
+      - name: Set app bundle version
+        run: |
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${{ steps.version.outputs.value }}" packaging/client/macos/Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ steps.version.outputs.value }}" packaging/client/macos/Info.plist
 
       - name: Build app bundle
         run: |
@@ -534,7 +550,7 @@ jobs:
     name: Publish Linux Client
     runs-on: ubuntu-latest
     needs: [package_linux, test_linux]
-    if: github.event_name == 'push' || inputs.publish
+    if: github.event_name == 'push' || github.event.inputs.publish == 'true'
 
     steps:
       - uses: actions/download-artifact@v4
@@ -557,7 +573,7 @@ jobs:
     name: Publish macOS Client
     runs-on: ubuntu-latest
     needs: [package_macos, test_macos]
-    if: github.event_name == 'push' || inputs.publish
+    if: github.event_name == 'push' || github.event.inputs.publish == 'true'
 
     steps:
       - uses: actions/download-artifact@v4
@@ -580,7 +596,7 @@ jobs:
     name: Publish Windows Client
     runs-on: ubuntu-latest
     needs: [package_windows, test_windows]
-    if: github.event_name == 'push' || inputs.publish
+    if: github.event_name == 'push' || github.event.inputs.publish == 'true'
 
     steps:
       - uses: actions/download-artifact@v4
@@ -598,4 +614,116 @@ jobs:
           --form "md5sum=${MD5_CHECKSUM}"
           --form "file=@./artifacts/thinkmay-client-windows-amd64-installer.exe"
           --progress-bar
+
+  release_github:
+    name: GitHub Release + Homebrew formulae
+    runs-on: ubuntu-latest
+    needs: [package_linux, package_macos, test_linux, test_macos]
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.publish == 'true')
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Download Linux package
+        uses: actions/download-artifact@v4
+        with:
+          name: client-linux-package
+          path: artifacts
+
+      - name: Download macOS package
+        uses: actions/download-artifact@v4
+        with:
+          name: client-macos-package
+          path: artifacts
+
+      - name: Read client version
+        id: version
+        run: echo "value=$(tr -d '[:space:]' < packaging/client/VERSION)" >> "$GITHUB_OUTPUT"
+
+      - name: Update Homebrew checksums
+        run: ./packaging/homebrew/update-formulae.sh ./artifacts
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.value }}
+          name: Thinkmay Client v${{ steps.version.outputs.value }}
+          generate_release_notes: true
+          overwrite: true
+          files: |
+            artifacts/thinkmay-client-linux-amd64.tar.gz
+            artifacts/thinkmay-client-linux-amd64.deb
+            artifacts/thinkmay-client-darwin.zip
+            artifacts/thinkmay-client-darwin.dmg
+          fail_on_unmatched_files: true
+
+      - name: Commit Homebrew formula updates
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add packaging/homebrew/Formula/thinkmay-client.rb packaging/homebrew/Casks/thinkmay-client.rb
+          if git diff --cached --quiet; then
+            echo "Homebrew formulae already up to date"
+            exit 0
+          fi
+          git commit -m "chore(homebrew): update thinkmay-client v${{ steps.version.outputs.value }} checksums [skip ci]"
+          git push
+
+  test_homebrew_linux:
+    name: Test Homebrew Linux formula
+    runs-on: ubuntu-24.04
+    needs: [package_linux]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Linux package
+        uses: actions/download-artifact@v4
+        with:
+          name: client-linux-package
+          path: artifacts
+
+      - name: Update Homebrew checksums
+        run: ./packaging/homebrew/update-formulae.sh ./artifacts
+
+      - name: Install Homebrew
+        run: NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+      - name: Install formula from local artifact URL
+        run: |
+          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+          LINUX_SHA=$(sha256sum artifacts/thinkmay-client-linux-amd64.tar.gz | awk '{print $1}')
+          sed -i "s|url \".*thinkmay-client-linux-amd64.tar.gz\"|url \"file://${GITHUB_WORKSPACE}/artifacts/thinkmay-client-linux-amd64.tar.gz\"|" packaging/homebrew/Formula/thinkmay-client.rb
+          sed -i "s/sha256 \"[0-9a-f]\{64\}\"/sha256 \"${LINUX_SHA}\"/" packaging/homebrew/Formula/thinkmay-client.rb
+          brew install --formula ./packaging/homebrew/Formula/thinkmay-client.rb
+          thinkmay-client --help || true
+
+  test_homebrew_macos:
+    name: Test Homebrew macOS cask
+    runs-on: macos-latest
+    needs: [package_macos]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download macOS package
+        uses: actions/download-artifact@v4
+        with:
+          name: client-macos-package
+          path: artifacts
+
+      - name: Update Homebrew checksums
+        run: ./packaging/homebrew/update-formulae.sh ./artifacts
+
+      - name: Install cask from local zip
+        run: |
+          MAC_SHA=$(shasum -a 256 artifacts/thinkmay-client-darwin.zip | awk '{print $1}')
+          sed -i '' "s|url \".*thinkmay-client-darwin.zip\"|url \"file://${PWD}/artifacts/thinkmay-client-darwin.zip\"|" packaging/homebrew/Casks/thinkmay-client.rb
+          sed -i '' "s/sha256 \"[0-9a-f]\{64\}\"/sha256 \"${MAC_SHA}\"/" packaging/homebrew/Casks/thinkmay-client.rb
+          brew install --cask ./packaging/homebrew/Casks/thinkmay-client.rb
+          "/Applications/Thinkmay Client.app/Contents/MacOS/thinkmay-client" --help || true
 

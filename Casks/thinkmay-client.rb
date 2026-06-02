@@ -1,0 +1,1 @@
+../packaging/homebrew/Casks/thinkmay-client.rb
