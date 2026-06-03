@@ -16,7 +16,7 @@ class ThinkmayClient < Formula
   on_linux do
     on_intel do
       url "https://github.com/thinkonmay/thinkmay/releases/download/v#{version}/thinkmay-client-linux-amd64.tar.gz"
-      sha256 "b0cd3d6ec2fd594d0e2f956f77e398b5106f6559884718ff8b36fe579a02833a"
+      sha256 "18e403bb16508ea8049c7b48c1c22833b453168a153a54af1fd9196b03005085"
     end
     on_arm do
       odie "Linux ARM64 builds are not published yet"
