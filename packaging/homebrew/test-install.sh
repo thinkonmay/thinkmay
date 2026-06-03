@@ -95,7 +95,7 @@ brew tap "${TAP_NAME}" "${TAP_DIR}"
 
 case "${PLATFORM}" in
   linux)
-    brew install "${TAP_NAME}/thinkmay-client"
+    brew install --formula "${TAP_NAME}/thinkmay-client"
     thinkmay-client --help || true
     ;;
   macos)

@@ -12,14 +12,16 @@ cask "thinkmay-client" do
 
   depends_on macos: ">= :monterey"
 
-  on_intel do
-    odie "Intel Mac builds are not published. Use an Apple Silicon Mac or install the Linux/Windows client."
+  on_macos do
+    on_intel do
+      odie "Intel Mac builds are not published. Use an Apple Silicon Mac or install the Linux/Windows client."
+    end
+
+    app "Thinkmay Client.app"
+
+    zap trash: [
+      "~/Library/Preferences/net.thinkmay.client.plist",
+      "~/Library/Saved Application State/net.thinkmay.client.savedState",
+    ]
   end
-
-  app "Thinkmay Client.app"
-
-  zap trash: [
-    "~/Library/Preferences/net.thinkmay.client.plist",
-    "~/Library/Saved Application State/net.thinkmay.client.savedState",
-  ]
 end
