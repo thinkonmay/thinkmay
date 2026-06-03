@@ -47,23 +47,22 @@ brew upgrade thinkmay-client          # Linux
 
 ## Local development (from a git checkout)
 
-Build client packages with CI or locally, refresh checksums, then install from the checkout:
+Build client packages with CI or locally, refresh checksums, then install via a **local tap** (Homebrew rejects bare `.rb` paths):
 
 ```bash
 # After client-package artifacts exist under ./artifacts/
 ./packaging/homebrew/update-formulae.sh ./artifacts
 
-# macOS
-brew install --cask ./packaging/homebrew/Casks/thinkmay-client.rb
-
-# Linux (Homebrew on Linux)
-brew install ./packaging/homebrew/Formula/thinkmay-client.rb
+# macOS or Linux (Homebrew on Linux)
+./packaging/homebrew/test-install.sh macos ./artifacts
+./packaging/homebrew/test-install.sh linux ./artifacts
 ```
 
-Or use the helper script:
+Or use the build helper (creates artifacts if missing, then updates formulae):
 
 ```bash
 ./packaging/homebrew/brew-build.sh
+./packaging/homebrew/test-install.sh macos ./artifacts
 ```
 
 ## Release maintenance

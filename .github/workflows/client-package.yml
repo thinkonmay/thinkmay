@@ -693,14 +693,10 @@ jobs:
       - name: Install Homebrew
         run: NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-      - name: Install formula from local artifact URL
+      - name: Test formula install via local tap
         run: |
           eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-          LINUX_SHA=$(sha256sum artifacts/thinkmay-client-linux-amd64.tar.gz | awk '{print $1}')
-          sed -i "s|url \".*thinkmay-client-linux-amd64.tar.gz\"|url \"file://${GITHUB_WORKSPACE}/artifacts/thinkmay-client-linux-amd64.tar.gz\"|" packaging/homebrew/Formula/thinkmay-client.rb
-          sed -i "s/sha256 \"[0-9a-f]\{64\}\"/sha256 \"${LINUX_SHA}\"/" packaging/homebrew/Formula/thinkmay-client.rb
-          brew install --formula ./packaging/homebrew/Formula/thinkmay-client.rb
-          thinkmay-client --help || true
+          ./packaging/homebrew/test-install.sh linux ./artifacts
 
   test_homebrew_macos:
     name: Test Homebrew macOS cask
@@ -719,11 +715,6 @@ jobs:
       - name: Update Homebrew checksums
         run: ./packaging/homebrew/update-formulae.sh ./artifacts
 
-      - name: Install cask from local zip
-        run: |
-          MAC_SHA=$(shasum -a 256 artifacts/thinkmay-client-darwin.zip | awk '{print $1}')
-          sed -i '' "s|url \".*thinkmay-client-darwin.zip\"|url \"file://${PWD}/artifacts/thinkmay-client-darwin.zip\"|" packaging/homebrew/Casks/thinkmay-client.rb
-          sed -i '' "s/sha256 \"[0-9a-f]\{64\}\"/sha256 \"${MAC_SHA}\"/" packaging/homebrew/Casks/thinkmay-client.rb
-          brew install --cask ./packaging/homebrew/Casks/thinkmay-client.rb
-          "/Applications/Thinkmay Client.app/Contents/MacOS/thinkmay-client" --help || true
+      - name: Test cask install via local tap
+        run: ./packaging/homebrew/test-install.sh macos ./artifacts
 
