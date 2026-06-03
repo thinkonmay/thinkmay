@@ -401,10 +401,10 @@ jobs:
           fi
           echo "Custom URL handler verification passed."
 
-      - name: Install and test Debian package
+      - name: Install and test Debian package in Docker
         run: |
-          sudo dpkg -i artifacts/thinkmay-client-linux-amd64.deb || sudo apt-get install -f -y
-          thinkmay-client --help || true
+          chmod +x ./packaging/client/linux/test-deb-install.sh
+          ./packaging/client/linux/test-deb-install.sh ./artifacts
   test_macos:
     name: Test macOS Client
     runs-on: macos-latest
