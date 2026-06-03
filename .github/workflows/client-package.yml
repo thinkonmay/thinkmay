@@ -78,7 +78,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: client-linux-package
+          name: client-linux-package-${{ matrix.arch }}
           path: |
             artifacts/thinkmay-client-linux-${{ matrix.arch }}.tar.gz
             artifacts/thinkmay-client-linux-${{ matrix.arch }}.deb
@@ -237,7 +237,7 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: client-linux-package
+          name: client-linux-package-${{ matrix.arch }}
           path: artifacts
 
       - name: Test tar package
@@ -392,7 +392,8 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: client-linux-package
+          pattern: client-linux-package-*
+          merge-multiple: true
           path: artifacts
 
       - name: Upload Linux client
@@ -472,7 +473,8 @@ jobs:
       - name: Download Linux package
         uses: actions/download-artifact@v4
         with:
-          name: client-linux-package
+          pattern: client-linux-package-*
+          merge-multiple: true
           path: artifacts
 
       - name: Download macOS package
@@ -535,7 +537,7 @@ jobs:
       - name: Download Linux package
         uses: actions/download-artifact@v4
         with:
-          name: client-linux-package
+          name: client-linux-package-${{ matrix.arch }}
           path: artifacts
 
       - name: Update Homebrew checksums
