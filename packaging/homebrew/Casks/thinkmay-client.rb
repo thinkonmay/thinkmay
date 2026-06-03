@@ -3,7 +3,7 @@
 
 cask "thinkmay-client" do
   version "0.1.0"
-  sha256 "30cc4e518d65a5f5e304b69b2271ae01f9bec86b76a37d0d4bf1efb40ecd2256"
+  sha256 "de11a805e4710d070a6afca8d7e4d62034481146319d0eac1c3c2e87fc5c5a7f"
 
   url "https://github.com/thinkonmay/thinkmay/releases/download/v#{version}/thinkmay-client-darwin.zip"
   name "Thinkmay Client"
