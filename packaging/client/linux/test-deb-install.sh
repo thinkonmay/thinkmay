@@ -1,12 +1,27 @@
 #!/usr/bin/env bash
-# Install the .deb in a clean Ubuntu container and verify URL handler desktop entry.
-# Usage: ./packaging/client/linux/test-deb-install.sh [artifacts_dir]
+# Install a .deb in a clean Ubuntu container and verify URL handler desktop entry.
+# Usage: ./packaging/client/linux/test-deb-install.sh [artifacts_dir] [amd64|arm64]
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 ARTIFACTS="${1:-${ROOT}/artifacts}"
-DEB="${ARTIFACTS}/thinkmay-client-linux-amd64.deb"
-IMAGE="${THINKMAY_DEB_TEST_IMAGE:-ubuntu:24.04}"
+ARCH="${2:-amd64}"
+DEB="${ARTIFACTS}/thinkmay-client-linux-${ARCH}.deb"
+
+case "${ARCH}" in
+  amd64)
+    IMAGE="${THINKMAY_DEB_TEST_IMAGE:-ubuntu:24.04}"
+    DOCKER_PLATFORM=()
+    ;;
+  arm64)
+    IMAGE="${THINKMAY_DEB_TEST_IMAGE_ARM:-ubuntu:24.04}"
+    DOCKER_PLATFORM=(--platform linux/arm64)
+    ;;
+  *)
+    echo "unsupported arch: ${ARCH}" >&2
+    exit 1
+    ;;
+esac
 
 if [[ ! -f "${DEB}" ]]; then
   echo "missing ${DEB}" >&2
@@ -18,9 +33,9 @@ if ! command -v docker >/dev/null 2>&1; then
   exit 1
 fi
 
-echo "Testing ${DEB} in ${IMAGE}..."
+echo "Testing ${DEB} in ${IMAGE} (${ARCH})..."
 
-docker run --rm \
+docker run --rm "${DOCKER_PLATFORM[@]}" \
   -v "${DEB}:/tmp/thinkmay-client.deb:ro" \
   "${IMAGE}" \
   bash -euxo pipefail -c '
@@ -59,4 +74,4 @@ docker run --rm \
     echo "Debian package install and URL handler verification passed"
   '
 
-echo "Docker deb install test passed"
+echo "Docker deb install test passed (${ARCH})"

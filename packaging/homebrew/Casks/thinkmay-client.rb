@@ -3,9 +3,16 @@
 
 cask "thinkmay-client" do
   version "0.1.0"
-  sha256 "258a9310a9046e19c2931402a496e4d88380399a1cfc5932da030c35f5c371df"
 
-  url "https://github.com/thinkonmay/thinkmay/releases/download/v#{version}/thinkmay-client-darwin.zip"
+  on_arm do
+    url "https://github.com/thinkonmay/thinkmay/releases/download/v#{version}/thinkmay-client-darwin-arm64.zip"
+    sha256 "de11a805e4710d070a6afca8d7e4d62034481146319d0eac1c3c2e87fc5c5a7f"
+  end
+  on_intel do
+    url "https://github.com/thinkonmay/thinkmay/releases/download/v#{version}/thinkmay-client-darwin-amd64.zip"
+    sha256 "0000000000000000000000000000000000000000000000000000000000000000"
+  end
+
   name "Thinkmay Client"
   desc "Thinkmay CloudPC desktop streaming client"
   homepage "https://thinkmay.net"

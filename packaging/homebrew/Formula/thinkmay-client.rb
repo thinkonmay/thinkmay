@@ -19,12 +19,18 @@ class ThinkmayClient < Formula
       sha256 "18e403bb16508ea8049c7b48c1c22833b453168a153a54af1fd9196b03005085"
     end
     on_arm do
-      odie "Linux ARM64 builds are not published yet"
+      url "https://github.com/thinkonmay/thinkmay/releases/download/v#{version}/thinkmay-client-linux-arm64.tar.gz"
+      sha256 "0000000000000000000000000000000000000000000000000000000000000000"
+    end
+
+    def linux_pkg_dir
+      arch = Hardware::CPU.arm? ? "arm64" : "amd64"
+      root = buildpath/"thinkmay-client-linux-#{arch}"
+      root.directory? ? root : buildpath
     end
 
     def install
-      pkg = "thinkmay-client-linux-amd64"
-      cd pkg do
+      cd linux_pkg_dir do
         (libexec/"lib").install Dir["lib/*"]
         libexec.install "thinkmay-client-bin"
         (bin/"thinkmay-client").write <<~SHELL

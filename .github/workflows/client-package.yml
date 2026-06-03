@@ -25,8 +25,16 @@ concurrency:
 
 jobs:
   package_linux:
-    name: Package Linux Client
-    runs-on: ubuntu-24.04
+    name: Package Linux Client (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
 
     steps:
       - name: Setup Go
@@ -62,110 +70,30 @@ jobs:
             libva-drm2 \
             pkg-config
 
-      - name: Build binary
+      - name: Build package
         run: |
-          mkdir -p artifacts/package/thinkmay-client-linux-amd64/lib
-          cd ./worker/proxy
-          go mod download
-          CGO_ENABLED=1 go build -trimpath -ldflags="-s -w" -o ../../artifacts/package/thinkmay-client-linux-amd64/thinkmay-client-bin ./cmd/client
-          cd ../..
-          chmod +x ./artifacts/package/thinkmay-client-linux-amd64/thinkmay-client-bin
-
-      - name: Bundle shared libraries
-        run: |
-          PKGDIR=artifacts/package/thinkmay-client-linux-amd64
-          LIBDIR="${PKGDIR}/lib"
-          copy_deps() {
-            local deps lib name
-            deps=$(ldd "$1" 2>/dev/null | grep '=> /' | awk '{print $3}' || true)
-            for lib in $deps; do
-              # Skip core system libraries guaranteed on any Linux
-              name=$(basename "$lib")
-              case "$name" in
-                libc.so*|libm.so*|libdl.so*|librt.so*|libpthread.so*|ld-linux*|linux-vdso*|libgcc_s.so*|libstdc++.so*) continue ;;
-              esac
-              if [ ! -f "${LIBDIR}/${name}" ]; then
-                cp "$lib" "${LIBDIR}/"
-                copy_deps "$lib"
-              fi
-            done
-          }
-          copy_deps "${PKGDIR}/thinkmay-client-bin"
-          echo "Bundled libraries:"
-          ls -1 "${LIBDIR}/"
-
-      - name: Create launcher and archive
-        run: |
-          PKGDIR=artifacts/package/thinkmay-client-linux-amd64
-          printf '#!/bin/bash\nSCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"\nexport LD_LIBRARY_PATH="${SCRIPT_DIR}/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"\nexec "${SCRIPT_DIR}/thinkmay-client-bin" "$@"\n' > "${PKGDIR}/thinkmay-client"
-          chmod +x "${PKGDIR}/thinkmay-client"
-          cp ./packaging/client/linux/README.txt "${PKGDIR}/README.txt"
-          cp ./packaging/client/linux/thinkmay-client.desktop "${PKGDIR}/thinkmay-client.desktop"
-          ldd "${PKGDIR}/thinkmay-client-bin" | tee "${PKGDIR}/thinkmay-client-linux-ldd.txt"
-          tar -czf ./artifacts/thinkmay-client-linux-amd64.tar.gz -C ./artifacts/package thinkmay-client-linux-amd64
-
-          # Create debian package structure
-          DEBDIR="artifacts/debian/thinkmay-client_${{ steps.version.outputs.value }}_amd64"
-          mkdir -p "${DEBDIR}/DEBIAN"
-          mkdir -p "${DEBDIR}/usr/bin"
-          mkdir -p "${DEBDIR}/usr/share/thinkmay-client/lib"
-          mkdir -p "${DEBDIR}/usr/share/applications"
-          
-          # Copy binaries and libraries
-          cp artifacts/package/thinkmay-client-linux-amd64/thinkmay-client-bin "${DEBDIR}/usr/share/thinkmay-client/"
-          cp -r artifacts/package/thinkmay-client-linux-amd64/lib/* "${DEBDIR}/usr/share/thinkmay-client/lib/"
-          
-          # Create launcher script /usr/bin/thinkmay-client
-          printf '#!/bin/bash\nexport LD_LIBRARY_PATH="/usr/share/thinkmay-client/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"\nexec "/usr/share/thinkmay-client/thinkmay-client-bin" "$@"\n' > "${DEBDIR}/usr/bin/thinkmay-client"
-          chmod +x "${DEBDIR}/usr/bin/thinkmay-client"
-          
-          # Copy desktop entry and update Exec path
-          cp ./packaging/client/linux/thinkmay-client.desktop "${DEBDIR}/usr/share/applications/"
-          sed -i 's/Exec=thinkmay-client/Exec=\/usr\/bin\/thinkmay-client/g' "${DEBDIR}/usr/share/applications/thinkmay-client.desktop"
-          
-          # Create control file
-          echo "Package: thinkmay-client" > "${DEBDIR}/DEBIAN/control"
-          echo "Version: ${{ steps.version.outputs.value }}" >> "${DEBDIR}/DEBIAN/control"
-          echo "Section: utils" >> "${DEBDIR}/DEBIAN/control"
-          echo "Priority: optional" >> "${DEBDIR}/DEBIAN/control"
-          echo "Architecture: amd64" >> "${DEBDIR}/DEBIAN/control"
-          echo "Maintainer: Thinkmay <contact@thinkmay.net>" >> "${DEBDIR}/DEBIAN/control"
-          echo "Description: Thinkmay Client Application for remote desktop connection." >> "${DEBDIR}/DEBIAN/control"
-
-          # Create postinst script
-          echo '#!/bin/sh' > "${DEBDIR}/DEBIAN/postinst"
-          echo 'set -e' >> "${DEBDIR}/DEBIAN/postinst"
-          echo 'if [ "$1" = "configure" ]; then' >> "${DEBDIR}/DEBIAN/postinst"
-          echo '    if which update-desktop-database >/dev/null 2>&1; then' >> "${DEBDIR}/DEBIAN/postinst"
-          echo '        update-desktop-database -q /usr/share/applications || true' >> "${DEBDIR}/DEBIAN/postinst"
-          echo '    fi' >> "${DEBDIR}/DEBIAN/postinst"
-          echo 'fi' >> "${DEBDIR}/DEBIAN/postinst"
-          chmod +x "${DEBDIR}/DEBIAN/postinst"
-
-          # Create postrm script
-          echo '#!/bin/sh' > "${DEBDIR}/DEBIAN/postrm"
-          echo 'set -e' >> "${DEBDIR}/DEBIAN/postrm"
-          echo 'if [ "$1" = "remove" ] || [ "$1" = "purge" ]; then' >> "${DEBDIR}/DEBIAN/postrm"
-          echo '    if which update-desktop-database >/dev/null 2>&1; then' >> "${DEBDIR}/DEBIAN/postrm"
-          echo '        update-desktop-database -q /usr/share/applications || true' >> "${DEBDIR}/DEBIAN/postrm"
-          echo '    fi' >> "${DEBDIR}/DEBIAN/postrm"
-          echo 'fi' >> "${DEBDIR}/DEBIAN/postrm"
-          chmod +x "${DEBDIR}/DEBIAN/postrm"
-          
-          # Build the .deb file
-          dpkg-deb --build "${DEBDIR}" artifacts/thinkmay-client-linux-amd64.deb
+          chmod +x ./packaging/client/linux/build-linux-package.sh
+          ./packaging/client/linux/build-linux-package.sh "${{ matrix.arch }}" "${{ steps.version.outputs.value }}"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: client-linux-package
           path: |
-            artifacts/thinkmay-client-linux-amd64.tar.gz
-            artifacts/thinkmay-client-linux-amd64.deb
+            artifacts/thinkmay-client-linux-${{ matrix.arch }}.tar.gz
+            artifacts/thinkmay-client-linux-${{ matrix.arch }}.deb
 
   package_macos:
-    name: Package macOS Client
-    runs-on: macos-latest
+    name: Package macOS Client (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: arm64
+            runner: macos-latest
+          - arch: amd64
+            runner: macos-13
 
     steps:
       - name: Setup Go
@@ -188,81 +116,18 @@ jobs:
           brew update
           brew install ffmpeg pkg-config sdl2
 
-      - name: Set app bundle version
+      - name: Build package
         run: |
-          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${{ steps.version.outputs.value }}" packaging/client/macos/Info.plist
-          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ steps.version.outputs.value }}" packaging/client/macos/Info.plist
-
-      - name: Build app bundle
-        run: |
-          APP="artifacts/macos/Thinkmay Client.app"
-          MACOS_DIR="${APP}/Contents/MacOS"
-          FRAMEWORKS_DIR="${APP}/Contents/Frameworks"
-          mkdir -p "${MACOS_DIR}" "${APP}/Contents/Resources" "${FRAMEWORKS_DIR}"
-          cp ./packaging/client/macos/Info.plist "${APP}/Contents/Info.plist"
-          cd ./worker/proxy
-          go mod download
-          CGO_ENABLED=1 go build -trimpath -ldflags="-s -w" -o "../../${MACOS_DIR}/thinkmay-client" ./cmd/client
-          cd ../..
-          chmod +x "${MACOS_DIR}/thinkmay-client"
-
-      - name: Bundle dylibs
-        run: |
-          APP="artifacts/macos/Thinkmay Client.app"
-          BINARY="${APP}/Contents/MacOS/thinkmay-client"
-          FRAMEWORKS="${APP}/Contents/Frameworks"
-
-          copy_deps() {
-            local deps lib base
-            deps=$(otool -L "$1" 2>/dev/null | tail -n +2 | awk '{print $1}' | grep -v '^/usr/lib/' | grep -v '^/System/' | grep -v '@executable_path' | grep -v '@rpath' | grep -v '@loader_path' || true)
-            for lib in $deps; do
-              base=$(basename "$lib")
-              if [ ! -f "${FRAMEWORKS}/${base}" ]; then
-                cp "$lib" "${FRAMEWORKS}/"
-                chmod 644 "${FRAMEWORKS}/${base}"
-                install_name_tool -id "@executable_path/../Frameworks/${base}" "${FRAMEWORKS}/${base}" 2>/dev/null || true
-                copy_deps "${FRAMEWORKS}/${base}"
-              fi
-              install_name_tool -change "$lib" "@executable_path/../Frameworks/${base}" "$1" 2>/dev/null || true
-            done
-          }
-
-          copy_deps "${BINARY}"
-
-          # Fix cross-references between bundled dylibs (run until stable)
-          for _pass in 1 2 3; do
-            for dylib in "${FRAMEWORKS}"/*.dylib; do
-              [ -f "$dylib" ] || continue
-              local_deps=$(otool -L "$dylib" 2>/dev/null | tail -n +2 | awk '{print $1}' | grep -v '^/usr/lib/' | grep -v '^/System/' | grep -v '@executable_path' | grep -v '@rpath' | grep -v '@loader_path' || true)
-              for lib in $local_deps; do
-                base=$(basename "$lib")
-                if [ -f "${FRAMEWORKS}/${base}" ]; then
-                  install_name_tool -change "$lib" "@executable_path/../Frameworks/${base}" "$dylib" 2>/dev/null || true
-                fi
-              done
-            done
-          done
-
-          # Ad-hoc codesign everything (required on modern macOS after install_name_tool)
-          for f in "${FRAMEWORKS}"/*.dylib; do
-            [ -f "$f" ] && codesign --force --sign - "$f" 2>/dev/null || true
-          done
-          codesign --force --sign - "${BINARY}" 2>/dev/null || true
-
-          echo "Bundled frameworks:"
-          ls -1 "${FRAMEWORKS}/"
-          echo "Final otool -L:"
-          otool -L "${BINARY}" | tee "artifacts/macos/thinkmay-client-macos-otool.txt"
-          ditto -c -k --sequesterRsrc --keepParent "${APP}" "artifacts/thinkmay-client-darwin.zip"
-          hdiutil create -fs HFS+ -srcfolder "${APP}" -volname "Thinkmay Client" "artifacts/thinkmay-client-darwin.dmg"
+          chmod +x ./packaging/client/macos/build-macos-package.sh
+          ./packaging/client/macos/build-macos-package.sh "${{ matrix.arch }}" "${{ steps.version.outputs.value }}"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: client-macos-package
           path: |
-            artifacts/thinkmay-client-darwin.zip
-            artifacts/thinkmay-client-darwin.dmg
+            artifacts/thinkmay-client-darwin-${{ matrix.arch }}.zip
+            artifacts/thinkmay-client-darwin-${{ matrix.arch }}.dmg
 
   package_windows:
     name: Package Windows Client
@@ -375,42 +240,36 @@ jobs:
           name: client-linux-package
           path: artifacts
 
-      - name: Extract tar package
-        run: |
-          tar -xzf artifacts/thinkmay-client-linux-amd64.tar.gz -C artifacts
-      - name: Run client --help
-        run: |
-          chmod +x artifacts/thinkmay-client-linux-amd64/thinkmay-client
-          chmod +x artifacts/thinkmay-client-linux-amd64/thinkmay-client-bin
-          artifacts/thinkmay-client-linux-amd64/thinkmay-client --help || true
-
-      - name: Test custom URL handler registration
-        run: |
-          DESKTOP_FILE="artifacts/thinkmay-client-linux-amd64/thinkmay-client.desktop"
-          if [ ! -f "$DESKTOP_FILE" ]; then
-              echo "Desktop file not found at $DESKTOP_FILE"
-              exit 1
-          fi
-          echo "=== thinkmay-client.desktop contents ==="
-          cat "$DESKTOP_FILE"
-          if ! grep -q "MimeType=.*x-scheme-handler/thinkmay;" "$DESKTOP_FILE"; then
-              echo "Custom URL handler mapping (x-scheme-handler/thinkmay) not found in desktop file!"
-              exit 1
-          fi
-          if ! grep -q "Exec=.*-url %u" "$DESKTOP_FILE"; then
-              echo "Custom URL launcher argument (-url %u) not found in desktop file Exec line!"
-              exit 1
-          fi
-          echo "Custom URL handler verification passed."
-
-      - name: Install and test Debian package in Docker
+      - name: Test tar packages
         run: |
           chmod +x ./packaging/client/linux/test-deb-install.sh
-          ./packaging/client/linux/test-deb-install.sh ./artifacts
+          for arch in amd64 arm64; do
+            tar -xzf "artifacts/thinkmay-client-linux-${arch}.tar.gz" -C artifacts
+            pkg="artifacts/thinkmay-client-linux-${arch}"
+            chmod +x "${pkg}/thinkmay-client" "${pkg}/thinkmay-client-bin"
+            "${pkg}/thinkmay-client" --help || true
+            DESKTOP_FILE="${pkg}/thinkmay-client.desktop"
+            grep -q "MimeType=.*x-scheme-handler/thinkmay;" "$DESKTOP_FILE"
+            grep -q "Exec=.*-url %u" "$DESKTOP_FILE"
+            echo "tar + URL handler OK (${arch})"
+          done
+
+      - name: Install and test Debian packages in Docker
+        run: |
+          ./packaging/client/linux/test-deb-install.sh ./artifacts amd64
+          ./packaging/client/linux/test-deb-install.sh ./artifacts arm64
   test_macos:
-    name: Test macOS Client
-    runs-on: macos-latest
+    name: Test macOS Client (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
     needs: [package_macos]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: arm64
+            runner: macos-latest
+          - arch: amd64
+            runner: macos-13
 
     steps:
       - uses: actions/download-artifact@v4
@@ -418,46 +277,33 @@ jobs:
           name: client-macos-package
           path: artifacts
 
-      - name: Extract zip package
+      - name: Test zip and dmg packages
         run: |
-          ditto -x -k artifacts/thinkmay-client-darwin.zip test-client
+          arch="${{ matrix.arch }}"
+          zip="artifacts/thinkmay-client-darwin-${arch}.zip"
+          dmg="artifacts/thinkmay-client-darwin-${arch}.dmg"
+          test_dir="test-client-${arch}"
 
-      - name: Verify dylib references
-        run: |
-          echo "=== otool -L on binary ==="
-          otool -L "test-client/Thinkmay Client.app/Contents/MacOS/thinkmay-client"
-          echo "=== Bundled frameworks ==="
-          ls -la "test-client/Thinkmay Client.app/Contents/Frameworks/" || echo "No Frameworks directory"
+          ditto -x -k "${zip}" "${test_dir}"
+          bin="${test_dir}/Thinkmay Client.app/Contents/MacOS/thinkmay-client"
+          otool -L "${bin}"
+          chmod +x "${bin}"
+          "${bin}" --help || true
 
-      - name: Run client --help
-        run: |
-          chmod +x "test-client/Thinkmay Client.app/Contents/MacOS/thinkmay-client"
-          "test-client/Thinkmay Client.app/Contents/MacOS/thinkmay-client" --help || true
-
-      - name: Test custom URL handler registration
-        run: |
-          PLIST_PATH="test-client/Thinkmay Client.app/Contents/Info.plist"
-          if [ ! -f "$PLIST_PATH" ]; then
-              echo "Info.plist not found at $PLIST_PATH"
-              exit 1
-          fi
+          PLIST="${test_dir}/Thinkmay Client.app/Contents/Info.plist"
           python3 -c '
-          import plistlib
-          with open("'"$PLIST_PATH"'", "rb") as f:
+          import plistlib, sys
+          with open(sys.argv[1], "rb") as f:
               plist = plistlib.load(f)
-          url_types = plist.get("CFBundleURLTypes", [])
-          schemes = [scheme for ut in url_types for scheme in ut.get("CFBundleURLSchemes", [])]
-          print("Found packaged URL Schemes:", schemes)
+          schemes = [s for ut in plist.get("CFBundleURLTypes", []) for s in ut.get("CFBundleURLSchemes", [])]
           if "thinkmay" not in schemes:
-              raise ValueError("Custom URL scheme \"thinkmay\" is missing from Info.plist!")
-          '
-          echo "Custom URL handler verification passed."
+              raise ValueError("thinkmay URL scheme missing from Info.plist")
+          ' "${PLIST}"
 
-      - name: Mount and test DMG package
-        run: |
-          hdiutil attach artifacts/thinkmay-client-darwin.dmg -mountpoint /Volumes/ThinkmayClient
-          "/Volumes/ThinkmayClient/Thinkmay Client.app/Contents/MacOS/thinkmay-client" --help || true
-          hdiutil detach /Volumes/ThinkmayClient
+          hdiutil attach "${dmg}" -mountpoint "/Volumes/ThinkmayClient-${arch}"
+          "/Volumes/ThinkmayClient-${arch}/Thinkmay Client.app/Contents/MacOS/thinkmay-client" --help || true
+          hdiutil detach "/Volumes/ThinkmayClient-${arch}"
+          echo "macOS package tests passed (${arch})"
 
   test_windows:
     name: Test Windows Client
@@ -563,13 +409,16 @@ jobs:
       - name: Upload Linux client
         shell: bash
         run: |
-          MD5_CHECKSUM_DEB=$(md5sum "./artifacts/thinkmay-client-linux-amd64.deb" | cut -d ' ' -f 1)
-          curl https://saigon2.thinkmay.net/api/collections/binaries/records \
-            -H "Content-Type: multipart/form-data" \
-            --form "name=thinkmay_client_linux_deb" \
-            --form "md5sum=${MD5_CHECKSUM_DEB}" \
-            --form "file=@./artifacts/thinkmay-client-linux-amd64.deb" \
-            --progress-bar
+          for arch in amd64 arm64; do
+            deb="./artifacts/thinkmay-client-linux-${arch}.deb"
+            md5=$(md5sum "${deb}" | cut -d ' ' -f 1)
+            curl https://saigon2.thinkmay.net/api/collections/binaries/records \
+              -H "Content-Type: multipart/form-data" \
+              --form "name=thinkmay_client_linux_deb_${arch}" \
+              --form "md5sum=${md5}" \
+              --form "file=@${deb}" \
+              --progress-bar
+          done
 
   publish_macos:
     name: Publish macOS Client
@@ -586,13 +435,16 @@ jobs:
       - name: Upload macOS client
         shell: bash
         run: |
-          MD5_CHECKSUM_DMG=$(md5sum "./artifacts/thinkmay-client-darwin.dmg" | cut -d ' ' -f 1)
-          curl https://saigon2.thinkmay.net/api/collections/binaries/records \
-            -H "Content-Type: multipart/form-data" \
-            --form "name=thinkmay_client_macos_dmg" \
-            --form "md5sum=${MD5_CHECKSUM_DMG}" \
-            --form "file=@./artifacts/thinkmay-client-darwin.dmg" \
-            --progress-bar
+          for arch in arm64 amd64; do
+            dmg="./artifacts/thinkmay-client-darwin-${arch}.dmg"
+            md5=$(md5sum "${dmg}" | cut -d ' ' -f 1)
+            curl https://saigon2.thinkmay.net/api/collections/binaries/records \
+              -H "Content-Type: multipart/form-data" \
+              --form "name=thinkmay_client_macos_dmg_${arch}" \
+              --form "md5sum=${md5}" \
+              --form "file=@${dmg}" \
+              --progress-bar
+          done
 
   publish_windows:
     name: Publish Windows Client
@@ -659,8 +511,12 @@ jobs:
           files: |
             artifacts/thinkmay-client-linux-amd64.tar.gz
             artifacts/thinkmay-client-linux-amd64.deb
-            artifacts/thinkmay-client-darwin.zip
-            artifacts/thinkmay-client-darwin.dmg
+            artifacts/thinkmay-client-linux-arm64.tar.gz
+            artifacts/thinkmay-client-linux-arm64.deb
+            artifacts/thinkmay-client-darwin-arm64.zip
+            artifacts/thinkmay-client-darwin-arm64.dmg
+            artifacts/thinkmay-client-darwin-amd64.zip
+            artifacts/thinkmay-client-darwin-amd64.dmg
           fail_on_unmatched_files: true
 
       - name: Commit Homebrew formula updates
@@ -676,9 +532,17 @@ jobs:
           git push
 
   test_homebrew_linux:
-    name: Test Homebrew Linux formula
-    runs-on: ubuntu-24.04
+    name: Test Homebrew Linux formula (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
     needs: [package_linux]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
 
     steps:
       - uses: actions/checkout@v4
@@ -701,9 +565,17 @@ jobs:
           ./packaging/homebrew/test-install.sh linux ./artifacts
 
   test_homebrew_macos:
-    name: Test Homebrew macOS cask
-    runs-on: macos-latest
+    name: Test Homebrew macOS cask (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
     needs: [package_macos]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: arm64
+            runner: macos-latest
+          - arch: amd64
+            runner: macos-13
 
     steps:
       - uses: actions/checkout@v4

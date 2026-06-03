@@ -16,6 +16,17 @@ FORMULA_SRC="${ROOT}/packaging/homebrew/Formula/thinkmay-client.rb"
 CASK_SRC="${ROOT}/packaging/homebrew/Casks/thinkmay-client.rb"
 TAP_NAME="thinkonmay/thinkmay"
 
+arch_suffix() {
+  case "$(uname -m)" in
+    x86_64) echo amd64 ;;
+    aarch64|arm64) echo arm64 ;;
+    *)
+      echo "unsupported arch: $(uname -m)" >&2
+      exit 1
+      ;;
+  esac
+}
+
 sha256_file() {
   if command -v shasum >/dev/null 2>&1; then
     shasum -a 256 "$1" | awk '{print $1}'
@@ -33,25 +44,27 @@ prepare_tap() {
 
   case "${PLATFORM}" in
     linux)
-      local tar="${ARTIFACTS}/thinkmay-client-linux-amd64.tar.gz"
+      local arch tar sha
+      arch="$(arch_suffix)"
+      tar="${ARTIFACTS}/thinkmay-client-linux-${arch}.tar.gz"
       [[ -f "${tar}" ]] || { echo "missing ${tar}" >&2; exit 1; }
-      local sha
       sha="$(sha256_file "${tar}")"
-      sed -i.bak "s|url \".*thinkmay-client-linux-amd64.tar.gz\"|url \"file://${tar}\"|" "${tap_dir}/Formula/thinkmay-client.rb"
-      sed -i.bak "s/sha256 \"[0-9a-f]\{64\}\"/sha256 \"${sha}\"/" "${tap_dir}/Formula/thinkmay-client.rb"
+      sed -i.bak "s|url \".*thinkmay-client-linux-${arch}.tar.gz\"|url \"file://${tar}\"|" "${tap_dir}/Formula/thinkmay-client.rb"
+      sed -i.bak "/thinkmay-client-linux-${arch}.tar.gz/,+1 s/sha256 \"[0-9a-f]\{64\}\"/sha256 \"${sha}\"/" "${tap_dir}/Formula/thinkmay-client.rb"
       rm -f "${tap_dir}/Formula/thinkmay-client.rb.bak"
       ;;
     macos)
-      local zip="${ARTIFACTS}/thinkmay-client-darwin.zip"
+      local arch zip sha
+      arch="$(arch_suffix)"
+      zip="${ARTIFACTS}/thinkmay-client-darwin-${arch}.zip"
       [[ -f "${zip}" ]] || { echo "missing ${zip}" >&2; exit 1; }
-      local sha
       sha="$(sha256_file "${zip}")"
       if [[ "$(uname -s)" == "Darwin" ]]; then
-        sed -i '' "s|url \".*thinkmay-client-darwin.zip\"|url \"file://${zip}\"|" "${tap_dir}/Casks/thinkmay-client.rb"
-        sed -i '' "s/sha256 \"[0-9a-f]\{64\}\"/sha256 \"${sha}\"/" "${tap_dir}/Casks/thinkmay-client.rb"
+        sed -i '' "s|url \".*thinkmay-client-darwin-${arch}.zip\"|url \"file://${zip}\"|" "${tap_dir}/Casks/thinkmay-client.rb"
+        sed -i '' "/thinkmay-client-darwin-${arch}.zip/,+1 s/sha256 \"[0-9a-f]\{64\}\"/sha256 \"${sha}\"/" "${tap_dir}/Casks/thinkmay-client.rb"
       else
-        sed -i "s|url \".*thinkmay-client-darwin.zip\"|url \"file://${zip}\"|" "${tap_dir}/Casks/thinkmay-client.rb"
-        sed -i "s/sha256 \"[0-9a-f]\{64\}\"/sha256 \"${sha}\"/" "${tap_dir}/Casks/thinkmay-client.rb"
+        sed -i "s|url \".*thinkmay-client-darwin-${arch}.zip\"|url \"file://${zip}\"|" "${tap_dir}/Casks/thinkmay-client.rb"
+        sed -i "/thinkmay-client-darwin-${arch}.zip/,+1 s/sha256 \"[0-9a-f]\{64\}\"/sha256 \"${sha}\"/" "${tap_dir}/Casks/thinkmay-client.rb"
       fi
       ;;
     *)

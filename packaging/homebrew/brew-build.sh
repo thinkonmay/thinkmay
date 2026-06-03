@@ -28,25 +28,28 @@ build_linux_tarball() {
 }
 
 build_macos_zip() {
-  if [[ -f "${ARTIFACTS}/thinkmay-client-darwin.zip" ]]; then
-    echo "macOS zip already exists"
-    return
-  fi
   if [[ "$(uname -s)" != "Darwin" ]]; then
     echo "skip macOS zip (not on macOS)" >&2
     return
   fi
-
-  echo "building macOS app zip..."
-  APP="${ARTIFACTS}/macos/Thinkmay Client.app"
-  MACOS_DIR="${APP}/Contents/MacOS"
-  mkdir -p "${MACOS_DIR}" "${APP}/Contents/Resources"
-  cp "${ROOT}/packaging/client/macos/Info.plist" "${APP}/Contents/Info.plist"
-  cd "${ROOT}/worker/proxy"
-  go mod download
-  CGO_ENABLED=1 go build -trimpath -ldflags="-s -w" -o "${MACOS_DIR}/thinkmay-client" ./cmd/client
-  chmod +x "${MACOS_DIR}/thinkmay-client"
-  ditto -c -k --sequesterRsrc --keepParent "${APP}" "${ARTIFACTS}/thinkmay-client-darwin.zip"
+  local arch
+  case "$(uname -m)" in
+    arm64) arch=arm64 ;;
+    x86_64) arch=amd64 ;;
+    *)
+      echo "unsupported macOS arch: $(uname -m)" >&2
+      return 1
+      ;;
+  esac
+  local zip="${ARTIFACTS}/thinkmay-client-darwin-${arch}.zip"
+  if [[ -f "${zip}" ]]; then
+    echo "macOS zip already exists: ${zip}"
+    return
+  fi
+  local version
+  version="$(tr -d '[:space:]' < "${ROOT}/packaging/client/VERSION")"
+  chmod +x "${ROOT}/packaging/client/macos/build-macos-package.sh"
+  "${ROOT}/packaging/client/macos/build-macos-package.sh" "${arch}" "${version}"
 }
 
 mkdir -p "${ARTIFACTS}"

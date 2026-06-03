@@ -74,6 +74,10 @@ Or use the build helper (creates artifacts if missing, then updates formulae):
 Formula URLs expect release assets:
 
 - `thinkmay-client-linux-amd64.tar.gz`
-- `thinkmay-client-darwin.zip`
+- `thinkmay-client-linux-arm64.tar.gz`
+- `thinkmay-client-darwin-arm64.zip`
+- `thinkmay-client-darwin-amd64.zip`
 
 at `https://github.com/thinkonmay/thinkmay/releases/download/v<VERSION>/`.
+
+Homebrew picks the build for your CPU: Linux formula (`amd64` / `arm64`) and macOS cask (Apple Silicon / Intel).
