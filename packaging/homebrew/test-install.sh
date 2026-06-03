@@ -6,6 +6,11 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 PLATFORM="${1:?usage: test-install.sh linux|macos [artifacts_dir]}"
 ARTIFACTS="${2:-${ROOT}/artifacts}"
+# Homebrew file:// URLs must be absolute; relative paths fail in CI (e.g. ./artifacts/...).
+if [[ "${ARTIFACTS}" != /* ]]; then
+  ARTIFACTS="${ROOT}/${ARTIFACTS#./}"
+fi
+ARTIFACTS="$(cd "${ARTIFACTS}" && pwd)"
 
 FORMULA_SRC="${ROOT}/packaging/homebrew/Formula/thinkmay-client.rb"
 CASK_SRC="${ROOT}/packaging/homebrew/Casks/thinkmay-client.rb"
