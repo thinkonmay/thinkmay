@@ -75,9 +75,8 @@ Formula URLs expect release assets:
 
 - `thinkmay-client-linux-amd64.tar.gz`
 - `thinkmay-client-linux-arm64.tar.gz`
-- `thinkmay-client-darwin-arm64.zip`
-- `thinkmay-client-darwin-amd64.zip`
+- `thinkmay-client-darwin-arm64.zip` (Apple Silicon macOS only)
 
 at `https://github.com/thinkonmay/thinkmay/releases/download/v<VERSION>/`.
 
-Homebrew picks the build for your CPU: Linux formula (`amd64` / `arm64`) and macOS cask (Apple Silicon / Intel).
+Linux Homebrew picks `amd64` or `arm64` by CPU. The macOS cask targets Apple Silicon.

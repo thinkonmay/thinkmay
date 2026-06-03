@@ -19,8 +19,7 @@ fi
 VERSION="$(tr -d '[:space:]' < "${VERSION_FILE}")"
 LINUX_AMD64_TAR="${ARTIFACTS}/thinkmay-client-linux-amd64.tar.gz"
 LINUX_ARM64_TAR="${ARTIFACTS}/thinkmay-client-linux-arm64.tar.gz"
-MAC_ARM64_ZIP="${ARTIFACTS}/thinkmay-client-darwin-arm64.zip"
-MAC_AMD64_ZIP="${ARTIFACTS}/thinkmay-client-darwin-amd64.zip"
+MAC_ZIP="${ARTIFACTS}/thinkmay-client-darwin-arm64.zip"
 
 sha256_file() {
   if command -v shasum >/dev/null 2>&1; then
@@ -44,10 +43,9 @@ set_formula_sha_for_arch() {
   rm -f "${FORMULA}.bak"
 }
 
-set_cask_sha_for_arch() {
-  local arch="$1"
-  local sha="$2"
-  sed -i.bak "/thinkmay-client-darwin-${arch}.zip/,+1 s/sha256 \"[0-9a-f]\{64\}\"/sha256 \"${sha}\"/" "${CASK}"
+set_cask_sha() {
+  local sha="$1"
+  sed -i.bak "s/sha256 \"[0-9a-f]\{64\}\"/sha256 \"${sha}\"/" "${CASK}"
   rm -f "${CASK}.bak"
 }
 
@@ -70,20 +68,12 @@ else
   echo "skip Linux arm64 sha256 (missing ${LINUX_ARM64_TAR})" >&2
 fi
 
-if [[ -f "${MAC_ARM64_ZIP}" ]]; then
-  MAC_ARM64_SHA="$(sha256_file "${MAC_ARM64_ZIP}")"
-  set_cask_sha_for_arch "arm64" "${MAC_ARM64_SHA}"
-  echo "updated macOS arm64 cask sha256=${MAC_ARM64_SHA}"
+if [[ -f "${MAC_ZIP}" ]]; then
+  MAC_SHA="$(sha256_file "${MAC_ZIP}")"
+  set_cask_sha "${MAC_SHA}"
+  echo "updated macOS cask sha256=${MAC_SHA}"
 else
-  echo "skip macOS arm64 sha256 (missing ${MAC_ARM64_ZIP})" >&2
-fi
-
-if [[ -f "${MAC_AMD64_ZIP}" ]]; then
-  MAC_AMD64_SHA="$(sha256_file "${MAC_AMD64_ZIP}")"
-  set_cask_sha_for_arch "amd64" "${MAC_AMD64_SHA}"
-  echo "updated macOS amd64 cask sha256=${MAC_AMD64_SHA}"
-else
-  echo "skip macOS amd64 sha256 (missing ${MAC_AMD64_ZIP})" >&2
+  echo "skip macOS sha256 (missing ${MAC_ZIP})" >&2
 fi
 
 echo "formulae version=${VERSION}"

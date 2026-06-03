@@ -54,17 +54,16 @@ prepare_tap() {
       rm -f "${tap_dir}/Formula/thinkmay-client.rb.bak"
       ;;
     macos)
-      local arch zip sha
-      arch="$(arch_suffix)"
-      zip="${ARTIFACTS}/thinkmay-client-darwin-${arch}.zip"
+      local zip="${ARTIFACTS}/thinkmay-client-darwin-arm64.zip"
       [[ -f "${zip}" ]] || { echo "missing ${zip}" >&2; exit 1; }
+      local sha
       sha="$(sha256_file "${zip}")"
       if [[ "$(uname -s)" == "Darwin" ]]; then
-        sed -i '' "s|url \".*thinkmay-client-darwin-${arch}.zip\"|url \"file://${zip}\"|" "${tap_dir}/Casks/thinkmay-client.rb"
-        sed -i '' "/thinkmay-client-darwin-${arch}.zip/,+1 s/sha256 \"[0-9a-f]\{64\}\"/sha256 \"${sha}\"/" "${tap_dir}/Casks/thinkmay-client.rb"
+        sed -i '' "s|url \".*thinkmay-client-darwin-arm64.zip\"|url \"file://${zip}\"|" "${tap_dir}/Casks/thinkmay-client.rb"
+        sed -i '' "s/sha256 \"[0-9a-f]\{64\}\"/sha256 \"${sha}\"/" "${tap_dir}/Casks/thinkmay-client.rb"
       else
-        sed -i "s|url \".*thinkmay-client-darwin-${arch}.zip\"|url \"file://${zip}\"|" "${tap_dir}/Casks/thinkmay-client.rb"
-        sed -i "/thinkmay-client-darwin-${arch}.zip/,+1 s/sha256 \"[0-9a-f]\{64\}\"/sha256 \"${sha}\"/" "${tap_dir}/Casks/thinkmay-client.rb"
+        sed -i "s|url \".*thinkmay-client-darwin-arm64.zip\"|url \"file://${zip}\"|" "${tap_dir}/Casks/thinkmay-client.rb"
+        sed -i "s/sha256 \"[0-9a-f]\{64\}\"/sha256 \"${sha}\"/" "${tap_dir}/Casks/thinkmay-client.rb"
       fi
       ;;
     *)

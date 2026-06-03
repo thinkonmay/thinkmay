@@ -84,16 +84,8 @@ jobs:
             artifacts/thinkmay-client-linux-${{ matrix.arch }}.deb
 
   package_macos:
-    name: Package macOS Client (${{ matrix.arch }})
-    runs-on: ${{ matrix.runner }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - arch: arm64
-            runner: macos-latest
-          - arch: amd64
-            runner: macos-13
+    name: Package macOS Client
+    runs-on: macos-latest
 
     steps:
       - name: Setup Go
@@ -119,15 +111,15 @@ jobs:
       - name: Build package
         run: |
           chmod +x ./packaging/client/macos/build-macos-package.sh
-          ./packaging/client/macos/build-macos-package.sh "${{ matrix.arch }}" "${{ steps.version.outputs.value }}"
+          ./packaging/client/macos/build-macos-package.sh arm64 "${{ steps.version.outputs.value }}"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: client-macos-package
           path: |
-            artifacts/thinkmay-client-darwin-${{ matrix.arch }}.zip
-            artifacts/thinkmay-client-darwin-${{ matrix.arch }}.dmg
+            artifacts/thinkmay-client-darwin-arm64.zip
+            artifacts/thinkmay-client-darwin-arm64.dmg
 
   package_windows:
     name: Package Windows Client
@@ -228,9 +220,17 @@ jobs:
             artifacts/thinkmay-client-windows-amd64-installer.exe
 
   test_linux:
-    name: Test Linux Client
-    runs-on: ubuntu-24.04
+    name: Test Linux Client (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
     needs: [package_linux]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
 
     steps:
       - uses: actions/checkout@v4
@@ -240,36 +240,26 @@ jobs:
           name: client-linux-package
           path: artifacts
 
-      - name: Test tar packages
+      - name: Test tar package
+        run: |
+          arch="${{ matrix.arch }}"
+          tar -xzf "artifacts/thinkmay-client-linux-${arch}.tar.gz" -C artifacts
+          pkg="artifacts/thinkmay-client-linux-${arch}"
+          chmod +x "${pkg}/thinkmay-client" "${pkg}/thinkmay-client-bin"
+          "${pkg}/thinkmay-client" --help || true
+          DESKTOP_FILE="${pkg}/thinkmay-client.desktop"
+          grep -q "MimeType=.*x-scheme-handler/thinkmay;" "$DESKTOP_FILE"
+          grep -q "Exec=.*-url %u" "$DESKTOP_FILE"
+          echo "tar + URL handler OK (${arch})"
+
+      - name: Install and test Debian package in Docker
         run: |
           chmod +x ./packaging/client/linux/test-deb-install.sh
-          for arch in amd64 arm64; do
-            tar -xzf "artifacts/thinkmay-client-linux-${arch}.tar.gz" -C artifacts
-            pkg="artifacts/thinkmay-client-linux-${arch}"
-            chmod +x "${pkg}/thinkmay-client" "${pkg}/thinkmay-client-bin"
-            "${pkg}/thinkmay-client" --help || true
-            DESKTOP_FILE="${pkg}/thinkmay-client.desktop"
-            grep -q "MimeType=.*x-scheme-handler/thinkmay;" "$DESKTOP_FILE"
-            grep -q "Exec=.*-url %u" "$DESKTOP_FILE"
-            echo "tar + URL handler OK (${arch})"
-          done
-
-      - name: Install and test Debian packages in Docker
-        run: |
-          ./packaging/client/linux/test-deb-install.sh ./artifacts amd64
-          ./packaging/client/linux/test-deb-install.sh ./artifacts arm64
+          ./packaging/client/linux/test-deb-install.sh ./artifacts "${{ matrix.arch }}"
   test_macos:
-    name: Test macOS Client (${{ matrix.arch }})
-    runs-on: ${{ matrix.runner }}
+    name: Test macOS Client
+    runs-on: macos-latest
     needs: [package_macos]
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - arch: arm64
-            runner: macos-latest
-          - arch: amd64
-            runner: macos-13
 
     steps:
       - uses: actions/download-artifact@v4
@@ -279,10 +269,9 @@ jobs:
 
       - name: Test zip and dmg packages
         run: |
-          arch="${{ matrix.arch }}"
-          zip="artifacts/thinkmay-client-darwin-${arch}.zip"
-          dmg="artifacts/thinkmay-client-darwin-${arch}.dmg"
-          test_dir="test-client-${arch}"
+          zip="artifacts/thinkmay-client-darwin-arm64.zip"
+          dmg="artifacts/thinkmay-client-darwin-arm64.dmg"
+          test_dir="test-client"
 
           ditto -x -k "${zip}" "${test_dir}"
           bin="${test_dir}/Thinkmay Client.app/Contents/MacOS/thinkmay-client"
@@ -300,10 +289,10 @@ jobs:
               raise ValueError("thinkmay URL scheme missing from Info.plist")
           ' "${PLIST}"
 
-          hdiutil attach "${dmg}" -mountpoint "/Volumes/ThinkmayClient-${arch}"
-          "/Volumes/ThinkmayClient-${arch}/Thinkmay Client.app/Contents/MacOS/thinkmay-client" --help || true
-          hdiutil detach "/Volumes/ThinkmayClient-${arch}"
-          echo "macOS package tests passed (${arch})"
+          hdiutil attach "${dmg}" -mountpoint /Volumes/ThinkmayClient
+          "/Volumes/ThinkmayClient/Thinkmay Client.app/Contents/MacOS/thinkmay-client" --help || true
+          hdiutil detach /Volumes/ThinkmayClient
+          echo "macOS package tests passed"
 
   test_windows:
     name: Test Windows Client
@@ -435,16 +424,14 @@ jobs:
       - name: Upload macOS client
         shell: bash
         run: |
-          for arch in arm64 amd64; do
-            dmg="./artifacts/thinkmay-client-darwin-${arch}.dmg"
-            md5=$(md5sum "${dmg}" | cut -d ' ' -f 1)
-            curl https://saigon2.thinkmay.net/api/collections/binaries/records \
-              -H "Content-Type: multipart/form-data" \
-              --form "name=thinkmay_client_macos_dmg_${arch}" \
-              --form "md5sum=${md5}" \
-              --form "file=@${dmg}" \
-              --progress-bar
-          done
+          dmg="./artifacts/thinkmay-client-darwin-arm64.dmg"
+          md5=$(md5sum "${dmg}" | cut -d ' ' -f 1)
+          curl https://saigon2.thinkmay.net/api/collections/binaries/records \
+            -H "Content-Type: multipart/form-data" \
+            --form "name=thinkmay_client_macos_dmg" \
+            --form "md5sum=${md5}" \
+            --form "file=@${dmg}" \
+            --progress-bar
 
   publish_windows:
     name: Publish Windows Client
@@ -515,8 +502,6 @@ jobs:
             artifacts/thinkmay-client-linux-arm64.deb
             artifacts/thinkmay-client-darwin-arm64.zip
             artifacts/thinkmay-client-darwin-arm64.dmg
-            artifacts/thinkmay-client-darwin-amd64.zip
-            artifacts/thinkmay-client-darwin-amd64.dmg
           fail_on_unmatched_files: true
 
       - name: Commit Homebrew formula updates
@@ -565,17 +550,9 @@ jobs:
           ./packaging/homebrew/test-install.sh linux ./artifacts
 
   test_homebrew_macos:
-    name: Test Homebrew macOS cask (${{ matrix.arch }})
-    runs-on: ${{ matrix.runner }}
+    name: Test Homebrew macOS cask
+    runs-on: macos-latest
     needs: [package_macos]
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - arch: arm64
-            runner: macos-latest
-          - arch: amd64
-            runner: macos-13
 
     steps:
       - uses: actions/checkout@v4
