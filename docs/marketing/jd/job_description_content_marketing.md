@@ -90,7 +90,7 @@ You help with **static, technical marketing**: SEO copy, FAQs, metadata, blog po
 
 ## How to Apply
 
-Email **contact@thinkmay.net** (subject: `Intern – Content SEO – [Your name]`).
+Email **huyhoangdo@contact.thinkmay.net** (subject: `Intern – Content SEO – [Your name]`).
 
 Include:
 

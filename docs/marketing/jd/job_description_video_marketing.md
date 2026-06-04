@@ -92,7 +92,7 @@ You help with **motion and video**: shorts, explainers, gameplay edits, template
 
 ## How to Apply
 
-Email **contact@thinkmay.net** (subject: `Intern – Video – [Your name]`).
+Email **huyhoangdo@contact.thinkmay.net** (subject: `Intern – Video – [Your name]`).
 
 Include:
 

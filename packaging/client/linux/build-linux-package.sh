@@ -70,7 +70,7 @@ Version: ${VERSION}
 Section: utils
 Priority: optional
 Architecture: ${ARCH}
-Maintainer: Thinkmay <contact@thinkmay.net>
+Maintainer: Thinkmay <huyhoangdo@contact.thinkmay.net>
 Description: Thinkmay Client Application for remote desktop connection.
 EOF
 

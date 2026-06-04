@@ -8,7 +8,7 @@ Use this section for marketing strategy, campaign templates, SEO work, analytics
 - [Content & SEO Marketing Intern](./jd/job_description_content_marketing.md)
 - [Video & Visual Marketing Intern](./jd/job_description_video_marketing.md)
 
-Apply: **contact@thinkmay.net** (see each JD for subject line and materials).
+Apply: **huyhoangdo@contact.thinkmay.net** (see each JD for subject line and materials).
 
 ## Strategy
 - [Marketing playbook](./strategy/marketing_doc.md)
