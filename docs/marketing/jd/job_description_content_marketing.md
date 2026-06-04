@@ -106,6 +106,8 @@ We reply to promising profiles within about a week.
 
 ## What We Offer
 
+- **Learn Marketing in the AI Era:** Move beyond simple copy-pasting. You will learn how to direct, curate, and scale content engines using advanced AI workflows as your force-multiplier.
+- **See Agent-Driven Development in Action:** Get to know what **real agent-driven software development** is. Observe and work with a team using state-of-the-art AI coding agents to build and ship code, gaining insight into the future of tech companies.
 - Monthly **intern stipend** (VND, tied to hours—see interview).
 - **Remote** schedule that can flex around classes.
 - Real shipping work (live site copy), not fake “intern projects.”

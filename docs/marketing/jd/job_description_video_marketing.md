@@ -108,6 +108,8 @@ We reply to promising profiles within about a week.
 
 ## What We Offer
 
+- **Learn Marketing in the AI Era:** Discover how to direct, script, and edit short-form visual content using advanced AI tools while preserving the vital human "vibe" and connection.
+- **See Agent-Driven Development in Action:** Get to know what **real agent-driven software development** is. Learn how we build and deploy our platform alongside AI coding agents, seeing the future of agile tech teams.
 - Monthly **intern stipend** (VND, tied to hours—see interview).
 - **Remote** hours that flex around classes.
 - **Portfolio pieces** shipped on a real gaming product, with direct creative feedback.
