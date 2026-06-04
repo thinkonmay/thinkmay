@@ -41,7 +41,7 @@ docker run --rm "${DOCKER_PLATFORM[@]}" \
   bash -euxo pipefail -c '
     export DEBIAN_FRONTEND=noninteractive
     apt-get update -qq
-    apt-get install -y -qq ca-certificates desktop-file-utils xdg-utils >/dev/null
+    apt-get install -y -qq ca-certificates desktop-file-utils xdg-utils libfile-mimeinfo-perl >/dev/null
 
     dpkg -i /tmp/thinkmay-client.deb || apt-get install -f -y -qq
 
@@ -71,6 +71,44 @@ docker run --rm "${DOCKER_PLATFORM[@]}" \
 
     thinkmay-client --help || true
 
+    # Test custom URL scheme handler launch via xdg-open fallback
+    # We rewrite the wrapper /usr/bin/thinkmay-client to redirect stdout/stderr to a log file.
+    # This lets us capture the logs of the background process spawned by xdg-open.
+    printf "#!/bin/bash\nexport LD_LIBRARY_PATH=\"/usr/share/thinkmay-client/lib\${LD_LIBRARY_PATH:+:\$LD_LIBRARY_PATH}\"\nexec \"/usr/share/thinkmay-client/thinkmay-client-bin\" \"\$@\" 2>&1 | tee -a /tmp/thinkmay-test-run.log\n" > /usr/bin/thinkmay-client
+    chmod +x /usr/bin/thinkmay-client
+
+    OUTPUT_LOG="/tmp/thinkmay-test-run.log"
+    rm -f "${OUTPUT_LOG}"
+
+    # Verify xdg-mime query works
+    ASSOCIATION=$(xdg-mime query default x-scheme-handler/thinkmay || echo "")
+    if [[ "${ASSOCIATION}" != "thinkmay-client.desktop" ]]; then
+      echo "ERROR: MIME type x-scheme-handler/thinkmay is registered to '${ASSOCIATION}', expected 'thinkmay-client.desktop'" >&2
+      exit 1
+    fi
+
+    # Dispatch the URL using xdg-open fallback
+    BROWSER=thinkmay-client xdg-open "thinkmay:https://saigon2.thinkmay.net/remote?vmid=vm-id-test&video=my-secret-video-token&audio=my-secret-audio-token&data=my-secret-data-token" || true
+    sleep 1.5
+
+    if ! grep -q "video client addr=saigon2.thinkmay.net:443 vmid=vm-id-test" "${OUTPUT_LOG}"; then
+      echo "ERROR: Output does not contain expected address or VM ID resolution" >&2
+      exit 1
+    fi
+
+    # Ensure secret tokens are NOT printed in plain text
+    if grep -q "my-secret-video-token" "${OUTPUT_LOG}" || grep -q "my-secret-audio-token" "${OUTPUT_LOG}" || grep -q "my-secret-data-token" "${OUTPUT_LOG}"; then
+      echo "ERROR: Security failure! Secret tokens were printed in plain text to the logs." >&2
+      exit 1
+    fi
+
+    # Ensure masked tokens are printed
+    if ! grep -q "token=my-s" "${OUTPUT_LOG}" && ! grep -q "token=\*\*\*" "${OUTPUT_LOG}"; then
+      echo "ERROR: Masked tokens were not found in the output logs" >&2
+      exit 1
+    fi
+
+    echo "Custom URL scheme handler validation passed"
     echo "Debian package install and URL handler verification passed"
   '
 

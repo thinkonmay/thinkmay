@@ -75,5 +75,5 @@ codesign --force --sign - "${MACOS_DIR}/thinkmay-client" 2>/dev/null || true
 
 otool -L "${MACOS_DIR}/thinkmay-client" | tee "${ARTIFACTS}/thinkmay-client-darwin-${ARCH}-otool.txt"
 ditto -c -k --sequesterRsrc --keepParent "${APP}" "${ZIP}"
-hdiutil create -fs HFS+ -srcfolder "${APP}" -volname "Thinkmay Client" "${DMG}"
+hdiutil create -ov -fs HFS+ -srcfolder "${APP}" -volname "Thinkmay Client" "${DMG}"
 echo "Built ${ZIP} and ${DMG}"

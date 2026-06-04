@@ -1,0 +1,42 @@
+FROM ubuntu:24.04
+
+# Prevent interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    git \
+    ffmpeg \
+    libavcodec-dev \
+    libavdevice-dev \
+    libavfilter-dev \
+    libavformat-dev \
+    libavutil-dev \
+    libsdl2-dev \
+    libswresample-dev \
+    libswscale-dev \
+    libva-dev \
+    libva-drm2 \
+    pkg-config \
+    desktop-file-utils \
+    xdg-utils \
+    libfile-mimeinfo-perl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Go 1.26.3
+RUN curl -sSL https://go.dev/dl/go1.26.3.linux-amd64.tar.gz | tar -C /usr/local -xzf -
+ENV PATH="/usr/local/go/bin:${PATH}"
+
+# Set up project directory
+WORKDIR /src
+COPY . .
+
+# Set up environment variables for Go cache
+ENV GOCACHE=/tmp/gocache
+ENV GOPATH=/tmp/gopath
+
+# Run the build and test script by default
+CMD ["/src/packaging/client/linux/docker-test-runner.sh"]
