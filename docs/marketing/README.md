@@ -2,6 +2,14 @@
 
 Use this section for marketing strategy, campaign templates, SEO work, analytics, and market research.
 
+## Hiring (interns)
+
+- [Marketing intern roles index](./jd/job_description_marketing_growth.md)
+- [Content & SEO Marketing Intern](./jd/job_description_content_marketing.md)
+- [Video & Visual Marketing Intern](./jd/job_description_video_marketing.md)
+
+Apply: **contact@thinkmay.net** (see each JD for subject line and materials).
+
 ## Strategy
 - [Marketing playbook](./strategy/marketing_doc.md)
 - [Founder marketing strategy notes](./strategy/thinkmay_founder_marketing_strategy_notes.md)
