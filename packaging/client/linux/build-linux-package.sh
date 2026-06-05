@@ -9,6 +9,8 @@ ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 ARTIFACTS="${ROOT}/artifacts"
 PKG_NAME="thinkmay-client-linux-${ARCH}"
 PKGDIR="${ARTIFACTS}/package/${PKG_NAME}"
+ICON_ROOT="${ROOT}/packaging/client/linux/icons/hicolor"
+LEGACY_ICON="${ROOT}/packaging/client/linux/thinkmay-client.png"
 
 case "${ARCH}" in
   amd64) GOARCH=amd64 ;;
@@ -18,6 +20,28 @@ case "${ARCH}" in
     exit 1
     ;;
 esac
+
+install_hicolor_icons() {
+  local dest="$1"
+  local size dir
+  for dir in "${ICON_ROOT}"/*/apps; do
+    [[ -d "${dir}" ]] || continue
+    size="$(basename "$(dirname "${dir}")")"
+    mkdir -p "${dest}/icons/hicolor/${size}/apps"
+    cp "${dir}/thinkmay-client.png" "${dest}/icons/hicolor/${size}/apps/thinkmay-client.png"
+  done
+}
+
+install_system_hicolor_icons() {
+  local dest="$1"
+  local size dir
+  for dir in "${ICON_ROOT}"/*/apps; do
+    [[ -d "${dir}" ]] || continue
+    size="$(basename "$(dirname "${dir}")")"
+    mkdir -p "${dest}/usr/share/icons/hicolor/${size}/apps"
+    cp "${dir}/thinkmay-client.png" "${dest}/usr/share/icons/hicolor/${size}/apps/thinkmay-client.png"
+  done
+}
 
 mkdir -p "${PKGDIR}/lib"
 cd "${ROOT}/worker/proxy"
@@ -47,6 +71,8 @@ printf '#!/bin/bash\nSCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"\nexport LD_LIBR
 chmod +x "${PKGDIR}/thinkmay-client"
 cp "${ROOT}/packaging/client/linux/README.txt" "${PKGDIR}/README.txt"
 cp "${ROOT}/packaging/client/linux/thinkmay-client.desktop" "${PKGDIR}/thinkmay-client.desktop"
+cp "${LEGACY_ICON}" "${PKGDIR}/thinkmay-client.png"
+install_hicolor_icons "${PKGDIR}"
 ldd "${PKGDIR}/thinkmay-client-bin" | tee "${PKGDIR}/thinkmay-client-linux-ldd.txt"
 
 mkdir -p "${ARTIFACTS}/package"
@@ -62,6 +88,7 @@ printf '#!/bin/bash\nexport LD_LIBRARY_PATH="/usr/share/thinkmay-client/lib${LD_
   > "${DEBDIR}/usr/bin/thinkmay-client"
 chmod +x "${DEBDIR}/usr/bin/thinkmay-client"
 cp "${ROOT}/packaging/client/linux/thinkmay-client.desktop" "${DEBDIR}/usr/share/applications/"
+install_system_hicolor_icons "${DEBDIR}"
 sed -i 's|Exec=thinkmay-client|Exec=/usr/bin/thinkmay-client|g' "${DEBDIR}/usr/share/applications/thinkmay-client.desktop"
 
 cat > "${DEBDIR}/DEBIAN/control" <<EOF
@@ -80,6 +107,9 @@ set -e
 if [ "$1" = "configure" ]; then
     if which update-desktop-database >/dev/null 2>&1; then
         update-desktop-database -q /usr/share/applications || true
+    fi
+    if which gtk-update-icon-cache >/dev/null 2>&1; then
+        gtk-update-icon-cache -f -t /usr/share/icons/hicolor || true
     fi
 fi
 EOF

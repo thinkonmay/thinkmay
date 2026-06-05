@@ -97,6 +97,11 @@ case "${PLATFORM}" in
   linux)
     brew install --formula "${TAP_NAME}/thinkmay-client"
     thinkmay-client --help || true
+    prefix="$(brew --prefix thinkmay-client)"
+    test -f "${prefix}/share/applications/thinkmay-client.desktop"
+    for size in 48 128 256 512; do
+      test -f "${prefix}/share/icons/hicolor/${size}x${size}/apps/thinkmay-client.png"
+    done
     ;;
   macos)
     brew install --cask "${TAP_NAME}/thinkmay-client"

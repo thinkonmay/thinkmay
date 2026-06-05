@@ -13,6 +13,7 @@ FRAMEWORKS="${APP}/Contents/Frameworks"
 ZIP="${ARTIFACTS}/thinkmay-client-darwin-${ARCH}.zip"
 DMG="${ARTIFACTS}/thinkmay-client-darwin-${ARCH}.dmg"
 INFO_PLIST="${ROOT}/packaging/client/macos/Info.plist"
+APP_ICON="${ROOT}/packaging/client/macos/AppIcon.icns"
 
 case "${ARCH}" in
   arm64) GOARCH=arm64 ;;
@@ -25,6 +26,7 @@ esac
 
 mkdir -p "${MACOS_DIR}" "${APP}/Contents/Resources" "${FRAMEWORKS}"
 cp "${INFO_PLIST}" "${APP}/Contents/Info.plist"
+cp "${APP_ICON}" "${APP}/Contents/Resources/AppIcon.icns"
 /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${VERSION}" "${APP}/Contents/Info.plist"
 /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${VERSION}" "${APP}/Contents/Info.plist"
 
@@ -75,5 +77,16 @@ codesign --force --sign - "${MACOS_DIR}/thinkmay-client" 2>/dev/null || true
 
 otool -L "${MACOS_DIR}/thinkmay-client" | tee "${ARTIFACTS}/thinkmay-client-darwin-${ARCH}-otool.txt"
 ditto -c -k --sequesterRsrc --keepParent "${APP}" "${ZIP}"
-hdiutil create -ov -fs HFS+ -srcfolder "${APP}" -volname "Thinkmay Client" "${DMG}"
+
+DMG_STAGING="${ARTIFACTS}/dmg-staging"
+rm -rf "${DMG_STAGING}"
+mkdir -p "${DMG_STAGING}"
+cp -R "${APP}" "${DMG_STAGING}/"
+ln -s /Applications "${DMG_STAGING}/Applications"
+cp "${APP_ICON}" "${DMG_STAGING}/.VolumeIcon.icns"
+if command -v SetFile >/dev/null 2>&1; then
+  SetFile -a C "${DMG_STAGING}"
+fi
+rm -f "${DMG}"
+hdiutil create -ov -fs HFS+ -volname "Thinkmay Client" -srcfolder "${DMG_STAGING}" "${DMG}"
 echo "Built ${ZIP} and ${DMG}"

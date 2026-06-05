@@ -39,12 +39,18 @@ class ThinkmayClient < Formula
           exec "#{libexec}/thinkmay-client-bin" "$@"
         SHELL
         chmod 0755, bin/"thinkmay-client"
+        (share/"applications").install "thinkmay-client.desktop"
+        (share/"icons").install "icons/hicolor"
       end
     end
 
     test do
       assert_predicate libexec/"thinkmay-client-bin", :exist?
       assert_predicate bin/"thinkmay-client", :exist?
+      assert_predicate share/"applications/thinkmay-client.desktop", :exist?
+      [48, 128, 256, 512].each do |size|
+        assert_predicate share/"icons/hicolor/#{size}x#{size}/apps/thinkmay-client.png", :exist?
+      end
     end
   end
 end

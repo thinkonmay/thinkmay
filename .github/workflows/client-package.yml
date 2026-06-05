@@ -8,6 +8,8 @@ on:
       - 'worker/proxy'
       - 'packaging/client/**'
       - 'packaging/homebrew/**'
+      - 'images/logo.png'
+      - 'images/logo.ico'
       - 'Formula/**'
       - 'Casks/**'
       - '.github/workflows/client-package.yml'
@@ -47,6 +49,9 @@ jobs:
         with:
           submodules: recursive
           token: ${{ secrets.GH_TOKEN }}
+
+      - name: Validate icon assets
+        run: ./packaging/client/icons/validate-icons.sh
 
       - name: Read client version
         id: version
@@ -99,6 +104,9 @@ jobs:
           submodules: recursive
           token: ${{ secrets.GH_TOKEN }}
 
+      - name: Validate icon assets
+        run: ./packaging/client/icons/validate-icons.sh
+
       - name: Read client version
         id: version
         run: echo "value=$(tr -d '[:space:]' < packaging/client/VERSION)" >> "$GITHUB_OUTPUT"
@@ -136,6 +144,10 @@ jobs:
         with:
           submodules: recursive
           token: ${{ secrets.GH_TOKEN }}
+
+      - name: Validate icon assets
+        shell: pwsh
+        run: bash ./packaging/client/icons/validate-icons.sh
 
       - name: Setup mingw dependencies
         uses: msys2/setup-msys2@v2
@@ -193,12 +205,6 @@ jobs:
           .\rcedit.exe "artifacts/windows/thinkmay-client.exe" --set-icon "images/logo.ico"
           .\rcedit.exe "artifacts/windows/thinkmay-cli.exe" --set-icon "images/logo.ico"
 
-      - name: Copy logo image
-        shell: pwsh
-        run: |
-          mkdir -p artifacts/windows/images
-          cp images/logo.png artifacts/windows/images/logo.png
-
       - name: Build zip package
         shell: pwsh
         run: |
@@ -220,16 +226,30 @@ jobs:
             artifacts/thinkmay-client-windows-amd64-installer.exe
 
   test_linux:
-    name: Test Linux Client (${{ matrix.arch }})
+    name: Test Linux Client (Ubuntu ${{ matrix.ubuntu }} / ${{ matrix.arch }})
     runs-on: ${{ matrix.runner }}
     needs: [package_linux]
     strategy:
       fail-fast: false
       matrix:
         include:
-          - arch: amd64
+          - ubuntu: "22.04"
+            arch: amd64
             runner: ubuntu-24.04
-          - arch: arm64
+          - ubuntu: "22.04"
+            arch: arm64
+            runner: ubuntu-24.04-arm
+          - ubuntu: "24.04"
+            arch: amd64
+            runner: ubuntu-24.04
+          - ubuntu: "24.04"
+            arch: arm64
+            runner: ubuntu-24.04-arm
+          - ubuntu: "26.04"
+            arch: amd64
+            runner: ubuntu-24.04
+          - ubuntu: "26.04"
+            arch: arm64
             runner: ubuntu-24.04-arm
 
     steps:
@@ -241,6 +261,7 @@ jobs:
           path: artifacts
 
       - name: Test tar package
+        if: matrix.ubuntu == '24.04'
         run: |
           arch="${{ matrix.arch }}"
           tar -xzf "artifacts/thinkmay-client-linux-${arch}.tar.gz" -C artifacts
@@ -250,12 +271,17 @@ jobs:
           DESKTOP_FILE="${pkg}/thinkmay-client.desktop"
           grep -q "MimeType=.*x-scheme-handler/thinkmay;" "$DESKTOP_FILE"
           grep -q "Exec=.*-url %u" "$DESKTOP_FILE"
-          echo "tar + URL handler OK (${arch})"
+          grep -q "^Icon=thinkmay-client$" "$DESKTOP_FILE"
+          test -f "${pkg}/thinkmay-client.png"
+          for size in 48 128 256 512; do
+            test -f "${pkg}/icons/hicolor/${size}x${size}/apps/thinkmay-client.png"
+          done
+          echo "tar + URL handler + icon OK (${arch})"
 
       - name: Install and test Debian package in Docker
         run: |
           chmod +x ./packaging/client/linux/test-deb-install.sh
-          ./packaging/client/linux/test-deb-install.sh ./artifacts "${{ matrix.arch }}"
+          ./packaging/client/linux/test-deb-install.sh ./artifacts "${{ matrix.arch }}" "${{ matrix.ubuntu }}"
   test_macos:
     name: Test macOS Client
     runs-on: macos-latest

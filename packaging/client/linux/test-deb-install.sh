@@ -1,20 +1,21 @@
 #!/usr/bin/env bash
 # Install a .deb in a clean Ubuntu container and verify URL handler desktop entry.
-# Usage: ./packaging/client/linux/test-deb-install.sh [artifacts_dir] [amd64|arm64]
+# Usage: ./packaging/client/linux/test-deb-install.sh [artifacts_dir] [amd64|arm64] [ubuntu_version]
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 ARTIFACTS="${1:-${ROOT}/artifacts}"
 ARCH="${2:-amd64}"
+UBUNTU="${3:-24.04}"
 DEB="${ARTIFACTS}/thinkmay-client-linux-${ARCH}.deb"
 
 case "${ARCH}" in
   amd64)
-    IMAGE="${THINKMAY_DEB_TEST_IMAGE:-ubuntu:24.04}"
+    IMAGE="${THINKMAY_DEB_TEST_IMAGE:-ubuntu:${UBUNTU}}"
     DOCKER_PLATFORM=()
     ;;
   arm64)
-    IMAGE="${THINKMAY_DEB_TEST_IMAGE_ARM:-ubuntu:24.04}"
+    IMAGE="${THINKMAY_DEB_TEST_IMAGE_ARM:-ubuntu:${UBUNTU}}"
     DOCKER_PLATFORM=(--platform linux/arm64)
     ;;
   *)
@@ -64,6 +65,23 @@ docker run --rm "${DOCKER_PLATFORM[@]}" \
       echo "Exec line must launch /usr/bin/thinkmay-client with -url %u" >&2
       exit 1
     }
+    grep -q "^Icon=thinkmay-client$" "${DESKTOP}" || {
+      echo "Icon=thinkmay-client missing from desktop entry" >&2
+      exit 1
+    }
+
+    ICON="/usr/share/icons/hicolor/256x256/apps/thinkmay-client.png"
+    if [[ ! -f "${ICON}" ]]; then
+      echo "application icon not installed at ${ICON}" >&2
+      exit 1
+    fi
+    for size in 48 128 256 512; do
+      sized_icon="/usr/share/icons/hicolor/${size}x${size}/apps/thinkmay-client.png"
+      if [[ ! -f "${sized_icon}" ]]; then
+        echo "application icon not installed at ${sized_icon}" >&2
+        exit 1
+      fi
+    done
 
     if which update-desktop-database >/dev/null 2>&1; then
       update-desktop-database -q /usr/share/applications

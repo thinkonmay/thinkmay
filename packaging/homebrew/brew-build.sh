@@ -23,6 +23,9 @@ build_linux_tarball() {
   chmod +x "${PKG}/thinkmay-client"
   cp "${ROOT}/packaging/client/linux/thinkmay-client.desktop" "${PKG}/"
   cp "${ROOT}/packaging/client/linux/README.txt" "${PKG}/"
+  cp "${ROOT}/packaging/client/linux/thinkmay-client.png" "${PKG}/"
+  mkdir -p "${PKG}/icons"
+  cp -R "${ROOT}/packaging/client/linux/icons/hicolor" "${PKG}/icons/"
   mkdir -p "${ARTIFACTS}/package"
   tar -czf "${ARTIFACTS}/thinkmay-client-linux-amd64.tar.gz" -C "${ARTIFACTS}/package" thinkmay-client-linux-amd64
 }
