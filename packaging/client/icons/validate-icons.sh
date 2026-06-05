@@ -2,12 +2,28 @@
 # Validate committed client icon assets (format, sizes, completeness).
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -n "${GITHUB_WORKSPACE:-}" ]]; then
+  ROOT="${GITHUB_WORKSPACE}"
+else
+  ROOT="$(cd "${script_dir}/../../.." && pwd)"
+fi
 errors=0
 
 fail() {
   echo "ERROR: $*" >&2
   errors=$((errors + 1))
+}
+
+# Windows GitHub Actions runs bash with a MSYS path but python3 is native;
+# convert to a path Python can open (e.g. D:/a/thinkmay/thinkmay/...).
+py_path() {
+  local p="$1"
+  if command -v cygpath >/dev/null 2>&1; then
+    cygpath -m "$p"
+  else
+    printf '%s' "$p"
+  fi
 }
 
 check_png() {
@@ -24,7 +40,7 @@ check_png() {
   fi
   size=$(python3 - <<PY
 import struct
-with open("${path}", "rb") as f:
+with open("$(py_path "${path}")", "rb") as f:
     f.seek(16)
     w, h = struct.unpack(">II", f.read(8))
 print(f"{w}x{h}")
@@ -44,7 +60,7 @@ check_ico() {
     fail "missing ${path}"
     return
   fi
-  python3 - <<'PY' "${path}" || fail "ICO validation failed for ${path}"
+  python3 - <<'PY' "$(py_path "${path}")" || fail "ICO validation failed for ${path}"
 import struct, sys
 path = sys.argv[1]
 with open(path, "rb") as f:
@@ -71,7 +87,7 @@ check_icns() {
     fail "missing ${path}"
     return
   fi
-  python3 - <<'PY' "${path}" || fail "ICNS validation failed for ${path}"
+  python3 - <<'PY' "$(py_path "${path}")" || fail "ICNS validation failed for ${path}"
 import struct, sys
 required = {b"ic04", b"ic05", b"ic07", b"ic08", b"ic09", b"ic10"}
 path = sys.argv[1]

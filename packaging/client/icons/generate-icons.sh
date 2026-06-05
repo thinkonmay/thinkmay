@@ -2,7 +2,7 @@
 # Regenerate all client icon assets from images/logo.png.
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 ICONS_DIR="${ROOT}/packaging/client/icons"
 
 cd "${ICONS_DIR}"

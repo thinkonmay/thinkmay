@@ -146,8 +146,8 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
 
       - name: Validate icon assets
-        shell: pwsh
-        run: bash ./packaging/client/icons/validate-icons.sh
+        shell: bash
+        run: ./packaging/client/icons/validate-icons.sh
 
       - name: Setup mingw dependencies
         uses: msys2/setup-msys2@v2
