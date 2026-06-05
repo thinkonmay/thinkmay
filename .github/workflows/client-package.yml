@@ -427,12 +427,20 @@ jobs:
         run: |
           for arch in amd64 arm64; do
             deb="./artifacts/thinkmay-client-linux-${arch}.deb"
-            md5=$(md5sum "${deb}" | cut -d ' ' -f 1)
+            tar="./artifacts/thinkmay-client-linux-${arch}.tar.gz"
+            deb_md5=$(md5sum "${deb}" | cut -d ' ' -f 1)
+            tar_md5=$(md5sum "${tar}" | cut -d ' ' -f 1)
             curl https://saigon2.thinkmay.net/api/collections/binaries/records \
               -H "Content-Type: multipart/form-data" \
               --form "name=thinkmay_client_linux_deb_${arch}" \
-              --form "md5sum=${md5}" \
+              --form "md5sum=${deb_md5}" \
               --form "file=@${deb}" \
+              --progress-bar
+            curl https://saigon2.thinkmay.net/api/collections/binaries/records \
+              -H "Content-Type: multipart/form-data" \
+              --form "name=thinkmay_client_linux_tar_${arch}" \
+              --form "md5sum=${tar_md5}" \
+              --form "file=@${tar}" \
               --progress-bar
           done
 
@@ -452,12 +460,20 @@ jobs:
         shell: bash
         run: |
           dmg="./artifacts/thinkmay-client-darwin-arm64.dmg"
-          md5=$(md5sum "${dmg}" | cut -d ' ' -f 1)
+          zip="./artifacts/thinkmay-client-darwin-arm64.zip"
+          dmg_md5=$(md5sum "${dmg}" | cut -d ' ' -f 1)
+          zip_md5=$(md5sum "${zip}" | cut -d ' ' -f 1)
           curl https://saigon2.thinkmay.net/api/collections/binaries/records \
             -H "Content-Type: multipart/form-data" \
             --form "name=thinkmay_client_macos_dmg" \
-            --form "md5sum=${md5}" \
+            --form "md5sum=${dmg_md5}" \
             --form "file=@${dmg}" \
+            --progress-bar
+          curl https://saigon2.thinkmay.net/api/collections/binaries/records \
+            -H "Content-Type: multipart/form-data" \
+            --form "name=thinkmay_client_macos_zip" \
+            --form "md5sum=${zip_md5}" \
+            --form "file=@${zip}" \
             --progress-bar
 
   publish_windows:
