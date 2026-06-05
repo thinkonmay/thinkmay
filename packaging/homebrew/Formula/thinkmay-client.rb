@@ -16,11 +16,11 @@ class ThinkmayClient < Formula
   on_linux do
     on_intel do
       url "https://github.com/thinkonmay/thinkmay/releases/download/v#{version}/thinkmay-client-linux-amd64.tar.gz"
-      sha256 "31f4ccb48364867e6a748a691f76f6ccc3661818e8564bdf7e7456d899cc69d6"
+      sha256 "c6e4938056ac0525e29919c6c092b4137b9f867ee21edbfc4fd1dc2d9599cf3d"
     end
     on_arm do
       url "https://github.com/thinkonmay/thinkmay/releases/download/v#{version}/thinkmay-client-linux-arm64.tar.gz"
-      sha256 "75891a4f72c0b87aa398781af891d1a22e06ab83beebb2d6563f4ff01f04da4e"
+      sha256 "d7ca1bc748a6153e3e5b1fed8a81ce8cf7c0ece06c825328967262277b5a36fe"
     end
 
     def linux_pkg_dir
