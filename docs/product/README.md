@@ -6,6 +6,8 @@ Use this section for product-facing and engineering-facing documentation about h
 - [Technical architecture](./architecture/technical_doc.md)
 - [Client protocol contract](./architecture/client_protocol_contract.md) — canonical binary/signaling protocol across all clients (PWA as reference, mobile, desktop/QUIC)
 - [Client platform divergence](./architecture/client_platform_divergence.md) — intentional differences, known bugs, and drift risks between PWA, mobile, and desktop clients
+- [Client user flow contract](./architecture/client_user_flow_contract.md) — user-facing flow parity map between PWA (reference) and mobile app
+- [Mobile sync checklist](./architecture/mobile_sync_checklist.md) — actionable checklist of 75 items to bring mobile app to PWA parity (25 remaining)
 - [Mobile architecture](./architecture/mobile_architecture.md)
 - [Native app architecture](./architecture/native_app.md) — Flutter streaming client feasibility analysis (pre-build)
 - [Desktop connection initialization](./architecture/desktop_connection_initialization.md) — end-to-end flow from website Connect click to live QUIC session
