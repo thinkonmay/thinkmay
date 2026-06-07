@@ -4,10 +4,14 @@ Use this section for product-facing and engineering-facing documentation about h
 
 ## Architecture
 - [Technical architecture](./architecture/technical_doc.md)
+- [Client protocol contract](./architecture/client_protocol_contract.md) — canonical binary/signaling protocol across all clients (PWA as reference, mobile, desktop/QUIC)
+- [Client platform divergence](./architecture/client_platform_divergence.md) — intentional differences, known bugs, and drift risks between PWA, mobile, and desktop clients
 - [Mobile architecture](./architecture/mobile_architecture.md)
-- [Native app architecture](./architecture/native_app.md)
+- [Native app architecture](./architecture/native_app.md) — Flutter streaming client feasibility analysis (pre-build)
+- [Desktop connection initialization](./architecture/desktop_connection_initialization.md) — end-to-end flow from website Connect click to live QUIC session
 - [Desktop client URL handler](./architecture/desktop_client_url_handler.md)
 - [Desktop client launch arguments](./architecture/desktop_client_launch_arguments.md)
+- [Desktop client architecture](../../desktop_client_architecture.md) — Go native client: QUIC transport, FFmpeg decode, SDL presentation, reconnect
 - [Design doc](./architecture/design_doc.md)
 - [Windows bundle](./architecture/windows_bundle.md)
 
