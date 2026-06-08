@@ -343,7 +343,7 @@ These features exist only in the desktop client:
 
 | ID   | Client    | Component     | Description                                                         | Status   |
 |------|-----------|---------------|---------------------------------------------------------------------|----------|
-| D-1  | Mobile    | HID           | `mouseWheel` deltaX operator precedence: `?? 0 + 2048` → should be `(?? 0) + 2048` | Open     |
+| D-1  | Mobile    | HID           | `mouseWheel` deltaX operator precedence: `?? 0 + 2048` → should be `(?? 0) + 2048` | **Fixed** — `((data['deltaX'] as num?)?.toInt() ?? 0) + 2048` |
 | D-2  | Mobile    | Metrics       | `StreamHealthMetric.state` is a free-form string vs PWA's union type — no compile-time exhaustiveness check | By design |
 
 ### 10.2 Drift Risks

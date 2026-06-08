@@ -8,7 +8,7 @@ Actionable checklist of items the mobile app needs to synchronize with the PWA (
 
 ## A. Critical Bugs (Fix Now)
 
-- [ ] **D-1: Mouse wheel deltaX encoding bug** — `event_code.dart` line `(data['deltaX'] as num?)?.toInt() ?? 0 + 2048` has wrong operator precedence. Must be `((data['deltaX'] as num?)?.toInt() ?? 0) + 2048`. When deltaX is null, sends `2048` (value for 0) instead of correct `2048` — they coincidentally match, but any non-null deltaX bypasses the `+ 2048` offset entirely. **File**: `mobile/lib/core/models/event_code.dart`
+- [x] **D-1: Mouse wheel deltaX encoding bug** — Fixed: `((data['deltaX'] as num?)?.toInt() ?? 0) + 2048` in `mobile/lib/core/models/event_code.dart`
 
 ---
 
@@ -25,8 +25,8 @@ Actionable checklist of items the mobile app needs to synchronize with the PWA (
 - [x] Cursor interpolation algorithm (32ms EMA) matches PWA
 - [x] Stream health status handling matches PWA
 - [x] Metrics calculation formulae match PWA (video decode, jitter, bitrate, etc.)
-- [ ] Clipboard encoding parity — verify `HIDMsg.encodeClipboard()` produces identical bytes as PWA's `concatTypedArrays(Uint8Array([EventCode.cs,0,0,0]), TextEncoder().encode(val))`
-- [ ] Gamepad `gconn` reconnect on "controller not found" notification — verify mobile handles this identically to PWA (re-sends `gconn` with parsed ID)
+- [x] Clipboard encoding parity — Fixed: changed `text.codeUnits` (UTF-16) to `utf8.encode(text)` (UTF-8) in `HIDMsg.encodeClipboard()`, now matches PWA's `TextEncoder().encode(val)`. **File**: `mobile/lib/core/models/event_code.dart`
+- [x] Gamepad `gconn` reconnect on "controller not found" notification — Fixed: now parses gamepad ID from notification text (matching PWA's `Number.parseInt(str.replaceAll(ctrlNotFound, ''))`), uses `utf8.decode` instead of `String.fromCharCodes`, and sends `gconn` with parsed gid. **File**: `mobile/lib/core/thinkmay_client.dart`
 
 ---
 
@@ -147,8 +147,8 @@ Actionable checklist of items the mobile app needs to synchronize with the PWA (
 
 | Category | Total | Done | Remaining |
 |----------|-------|------|-----------|
-| A. Critical Bugs | 1 | 0 | 1 |
-| B. Protocol Sync | 14 | 11 | 3 |
+| A. Critical Bugs | 1 | 1 | 0 |
+| B. Protocol Sync | 14 | 14 | 0 |
 | C. Advanced Settings | 15 | 7 | 8 |
 | D. Dashboard / VM Mgmt | 10 | 5 | 5 |
 | E. Remote / Streaming | 16 | 11 | 5 |
@@ -158,12 +158,12 @@ Actionable checklist of items the mobile app needs to synchronize with the PWA (
 | I. Onboarding | 1 | 0 | 1 |
 | J. Metrics / Diagnostics | 4 | 3 | 1 |
 | K. Payment / Subscription | 8 | 7 | 1 |
-| **Total** | **75** | **50** | **25** |
+| **Total** | **75** | **53** | **22** |
 
 ### Recommended execution order
 
-1. **A1** — Fix mouse wheel bug (5 min, blocks nothing)
-2. **B7–B8** — Clipboard and gamepad reconnect protocol verification (low risk, high correctness)
+1. ~~**A1** — Fix mouse wheel bug~~ **DONE**
+2. ~~**B7–B8** — Clipboard and gamepad reconnect protocol fix~~ **DONE**
 3. **C1–C6** — FPS slider, bitrate range, keyboard lock, gamepad touch, client cursor, fill screen (settings that directly affect streaming UX)
 4. **D4–D5** — Share session, port forwards (growth + power-user features)
 5. **F1–F5** — Store and install flow (core product loop for new users)
