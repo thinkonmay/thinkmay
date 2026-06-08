@@ -9,6 +9,7 @@ Use this section for product-facing and engineering-facing documentation about h
 - [Client user flow contract](./architecture/client_user_flow_contract.md) — user-facing flow parity map between PWA (reference) and mobile app
 - [Mobile sync checklist](./architecture/mobile_sync_checklist.md) — actionable checklist of 75 items to bring mobile app to PWA parity (25 remaining)
 - [Mobile architecture](./architecture/mobile_architecture.md)
+- [Moonlight Android HID capture](./architecture/moonlight_android_hid_capture.md) — reference analysis of how moonlight-android captures keyboard, mouse, touch, and gamepad input on Android
 - [Native app architecture](./architecture/native_app.md) — Flutter streaming client feasibility analysis (pre-build)
 - [Desktop connection initialization](./architecture/desktop_connection_initialization.md) — end-to-end flow from website Connect click to live QUIC session
 - [Desktop client URL handler](./architecture/desktop_client_url_handler.md)

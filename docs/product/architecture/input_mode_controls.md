@@ -30,8 +30,10 @@ This is essential for FPS games, 3D applications, and any software that uses raw
 #### Mobile (Flutter)
 
 - `MouseHandler.relativeMouse` / `TouchHandler.relativeMouse` flags
-- When enabled: `MouseHandler.onPointerMove()` sends `mmr` instead of `mma`
-- **Input Lock** is the mobile equivalent of Pointer Lock: `PointerCapture.request()` (platform channel) captures all touch input to the remote surface, hides the system cursor and status bar, and shows an "Exit gaming mode" button
+- When enabled: finger trackpad sends `mmr` via `TouchHandler`; physical OTG/BT mouse sends `mmr` via the native captured-pointer bridge
+- **Input Lock** is the mobile equivalent of Pointer Lock: toggling **Gaming mode** in the control panel calls `PointerCapture.request()` (Android API 26+), which hides the system cursor and captures the physical mouse via `View.requestPointerCapture()`. Flutter does not receive `SOURCE_MOUSE_RELATIVE` events natively, so `MouseCaptureNative.kt` registers `OnCapturedPointerListener` and forwards relative deltas/buttons/scroll to Dart over `EventChannel("com.thinkmay/captured_pointer")`
+- Pointer capture affects **mouse and trackpad only** — touchscreen finger input is unaffected and continues to work as trackpad (`mmr`) or native touch (`td/tm/tu`)
+- Exit: tap the on-screen exit button, hold **ESC** for 1 second (ESC still forwards to the guest during the hold), or toggle Gaming mode off in the control panel
 - No auto-activation — the user explicitly toggles gaming mode from the control panel
 
 ### 1.4 Settings UI Location
@@ -43,7 +45,7 @@ This is essential for FPS games, 3D applications, and any software that uses raw
 
 ### 1.5 Key Difference from PWA
 
-The browser's Pointer Lock API is an OS-level feature: once active, the native cursor is completely hidden and the OS delivers raw deltas. Mobile cannot use Pointer Lock (it's a browser API), so it simulates the effect via a platform channel that captures touch events and hides the system UI. The HID behavior (sending `mmr` deltas) is identical.
+The browser's Pointer Lock API is an OS-level feature: once active, the native cursor is completely hidden and the OS delivers raw deltas. Mobile cannot use Pointer Lock (it's a browser API), so Android uses `View.requestPointerCapture()` with a native EventChannel bridge to deliver the same raw mouse deltas. The HID behavior (sending `mmr` deltas) is identical. On API < 26, capture is unavailable and physical mouse falls back to bounded `MouseRegion` hover.
 
 ---
 
@@ -193,7 +195,14 @@ These three settings interact in specific ways:
 
 ### 4.1 Gaming Mode + Client Cursor
 
-When gaming mode activates (pointer lock / input lock), the native cursor is hidden. The client cursor overlay becomes the user's only way to see the cursor. If the user disables client cursor while in gaming mode, the server-side cursor activates as a fallback — rendered into the video stream rather than as a client overlay.
+Mobile coordinates cursor rendering with gaming mode to avoid double cursors:
+
+| Gaming mode | Client overlay (cp/cu PNG) | Server cursor (composited in video) |
+|-------------|---------------------------|-------------------------------------|
+| OFF (default) | OFF | ON — replaces the hidden OS cursor |
+| ON | ON if "Client cursor" setting enabled | OFF |
+
+When gaming mode activates (pointer lock / input lock), the native/OS cursor is hidden. The client cursor overlay becomes the user's way to see the cursor. If the user disables client cursor while in gaming mode, no client overlay is shown (server compositing stays off in gaming mode; the 5s cp/cu fallback may enable server cursor if the daemon sends no cursor packets).
 
 ### 4.2 Gaming Mode + Native Touch
 
@@ -238,7 +247,8 @@ In native touch mode, the user's finger is the cursor — they tap directly wher
 |-----------|------|
 | Relative mouse (MouseHandler) | `mobile/lib/core/hid/mouse_handler.dart` (`relativeMouse` flag) |
 | Relative mouse (TouchHandler) | `mobile/lib/core/hid/touch_handler.dart` (`relativeMouse` flag) |
-| Input lock (Pointer Lock equiv.) | `mobile/lib/core/platform/pointer_capture.dart` |
+| Input lock (Pointer Lock equiv.) | `mobile/lib/core/platform/pointer_capture.dart`, `mobile/android/.../MouseCaptureNative.kt` |
+| Gaming mode wiring | `mobile/lib/presentation/screen/remote/remote_screen.dart` |
 | Client cursor toggle | `mobile/lib/core/cursor/cursor_handler.dart` (`CursorState.clientCursor`) |
 | Native touch toggle | `mobile/lib/core/hid/touch_handler.dart` (`native` flag) |
 | Keyboard native touch override | `mobile/lib/core/thinkmay_client.dart` (`setKeyboardNativeTouchOverride`) |
