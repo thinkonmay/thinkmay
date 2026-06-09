@@ -1,8 +1,132 @@
 # Mobile App Sync Checklist
 
-Actionable checklist of items the mobile app needs to synchronize with the PWA (reference implementation). Derived from the [User Flow Contract](./client_user_flow_contract.md), [Platform Divergence Registry](./client_platform_divergence.md), and [Protocol Contract](./client_protocol_contract.md).
+Actionable checklist of items the mobile app needs to synchronize with the PWA (reference implementation). Derived from the [User Flow Contract](./client_user_flow_contract.md), [Platform Divergence Registry](./client_platform_divergence.md), [Protocol Contract](./client_protocol_contract.md), and the [pre-release task list](../../checklist.md).
 
 **Status legend**: `[ ]` = not started, `[~]` = partial/in progress, `[x]` = done, `[-]` = not applicable
+
+**Architecture reference**: Flutter client uses Clean Architecture (`presentation/` → `domain/` → `data/` + `core/` for WebRTC/HID). State: `flutter_bloc` + `get_it`/`injectable`. Streaming orchestrator: `ThinkmayClient` (4 WebRTC connections). Bootstrap: `SplashCubit` → `GlobalCubit.preload()` → `AppRouter.isAppInitialized`. See [mobile_architecture.md](./mobile_architecture.md) and [docs/ai/mobile/specs/01-app-bootstrap-global-state.md](../../ai/mobile/specs/01-app-bootstrap-global-state.md).
+
+---
+
+## L. Pre-Release Blockers (Release Gate)
+
+Items from [docs/checklist.md](../../checklist.md) that must ship before app-store release. Each maps to longer parity work elsewhere in this doc (cross-refs in **Related**).
+
+- [ ] **L-1: Startup performance — main-thread jank (3–5 s)**
+  - **Symptom**: First 3–5 s after cold start feel sluggish; device logs report *"skipped frames"* / *"too much work on main thread"*.
+  - **Root causes (mobile)**:
+    - `main()` runs `configureDependencies()` synchronously before first frame — large `injectable` graph registers every service up front (`mobile/lib/main.dart`, `dependency_injection/injection.config.dart`).
+    - `PreloadUseCaseImpl` decodes JSON on the main isolate: wave 1 (subscription, domains, worker, wallet) then wave 2 (store catalog, configuration, settings) — wave 2 was added to reduce stacking but still blocks splash exit (`mobile/lib/data/use_case/preload/preload_use_case_impl.dart`).
+    - `SplashScreen` animates progress on a 50 ms timer while awaiting auth + preload on the same isolate (`mobile/lib/presentation/screen/splash/splash_screen.dart`).
+  - **PWA reference**: `preload()` is deferred via `requestIdleCallback` / `setTimeout(0)` in `website/components/providers/stateProvider.tsx` so first paint is not blocked; critical fetches run after shell render.
+  - **Fix approach**: Profile with Flutter DevTools timeline; move heavy JSON parsing / Freezed model mapping to `compute()` isolates; lazy-register non-splash DI modules; defer wave-2 preload until after first dashboard frame (match PWA idle scheduling); consider shrinking splash asset decode (PNG → WebP).
+  - **Related**: L-7 (bootstrap gate), §D dashboard first paint.
+
+- [ ] **L-2: Dashboard volume card — `ControlPannel` parity audit**
+  - **PWA reference**: `website/components/dashboard/VmState.tsx` — volume card with template image, availability dot, connect/restart/shutdown, share, debug VNC, port-forward list, played-hours meter, disk-resize CTA, expired → payment redirect.
+  - **Mobile reference**: `mobile/lib/presentation/screen/dashboard/dashboard_screen.dart` (`_VolumeCard` widget) + `DashboardCubit`.
+  - **Known gaps** (audit each prop/action against PWA):
+    | PWA `ControlPannel` | Mobile status |
+    |---------------------|---------------|
+    | `open` / connect | ✅ `openStream` / `powerOnCloudPC` |
+    | `close` / shutdown | ✅ `powerOffCloudPC` |
+    | `restart` | ✅ `restartCloudPC` |
+    | `share` | ❌ button wired but `shareVolume()` is empty TODO — see L-4 |
+    | `debug` (VNC popup) | ❌ missing — see L-3 |
+    | `port_forward[]` display | ❌ not rendered |
+    | Disk resize button | ❌ TODO stub — see L-10 |
+    | `transient` volume handling | ⚠️ verify hide share/connect rules |
+    | Expired → `/payment` | ⚠️ verify `isExpired` UX matches PWA `ShareWF` / `Connect` guards |
+  - **Acceptance**: Side-by-side screenshot + behavior matrix for `ready`, `started`, `headless`, `unknown`, expired subscription states.
+
+- [ ] **L-3: Deploy watch — VNC preview + log WebSocket (PWA `deployWatch.tsx`)**
+  - **PWA reference**: `website/components/dashboard/deployWatch.tsx`
+    - **Friendly mode**: YouTube tutorial iframe keyed by game `code_name`.
+    - **Technical mode**: live VNC (`VncScreen` from `components/popup/internal`) when `DeployWatch.vnc` path is set; `QueueModal` when waiting in queue; WebSocket log stream on `DeployWatch.log` path (`wss://{host}:444{log}`); progress step list; elapsed boot timer; cancel → `CancelDeployment`.
+  - **Mobile current**: `DeployWatchOverlay` shows title, progress text list, boot timer, cancel only — no VNC, no log WS, no friendly/technical toggle (`mobile/lib/presentation/screen/dashboard/widgets/deploy_watch_overlay.dart`).
+  - **Data model**: `DeployState` already has `vnc`, `log`, `progress` fields (`mobile/lib/domain/models/worker/worker_state_models.dart`) but `DashboardCubit.powerOnCloudPC` only appends `onStatus` strings to `progress`; does not capture `vnc`/`log` URLs from session response.
+  - **Implementation plan**:
+    1. Extend `StartSessionUseCase` / session callback to populate `DeployState.vnc` and `.log` from daemon deploy payload (same fields PWA Redux `state.popup.deployWatch` receives).
+    2. Add `[vnc_viewer](https://pub.dev/packages/vnc_viewer)` widget in technical mode — follow package example for `VncViewer` + `scaleViewport` to mirror PWA `scaleViewport`.
+    3. Open `WebSocketChannel` on `log` URL; prepend incoming lines to progress list (PWA prepends newest first).
+    4. Add friendly/technical segmented control; persist mode in `SharedPreferences` (PWA: `state.remote.watchMode` + `cache_setting`).
+    5. Queue detection: if first log line contains `"you are in"`, show queue UI with upgrade CTA (PWA `QueueModal`).
+  - **Related**: §D *Debug / VNC window*.
+
+- [ ] **L-4: Share link logic — dashboard volume card**
+  - **PWA reference**: `website/components/dashboard/index.tsx` → `share(volume_id)`:
+    1. `getVmSession(computer, volume_id)` → session `{ id, thinkmay }`.
+    2. `ParseRequest(id, thinkmay)` → streaming tokens; `save_reference(result)` into Redux `state.remote.ref`.
+    3. Build URL: `https://{host}/{locale}/{remote|share}?ref={uid}&vmid=…&video=…&audio=…&data=…`.
+    4. `navigator.clipboard.writeText` + `AppToast.success('copied to clipboard')`.
+  - **Mobile partial**: Remote control panel already implements equivalent via `ControlPanelActions.buildShareUri` / `copySessionLink` / `shareSession` (`mobile/lib/presentation/screen/remote/widgets/control_panel/control_panel_actions.dart`) using `SessionService.parseRequest` and hardcoded host `https://thinkmay.net`.
+  - **Mobile missing**: `DashboardCubit.shareVolume(String volumeId)` is an empty TODO (`dashboard_cubit.dart` L308); dashboard Share button calls it (`dashboard_screen.dart` L595).
+  - **Implementation**: Reuse `ControlPanelActions.sessionRefParams` pattern but source session from `GlobalCubit.state.workerInfo` + `getVmSession` equivalent (worker sessions map) without entering RemoteScreen; copy to clipboard; show toast via L-9.
+  - **Related**: §D *Share session*.
+
+- [ ] **L-5: Onboarding flow audit**
+  - **PWA reference**: `nextstepjs` guided tours defined in `website/backend/utils/tour.tsx` — three tours (`onboarding-mobile-guide`, dashboard guide, store guide) triggered via `useTourGuide()` on dashboard. Steps cover device selection, streaming quality, toggles, routing domain, sharing, advanced settings.
+  - **Mobile current**:
+    - `OnboardingVirtualScreen` — interactive **remote-only** tutorial (mouse move, keyboard, gamepad, control panel steps) opened from remote side panel (`ControlPanelActions.openUsageGuide`). Not shown on first launch.
+    - No dashboard or store tour equivalent.
+  - **Audit checklist**:
+    - [ ] First-run detection flag (PWA: tour completion in local storage).
+    - [ ] Dashboard: volume card, connect, domain switcher, subscription states.
+    - [ ] Remote: side panel, virtual controls, advanced settings entry.
+    - [ ] Store / install flow (when §F ships).
+    - [ ] Decide: Flutter overlay package (e.g. `tutorial_coach_mark`) vs custom `OverlayPortal` vs re-use `OnboardingVirtualScreen` pattern.
+  - **Related**: §I *Structured onboarding tours*.
+
+- [ ] **L-6: Profile tab — gamification parity (`/profile`)**
+  - **Product spec**: [gamification.md](../features/gamification.md) — Profile tab is **not** account edit; it is rank, stars, quests, leaderboard, heatmap hub.
+  - **PWA reference**: `website/app/[locale]/(app)/profile/page.tsx` + `website/components/profile/*` — `RankBanner`, `RoadmapCard`, `LeaderboardCard`, `QuestsCard`.
+  - **Mobile current**: `ProfileScreen` shows account card with **hardcoded/mock** usage stats, server picker, static subscription card (`mobile/lib/presentation/screen/profile/profile_screen.dart`). `ProfileCubit.init()` reads `GlobalCubit` but preload phase 2 never emits quests/stars/heatmap into `GlobalState` (`docs/ai/mobile/specs/profile/09-profile-account.md`).
+  - **APIs to wire**: RPC `get_star_balance`, `get_quests_v2`, `get_star_leaderboard`, `get_heatmap`; action `claim_mission_v2`.
+  - **Acceptance**: Profile tab matches PWA layout per `thinkmay_mobile_design.md`; account edit stays on `/setting` → `/update-profile`.
+  - **Related**: §G *Profile page* (status corrected below).
+
+- [ ] **L-7: Bootstrap preload gate — exit splash only when data is ready**
+  - **PWA reference**: `website/backend/actions/background.ts` → `preloadSilent()` **awaits** subscription, configuration, domains, worker, settings, positions before `finish_fetching()`; non-critical fetches are fire-and-forget afterward.
+  - **Mobile current**:
+    - `SplashCubit.checkIsLoggedIn()` awaits `GlobalCubit.preload()` then sets `AppRouter.isAppInitialized = true` and navigates (`splash_cubit.dart`).
+    - `GlobalCubit.preload()` emits `fetched: true` even on partial failure (empty lists) — dashboard may render empty then populates (`global_cubit.dart`).
+    - Preload phase 2 (recommendations, mails, quests, heatmap, star balance) is fire-and-forget and **never updates** `GlobalState` (`preload_use_case_impl.dart` L116–142).
+    - Login/sign-up paths call `preload()` but do not block navigation on `GlobalState.fetched` (`login_cubit.dart`, spec 01 🟡).
+  - **Target behavior**: Splash (and post-login redirect) waits until wave-1 preload completes successfully; dashboard reads from populated `GlobalCubit` without flash-of-empty; optionally gate on `workerInfo != null` for logged-in users.
+  - **Router**: `AppRouter` redirect should respect `GlobalCubit.state.fetched && !isLoading` before `/home`.
+  - **Related**: L-1 (performance — don't block longer than necessary; optimize first, then gate).
+
+- [ ] **L-8: Advanced settings screen — UI polish / bug fixes**
+  - **Mobile file**: `mobile/lib/presentation/screen/advanced_settings/advanced_settings_screen.dart`
+  - **PWA reference**: `website/app/[locale]/(app)/setting/(other)/advance/page.tsx`
+  - **Scope**: Fix minor layout/overflow/visual glitches reported on device (safe-area, slider label alignment, section spacing, dark-theme contrast). Verify toggles persist via `RemoteSettingsCubit` → `RemoteSettingsRepository` (SharedPreferences) and apply live when opened from remote (`?remote=true`).
+  - **Parity gaps to verify while fixing UI** (see §C): keyboard lock, gamepad touch, client cursor, fill-screen, auto relative mouse toggles may exist in `RemoteSettings` model but need UI wiring if missing.
+  - **Related**: §C *Advanced Settings Sync*.
+
+- [ ] **L-9: `AppToast` notification system**
+  - **PWA reference**: `website/components/providers/stateProvider.tsx` → `AppToast` wrapper over `react-hot-toast`:
+    - `AppToast.success(message)` — green check, top-left, 4 s, glass gradient border.
+    - `AppToast.error(message)` — red X icon.
+    - `AppToast.loading(message)` — spinner (used for in-progress connect).
+    - Used across dashboard share, login errors, disk resize, log callbacks (`background.ts` → `logCallback`).
+  - **Mobile current**: Inconsistent — `flutter_easyloading` for blocking loaders (login/sign-up), ad-hoc `SnackBar` / `ScaffoldMessenger` in remote and control panel (`control_panel_actions.dart` → `_showSnack`), no global styled toast.
+  - **Implementation plan**:
+    1. Create `AppToast` utility (or `TmToast`) in `mobile/lib/presentation/components/` mirroring three variants + duration/position.
+    2. Register overlay in `MaterialApp.router` `builder` (alongside or replacing `EasyLoading` for non-blocking cases).
+    3. Replace `_showSnack` / scattered SnackBars with `AppToast.success` for copy-link, errors, deployment status.
+    4. Match PWA visual tokens: `#112E29` → `#0A1A1A` gradient, `#29D69F` accent, `#1F3E39` border.
+  - **Related**: L-4 (share copied feedback), L-10 (disk resize errors).
+
+- [ ] **L-10: Disk resize popup**
+  - **PWA reference**: `website/components/popup/disk.tsx` — opened via `popup_open({ type: 'diskResize', data: { volume_id } })` from `ControlPannel` disk button.
+    - Shows current vs plan max disk from subscription policy + addon charges (`fetch_addon_charges`).
+    - Selectable size steps; storage usage bar (`total_data_credit` vs free credit).
+    - Confirm → `Resize(volume_id, size)` API → success closes popup + `AppToast`; failure → `AppToast.error`.
+    - `hour1` plan → redirect to `/payment` instead of resize.
+  - **Mobile current**: `_VolumeCard` secondary button calls empty TODO (`dashboard_screen.dart` L657: `// TODO: Implement resize disk popup`).
+  - **APIs**: PocketBase `Resize` (via worker API — same as PWA `#/api`), `FetchAddonChargesUseCase` / `FetchPlanDetail` for pricing display.
+  - **Implementation**: Bottom sheet or dialog widget `DiskResizeSheet`; wire `DashboardCubit.openDiskResize(volumeId)`; refresh worker info on success via `GlobalCubit.refreshWorker()`.
+  - **Related**: §D *ControlPannel* disk button, §H *Storage / Add-ons*.
 
 ---
 
@@ -59,11 +183,11 @@ Actionable checklist of items the mobile app needs to synchronize with the PWA (
 
 - [x] Volume card rendering with availability states
 - [x] Connect flow (claim → deploy → watch → navigate to remote)
-- [x] Deploy watch overlay with progress steps
+- [~] Deploy watch overlay with progress steps — text progress only; VNC/log/friendly mode missing. **See**: L-3.
 - [x] Restart volume action
 - [x] Close/shutdown volume action
-- [ ] **Share session** — PWA copies session URL to clipboard; mobile missing. **PWA file**: `website/components/dashboard/index.tsx` → `share()` function
-- [ ] **Debug / VNC window** — PWA opens debug VNC in popup window; mobile missing (may not be applicable but should have equivalent diagnostics access)
+- [~] **Share session** — Remote side panel: ✅ `ControlPanelActions.copySessionLink` / `shareSession`. Dashboard volume card: ❌ `DashboardCubit.shareVolume` TODO. **PWA file**: `website/components/dashboard/index.tsx` → `share()`. **See**: L-4.
+- [~] **Debug / VNC window** — PWA opens debug VNC in popup (`debug()` → `constructRedirect('/debug')`). Mobile deploy overlay lacks VNC entirely. **See**: L-3.
 - [ ] **Port forwards display** — PWA volume card shows port forwards; mobile missing. **PWA component**: `ControlPannel` → `port_forward` prop
 - [ ] **Server down / Wrong server / No subscription** — verify mobile renders all three error states identically to PWA. **PWA components**: `ServerDownState`, `WrongDomainState`, `NoSubscriptionState`
 - [ ] **Notifications panel** — PWA dashboard has a notifications sidebar; verify mobile has equivalent. **PWA component**: `Notifications`
@@ -102,7 +226,7 @@ Actionable checklist of items the mobile app needs to synchronize with the PWA (
 
 ## G. Settings Pages Sync
 
-- [x] Profile page
+- [~] **Profile page** — Account/settings screens exist; Profile **tab** still mock stats, missing gamification widgets (rank, quests, leaderboard, heatmap). **See**: L-6, [09-profile-account.md](../../ai/mobile/specs/profile/09-profile-account.md).
 - [x] Change password page
 - [x] Keyboard test screen
 - [x] Gamepad test screen
@@ -123,7 +247,7 @@ Actionable checklist of items the mobile app needs to synchronize with the PWA (
 
 ## I. Onboarding
 
-- [ ] **Structured onboarding tours** — PWA uses `nextstepjs` with 3 tours (dashboard, remote, store); mobile has no equivalent. Should implement step-by-step introduction for new users. **PWA library**: `nextstepjs`
+- [~] **Structured onboarding tours** — PWA uses `nextstepjs` with 3 tours (dashboard, remote, store). Mobile has remote-only `OnboardingVirtualScreen`, no first-run dashboard/store tours. **PWA**: `website/backend/utils/tour.tsx`. **See**: L-5.
 
 ---
 
@@ -151,30 +275,43 @@ Actionable checklist of items the mobile app needs to synchronize with the PWA (
 
 ## Summary
 
-| Category | Total | Done | Remaining |
-|----------|-------|------|-----------|
-| A. Critical Bugs | 1 | 1 | 0 |
-| B. Protocol Sync | 14 | 14 | 0 |
-| C. Advanced Settings | 15 | 7 | 8 |
-| D. Dashboard / VM Mgmt | 10 | 5 | 5 |
-| E. Remote / Streaming | 16 | 11 | 5 |
-| F. Store / Install | 5 | 0 | 5 |
-| G. Settings Pages | 10 | 6 | 4 |
-| H. Storage / Add-ons | 1 | 0 | 1 |
-| I. Onboarding | 1 | 0 | 1 |
-| J. Metrics / Diagnostics | 4 | 3 | 1 |
-| K. Payment / Subscription | 8 | 7 | 1 |
-| **Total** | **75** | **53** | **22** |
+| Category | Total | Done | Partial | Remaining |
+|----------|-------|------|---------|-----------|
+| A. Critical Bugs | 1 | 1 | 0 | 0 |
+| B. Protocol Sync | 14 | 14 | 0 | 0 |
+| C. Advanced Settings | 15 | 7 | 0 | 8 |
+| D. Dashboard / VM Mgmt | 10 | 4 | 3 | 3 |
+| E. Remote / Streaming | 16 | 11 | 0 | 5 |
+| F. Store / Install | 5 | 0 | 0 | 5 |
+| G. Settings Pages | 10 | 5 | 1 | 4 |
+| H. Storage / Add-ons | 1 | 0 | 0 | 1 |
+| I. Onboarding | 1 | 0 | 1 | 0 |
+| J. Metrics / Diagnostics | 4 | 3 | 0 | 1 |
+| K. Payment / Subscription | 8 | 7 | 0 | 1 |
+| **L. Pre-Release Blockers** | **10** | **0** | **0** | **10** |
+| **Total** | **95** | **52** | **5** | **38** |
 
 ### Recommended execution order
 
-1. ~~**A1** — Fix mouse wheel bug~~ **DONE**
-2. ~~**B7–B8** — Clipboard and gamepad reconnect protocol fix~~ **DONE**
-3. **C1–C6** — FPS slider, bitrate range, keyboard lock, gamepad touch, client cursor, fill screen (settings that directly affect streaming UX)
-4. **D4–D5** — Share session, port forwards (growth + power-user features)
-5. **F1–F5** — Store and install flow (core product loop for new users)
-6. **E1–E3** — Side panel parity, VM log stream (streaming polish)
-7. **G1** — Snapshots page (data protection)
-8. **H1** — Storage / add-ons page (monetization)
-9. **I1** — Onboarding tours (new user activation)
-10. **J1** — Stream health type safety (code quality)
+**Release gate (do first — blocks app-store ship):**
+
+1. **L-1 + L-7** — Startup perf + preload gate (fix jank, then gate splash on wave-1 data)
+2. **L-9** — AppToast (unblocks consistent feedback for items below)
+3. **L-4 + L-10** — Dashboard share link + disk resize popup
+4. **L-2** — ControlPannel audit (verify matrix after L-4/L-10 land)
+5. **L-3** — Deploy watch VNC + log WebSocket (`vnc_viewer` package)
+6. **L-8** — Advanced settings UI fixes
+7. **L-6** — Profile tab gamification parity
+8. **L-5** — Onboarding flow audit + first-run tours
+
+**Broader parity (post-release or parallel if capacity allows):**
+
+9. ~~**A1** — Fix mouse wheel bug~~ **DONE**
+10. ~~**B7–B8** — Clipboard and gamepad reconnect protocol fix~~ **DONE**
+11. **C1–C6** — FPS slider, bitrate range, keyboard lock, gamepad touch, client cursor, fill screen (settings that directly affect streaming UX)
+12. **D6–D8** — Port forwards, error states, notifications panel
+13. **F1–F5** — Store and install flow (core product loop for new users)
+14. **E1–E3** — Side panel parity, VM log stream (streaming polish)
+15. **G1** — Snapshots page (data protection)
+16. **H1** — Storage / add-ons page (monetization)
+17. **J1** — Stream health type safety (code quality)
