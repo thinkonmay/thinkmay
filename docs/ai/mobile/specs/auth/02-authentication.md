@@ -72,9 +72,9 @@ Website: `(auth)/login`, `register`, … — `backend/actions/index.ts` (needs s
 
 **`LoginCubit.loginAction()`** — Google OAuth: same save storage + `registerCurrentUser` + `preload()` → `/home`.
 
-### Server selection — removed
+### Server selection on login
 
-Server dropdown UI removed from `LoginScreen`; `LoginCubit` no longer depends on `FetchDomainsUseCase` and `LoginViewModel` no longer has `availableDomains` / `serverSelected` fields. Reason: on production only `saigon2.thinkmay.net` runs PocketBase auth, other domains are routing-only for WebRTC streaming → letting user pick server at Login only causes confusion (wrong choice = login fail).
+`SplashCubit` always runs `GlobalCubit.bootstrap()` — guests get `fetch_domains` during splash (PWA preload on shell). `LoginCubit.init()` reads `GlobalState.domains` for `ServerDomainSwitch` (`pocketBaseNodesOnly: true`). Post-login full preload refreshes user-scoped data. WebRTC routing: network check, remote `RoutingSwitch`, control panel settings.
 
 `BaseUrlProvider` after refactor:
 

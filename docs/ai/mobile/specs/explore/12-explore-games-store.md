@@ -2,7 +2,7 @@
 
 ## Overview
 
-Game catalog: Explore tab, separate Store screen, search, game detail. **Real data source** exists in preload/Store; **Explore tab not using it yet**.
+Game catalog: Explore tab, separate Store screen, search, game detail. **Explore tab reads preloaded catalog from `GlobalState.games`** (splash `loadAll()`).
 
 ---
 
@@ -12,11 +12,12 @@ Game catalog: Explore tab, separate Store screen, search, game detail. **Real da
 
 | Component | Status | Backend |
 |-----------|--------|---------|
-| **Explore tab** | 🔴 | Mock UI; `FetchStoreUseCase` injected **not called** |
-| **Explore search** | 🔴 | Local filter on hardcoded list |
-| **Store** `/store` | ✅ | Supabase `stores` + PB `buckets` |
-| **Game detail** | 🔴 | No service |
-| **Dashboard games** | ✅ | `GlobalState.games` ← `FetchStoreUseCase` (Supabase) in preload |
+| **Explore tab** | ✅ | `GlobalState.games` ← `FetchStoreUseCase` in splash `loadAll()` |
+| **Explore AI search** | ✅ | `SearchStoresUseCase` on demand |
+| **Explore search** | 🟡 | Catalog from global; `FetchGenresUseCase` on search screen open |
+| **Store** `/store` | ✅ | Supabase `stores` + PB `buckets` (dev harness screen) |
+| **Game detail** | 🟡 | Catalog from global; param-driven detail; FC26 demo fallback |
+| **Dashboard games** | ✅ | `GlobalState.games` from preload |
 
 ---
 
@@ -24,18 +25,20 @@ Game catalog: Explore tab, separate Store screen, search, game detail. **Real da
 
 ### Explore tab (`explore_cubit.dart`)
 
-`init()` emits `ExploreViewModel` with `assets/images/*` — **entirely hardcoded**.
+`init()` maps `GlobalCubit.state.games` → `ExploreViewModel` — **no network on tab switch**. Subscribes to global stream if games arrive late. `performAiSearch` → `SearchStoresUseCase`.
+
+### Explore search (`explore_search_cubit.dart`)
+
+`_loadGames()` reads `GlobalState.games` only. `FetchGenresUseCase` still called on init for category chips (could move to preload later).
 
 ### Store (`store_cubit.dart`)
 
-- `fetchStore(email)` → `StoreService` → Supabase `.from('stores').select(...)`
-- `fetchBuckets()` → PocketBase collection `buckets`
-
-`store_screen.dart` calls `fetchStore('')` on build (email from `getIt<User>()` in use case).
+- Dev/debug screen — manual `fetchStore` / `fetchBuckets` buttons
+- Production catalog path is splash preload + Explore tab
 
 ### Game detail (`game_detail_cubit.dart`)
 
-Mock FC 26 — no API.
+`_loadCatalog()` prefers `GlobalCubit.state.games`; fallback `FetchStoreUseCase` if empty.
 
 ### Data model `Game`
 
@@ -43,35 +46,25 @@ Supabase returns: `name`, `code_name`, `path_full` (mapped from `header_image`),
 
 ---
 
+## Preload
+
+Store catalog is call **#12** in `PreloadUseCase.loadAll()` parallel batch. JSON decode currently on main isolate — see L-1 in [mobile_sync_checklist.md](../../../product/architecture/mobile_sync_checklist.md).
+
+---
+
 ## Website — comparison
 
 | Mobile | Website |
 |--------|---------|
-| Explore mock | `/store` SSR + client catalog |
-| Store ✅ | `StoreAllGames`, `AppDetail` |
-| Dashboard games | `play` page carousel |
+| Explore reads global cache | `/store` SSR + client catalog |
+| Splash awaits full catalog | Web preload gate |
 
 ---
 
-## Data flow (target)
+## Remaining
 
-```mermaid
-flowchart LR
-  SB[(Supabase stores)]
-  Preload[PreloadUseCase]
-  GC[GlobalState.games]
-  Explore[ExploreCubit - should use]
-  Store[StoreCubit]
-  SB --> Preload --> GC
-  SB --> Store
-  GC --> Dashboard
-  GC -.-> Explore
-```
+- Persona genre sections (#22) — `FetchRecommendationsUseCase` not wired to Explore UI
+- Polished store UX vs PWA (§F checklist)
+- Game detail + install flow parity
 
----
-
-## Links
-
-- [13-banners](../banner/13-banners-marketing.md)
-- [04-dashboard](../dashboard/04-dashboard-cloud-pc.md)
-- [18-backend-integration](../18-backend-integration.md)
+*Updated: 2026-06-09 — store on splash; Explore tab no fetch on open.*

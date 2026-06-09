@@ -4,7 +4,7 @@ Actionable checklist of items the mobile app needs to synchronize with the PWA (
 
 **Status legend**: `[ ]` = not started, `[~]` = partial/in progress, `[x]` = done, `[-]` = not applicable
 
-**Architecture reference**: Flutter client uses Clean Architecture (`presentation/` → `domain/` → `data/` + `core/` for WebRTC/HID). State: `flutter_bloc` + `get_it`/`injectable`. Streaming orchestrator: `ThinkmayClient` (4 WebRTC connections). Bootstrap: `SplashCubit` → `GlobalCubit.preload()` → `AppRouter.isAppInitialized`. See [mobile_architecture.md](./mobile_architecture.md) and [docs/ai/mobile/specs/01-app-bootstrap-global-state.md](../../ai/mobile/specs/01-app-bootstrap-global-state.md).
+**Architecture reference**: Flutter client uses Clean Architecture (`presentation/` → `domain/` → `data/` + `core/` for WebRTC/HID). State: `flutter_bloc` + `get_it`/`injectable`. Streaming orchestrator: `ThinkmayClient` (4 WebRTC connections). Bootstrap: `SplashScreen` → `SplashCubit` session restore (if any) → `GlobalCubit.bootstrap()` → **`PreloadUseCase.loadAll()`** (authed: 13 parallel API calls; guest: domains only) → splash progress bar until `isBootstrapReady` → `AppRouter.isAppInitialized` → `/home` or `/welcome`. See [mobile_architecture.md](./mobile_architecture.md) and [docs/ai/mobile/specs/01-app-bootstrap-global-state.md](../../ai/mobile/specs/01-app-bootstrap-global-state.md).
 
 ---
 
@@ -12,15 +12,34 @@ Actionable checklist of items the mobile app needs to synchronize with the PWA (
 
 Items from [docs/checklist.md](../../checklist.md) that must ship before app-store release. Each maps to longer parity work elsewhere in this doc (cross-refs in **Related**).
 
-- [ ] **L-1: Startup performance — main-thread jank (3–5 s)**
-  - **Symptom**: First 3–5 s after cold start feel sluggish; device logs report *"skipped frames"* / *"too much work on main thread"*.
+- [~] **L-1: Startup performance — main-thread jank**
+  - **Symptom**: Cold start and early tab switches can feel sluggish; device logs report *"skipped frames"* / *"Davey!"* during splash decode, dashboard first paint, or heavy JSON handling.
   - **Root causes (mobile)**:
     - `main()` runs `configureDependencies()` synchronously before first frame — large `injectable` graph registers every service up front (`mobile/lib/main.dart`, `dependency_injection/injection.config.dart`).
-    - `PreloadUseCaseImpl` decodes JSON on the main isolate: wave 1 (subscription, domains, worker, wallet) then wave 2 (store catalog, configuration, settings) — wave 2 was added to reduce stacking but still blocks splash exit (`mobile/lib/data/use_case/preload/preload_use_case_impl.dart`).
-    - `SplashScreen` animates progress on a 50 ms timer while awaiting auth + preload on the same isolate (`mobile/lib/presentation/screen/splash/splash_screen.dart`).
-  - **PWA reference**: `preload()` is deferred via `requestIdleCallback` / `setTimeout(0)` in `website/components/providers/stateProvider.tsx` so first paint is not blocked; critical fetches run after shell render.
-  - **Fix approach**: Profile with Flutter DevTools timeline; move heavy JSON parsing / Freezed model mapping to `compute()` isolates; lazy-register non-splash DI modules; defer wave-2 preload until after first dashboard frame (match PWA idle scheduling); consider shrinking splash asset decode (PNG → WebP).
-  - **Related**: L-7 (bootstrap gate), §D dashboard first paint.
+    - `PreloadUseCaseImpl.loadAll()` fetches 13 endpoints in parallel but **JSON decode + model mapping still run on the main isolate** when responses return — store catalog (~4k games) is the worst offender (`mobile/lib/data/use_case/preload/preload_use_case_impl.dart`).
+    - Dashboard first paint: volume card section + hero carousel still produce 200–400 ms builds on low-end devices even when data is preloaded (`dashboard_screen.dart`, `play_hero_carousel.dart`).
+    - `flutter_webrtc` native plugin registration deferred until streaming entry (lazy init shipped) — startup cost moved off cold path.
+  - **PWA reference**: `preloadSilent()` in `website/backend/actions/background.ts` awaits shell data before `finish_fetching()`; non-critical fetches fire-and-forget afterward — mobile now matches the **await-all** gate, not PWA idle deferral.
+  - **Mobile shipped (2026-06-09)**:
+    - **Full splash gate**: authed users do not leave splash until worker, volumes, subscription, wallet, domains, setting domain, gamification (6 RPCs), and store catalog are loaded — no post-navigate fetch on Profile or Explore tabs.
+    - **`PreloadUseCase.loadAll()`**: single `Future.wait` with 13 parallel leaf API calls; splash progress bar maps `GlobalState.bootstrapProgress` (increments per completed call).
+    - **`GlobalState.isBootstrapReady`**: `fetched && !isLoading && deferredPreloadComplete` — router/login/dashboard blocked until full batch completes.
+    - **`ProfileCubit` / `ExploreCubit`**: read `GlobalCubit` only on tab open; pull-to-refresh / AI search still hit network on demand.
+    - Asset/animation fixes: WebP splash/logo precache; removed global SVG precache; static splash progress bar; bounded hero `PageView`; volume-card repaint boundaries; `[perf]` / `[startup]` timing via `StartupProfiler`.
+    - Lazy WebRTC: Android/iOS defer `flutter_webrtc` plugin registration until streaming screen (`LazyPluginRegistrant`, `WebRtcLazyInit`).
+  - **Current obstacles**:
+    - Splash duration bounded by slowest API (~3–10 s on real devices) — acceptable UX tradeoff vs half-loaded tabs, but **store + subscription RPC latency** still dominates.
+    - Intermittent **`subs=0` / `wallet=0`** from account RPC on some sessions — server/API investigation, not client parallelization.
+    - **Main-isolate JSON** after parallel fetch completes — need `compute()` / isolate offload for store catalog and large RPC payloads.
+    - **Post-splash UI jank** on dashboard first frame — DevTools timeline profiling not yet done; volume cards / hero carousel may need further list virtualization.
+    - `ExploreSearchCubit` still fetches **genres** on search screen open (lightweight vs catalog).
+    - Release build: Play Store signing via `key.properties` not configured in repo.
+  - **Remaining work**:
+    - Profile cold start in Flutter DevTools timeline on Pixel-class hardware; quantify splash vs dashboard vs tab-switch hitches.
+    - Offload store catalog JSON parse + `Game` mapping to isolates.
+    - Lazy-register or split non-splash DI modules if `configureDependencies()` remains measurable.
+    - Validate parallel preload under poor network (partial failure → empty sections vs error UI).
+  - **Related**: L-7 (bootstrap gate ✅), §D dashboard first paint, §F Explore tab.
 
 - [ ] **L-2: Dashboard volume card — `ControlPannel` parity audit**
   - **PWA reference**: `website/components/dashboard/VmState.tsx` — volume card with template image, availability dot, connect/restart/shutdown, share, debug VNC, port-forward list, played-hours meter, disk-resize CTA, expired → payment redirect.
@@ -77,30 +96,46 @@ Items from [docs/checklist.md](../../checklist.md) that must ship before app-sto
     - [ ] Decide: Flutter overlay package (e.g. `tutorial_coach_mark`) vs custom `OverlayPortal` vs re-use `OnboardingVirtualScreen` pattern.
   - **Related**: §I *Structured onboarding tours*.
 
-- [ ] **L-6: Profile tab — gamification parity (`/profile`)**
+- [~] **L-6: Profile tab — gamification parity (`/profile`)**
   - **Product spec**: [gamification.md](../features/gamification.md) — Profile tab is **not** account edit; it is rank, stars, quests, leaderboard, heatmap hub.
   - **PWA reference**: `website/app/[locale]/(app)/profile/page.tsx` + `website/components/profile/*` — `RankBanner`, `RoadmapCard`, `LeaderboardCard`, `QuestsCard`.
-  - **Mobile current**: `ProfileScreen` shows account card with **hardcoded/mock** usage stats, server picker, static subscription card (`mobile/lib/presentation/screen/profile/profile_screen.dart`). `ProfileCubit.init()` reads `GlobalCubit` but preload phase 2 never emits quests/stars/heatmap into `GlobalState` (`docs/ai/mobile/specs/profile/09-profile-account.md`).
-  - **APIs to wire**: RPC `get_star_balance`, `get_quests_v2`, `get_star_leaderboard`, `get_heatmap`; action `claim_mission_v2`.
-  - **Acceptance**: Profile tab matches PWA layout per `thinkmay_mobile_design.md`; account edit stays on `/setting` → `/update-profile`.
-  - **Related**: §G *Profile page* (status corrected below).
+  - **Mobile shipped (2026-06-09)**:
+    - `GlobalCubit.refreshGamification()` loads quests, heatmap, star balance, leaderboard, rank rewards, addon charges into `GlobalState`.
+    - APIs wired: `get_star_balance`, `get_user_missions_v2`, `get_star_leaderboard`, `get_user_heatmap`, `get_all_rank_rewards`, `list_addon_charges_v2`, `claim_mission_v2`.
+    - Rank badges bundled locally (`mobile/assets/badges/*.png`); leaderboard avatars via PocketBase lookup + DiceBear PNG fallback (`UserAvatarImage`).
+    - Gamification l10n (en/vi) in `app_*.arb`; account edit remains `/setting` → `/update-profile`.
+    - **Splash preload (2026-06-09)**: gamification batch included in `PreloadUseCase.loadAll()` — Profile tab no longer fetches on first open; `ProfileCubit.init()` subscribes to `GlobalCubit` only.
+  - **Remaining gaps**:
+    - Discord OAuth link (`DiscordLinkCard` — UI stub only).
+    - `ThemePicker` / `accent_rank` (optional PWA polish).
+    - Mission telemetry `session_device`, `ai_search_used` (missions unlock server-side).
+    - Exchange-rate formatting for addon charges (credits fallback today).
+    - Side-by-side pixel audit vs PWA mobile `/profile`.
+  - **Related**: §G *Profile page*.
 
-- [ ] **L-7: Bootstrap preload gate — exit splash only when data is ready**
+- [x] **L-7: Bootstrap preload gate — exit splash only when data is ready**
   - **PWA reference**: `website/backend/actions/background.ts` → `preloadSilent()` **awaits** subscription, configuration, domains, worker, settings, positions before `finish_fetching()`; non-critical fetches are fire-and-forget afterward.
-  - **Mobile current**:
-    - `SplashCubit.checkIsLoggedIn()` awaits `GlobalCubit.preload()` then sets `AppRouter.isAppInitialized = true` and navigates (`splash_cubit.dart`).
-    - `GlobalCubit.preload()` emits `fetched: true` even on partial failure (empty lists) — dashboard may render empty then populates (`global_cubit.dart`).
-    - Preload phase 2 (recommendations, mails, quests, heatmap, star balance) is fire-and-forget and **never updates** `GlobalState` (`preload_use_case_impl.dart` L116–142).
-    - Login/sign-up paths call `preload()` but do not block navigation on `GlobalState.fetched` (`login_cubit.dart`, spec 01 🟡).
-  - **Target behavior**: Splash (and post-login redirect) waits until wave-1 preload completes successfully; dashboard reads from populated `GlobalCubit` without flash-of-empty; optionally gate on `workerInfo != null` for logged-in users.
-  - **Router**: `AppRouter` redirect should respect `GlobalCubit.state.fetched && !isLoading` before `/home`.
-  - **Related**: L-1 (performance — don't block longer than necessary; optimize first, then gate).
+  - **Mobile shipped (2026-06-09, updated same day — full parallel preload)**:
+    - `GlobalState.isBootstrapReady` = `fetched && !isLoading && deferredPreloadComplete`; `GlobalCubit.bootstrap()` / `preload()` share one in-flight future.
+    - **Authed splash**: `PreloadUseCase.loadAll(email)` — **13 parallel API calls** (worker, configuration, subscription, wallet, domains, setting, 6× gamification, store catalog) before navigate; progress via `bootstrapProgress`.
+    - **Guest splash**: domains only.
+    - `GlobalState.domains` + `games` + gamification fields populated before `/home` — Profile/Explore tabs read cache, no tab-switch fetch storm.
+    - `AppRouter` redirect + `refreshListenable` gates authenticated routes until `isBootstrapReady`.
+    - `LoginCubit` blocks `LoginSuccessState` until `isBootstrapReady`; `DashboardCubit` loading until bootstrap ready.
+    - Splash progress bar during bootstrap — `EasyLoading` not shown on login screen open (auth submit only).
+    - Fire-and-forget after preload: recommendations + mails (`_scheduleDeferredNonCritical`, 5 s delay) — does not block shell.
+  - **Related**: L-1 (perf — splash may take longer but tabs are instant; isolate offload still open).
 
-- [ ] **L-8: Advanced settings screen — UI polish / bug fixes**
+- [x] **L-8: Advanced settings screen — UI polish / bug fixes**
   - **Mobile file**: `mobile/lib/presentation/screen/advanced_settings/advanced_settings_screen.dart`
   - **PWA reference**: `website/app/[locale]/(app)/setting/(other)/advance/page.tsx`
-  - **Scope**: Fix minor layout/overflow/visual glitches reported on device (safe-area, slider label alignment, section spacing, dark-theme contrast). Verify toggles persist via `RemoteSettingsCubit` → `RemoteSettingsRepository` (SharedPreferences) and apply live when opened from remote (`?remote=true`).
-  - **Parity gaps to verify while fixing UI** (see §C): keyboard lock, gamepad touch, client cursor, fill-screen, auto relative mouse toggles may exist in `RemoteSettings` model but need UI wiring if missing.
+  - **Mobile shipped (2026-06-09)**:
+    - Safe-area scroll body; sticky footer border; slider badge `Wrap` prevents min/max label overflow on narrow screens.
+    - Toggle layout matches PWA (label left, switch right); title/description contrast (`#FFFFFF` / `#A3A3A3`).
+    - `SliderTheme` inactive track + `TmSwitch` off-state use `white/10–20` for dark-theme contrast.
+    - `TmSwitch.didUpdateWidget` syncs external value — fixes stale toggles after Reset.
+    - All §C toggles wired: FPS steps, dual bitrate range, keyboard lock, touch gamepad, client cursor, fill-screen, auto relative mouse.
+    - Persistence + live apply verified: `RemoteSettingsCubit` → `RemoteSettingsRepository` (SharedPreferences); `?remote=true` routes back to `RemoteScreen` and `onReconnectRequested` applies reconnect-sensitive changes.
   - **Related**: §C *Advanced Settings Sync*.
 
 - [ ] **L-9: `AppToast` notification system**
@@ -165,17 +200,17 @@ Items from [docs/checklist.md](../../checklist.md) that must ship before app-sto
 - [x] HQ / Stability quality preset radio
 - [x] Disable GCC toggle + fixed bitrate slider
 - [x] Use H.265 toggle (disabled when `deviceSupportsH265Decode()` is false)
-- [x] Always 1080p toggle
-- [x] Enable microphone toggle
+- [x] Always 1080p toggle — UI + runtime (`changeResolution` / `applyAlways1080pIfNeeded`, 2026-06-09)
+- [x] Enable microphone toggle — UI + runtime (`microUrl` + reconnect on toggle, 2026-06-09)
 - [x] VSync toggle
 - [x] Keyboard compatibility (scancode) toggle
-- [ ] **FPS slider** — PWA has steps [40, 60, 90, 120, 144, 240]; mobile has no FPS control. Add FPS slider to advanced settings. **PWA file**: `website/app/[locale]/(app)/setting/(other)/advance/page.tsx` → `FPS_STEPS` array
-- [ ] **Bitrate min/max dual range slider** — PWA has dual slider for GCC bitrate range (1–60 mbps min & max); mobile only has single fixed-bitrate slider when GCC disabled. Add min/max range. **PWA file**: `DualRangeSlider` component in advance/page.tsx
-- [ ] **Keyboard lock toggle** — PWA has `toggle_keyboard_lock`; mobile missing. **PWA Redux**: `state.remote.keyboard_lock`
-- [ ] **Gamepad touch toggle** — PWA has `toggle_gamepad_touch` (show virtual gamepad on touch); mobile missing (gamepad is always available via side panel). **PWA Redux**: `state.remote.touch_gamepad`
-- [ ] **Client cursor toggle** — PWA has `toggle_client_cursor` (show/hide client-side cursor overlay); mobile missing. **PWA Redux**: `state.remote.client_cursor`
-- [ ] **Fill screen / object-fit toggle** — PWA has `toggle_objectfit` (stretch vs letterbox); mobile missing. **PWA Redux**: `state.remote.objectFitFill`
-- [ ] **Auto relative mouse toggle** — PWA has `toggle_auto_relative_mouse`; mobile missing. **PWA Redux**: `state.remote.auto_relative_mouse`
+- [x] **FPS slider** — steps [40, 60, 90, 120, 144, 240] in `advanced_settings_screen.dart` → `_FpsSlider`
+- [x] **Bitrate min/max dual range slider** — `_DualBitrateSlider` when GCC enabled; `_FixedBitrateSlider` when disabled
+- [~] **Keyboard lock toggle** — UI + persist; **runtime N/A** — no `navigator.keyboard` on native (PWA locks on fullscreen)
+- [x] **Gamepad touch toggle** — `RemoteSettings.touchGamepad` + `setTouchGamepad` → `computeTouchEnabled` in `RemoteScreen`
+- [~] **Client cursor toggle** — UI + persist; **partial runtime** — applies in gaming mode (`relativeMouse`); touch mode uses `nativeCursorReplacement` (PWA mobile: `isMobile` always hides OS cursor)
+- [x] **Fill screen / object-fit toggle** — `RemoteSettings.objectFitFill` + `setObjectFitFill`
+- [~] **Auto relative mouse toggle** — UI + persist; **runtime blocked** until deploy log WebSocket (L-3) — PWA `logCallback` on game spawn
 
 ---
 
@@ -216,6 +251,7 @@ Items from [docs/checklist.md](../../checklist.md) that must ship before app-sto
 
 ## F. Store / Install from Template
 
+- [~] **Explore tab catalog** — Supabase store preloaded on splash via `PreloadUseCase.loadAll()` → `GlobalState.games`; `ExploreCubit` reads global cache (no fetch on tab switch). AI search wired (`SearchStoresUseCase`). **Remaining**: persona genre sections (#22), pixel parity vs PWA `/store`, game detail/install flow.
 - [ ] **Store catalog screen** — Replace debug placeholder (`StoreScreen` shows raw JSON) with polished game catalog matching PWA. **PWA file**: `website/app/[locale]/(app)/store/page.tsx`
 - [ ] **AI search bar** — PWA has natural language game search; mobile missing. **PWA component**: `AISearchBar`
 - [ ] **AI recommendations** — PWA has personalized game suggestions; mobile missing. **PWA component**: `AIRecommendations`
@@ -226,7 +262,7 @@ Items from [docs/checklist.md](../../checklist.md) that must ship before app-sto
 
 ## G. Settings Pages Sync
 
-- [~] **Profile page** — Account/settings screens exist; Profile **tab** still mock stats, missing gamification widgets (rank, quests, leaderboard, heatmap). **See**: L-6, [09-profile-account.md](../../ai/mobile/specs/profile/09-profile-account.md).
+- [~] **Profile page** — Profile **tab** gamification hub shipped (rank, quests, leaderboard, heatmap); account edit on `/update-profile` via Settings. Remaining: Discord OAuth, ThemePicker, mission telemetry, pixel audit. **See**: L-6, [09-profile-account.md](../../ai/mobile/specs/profile/09-profile-account.md).
 - [x] Change password page
 - [x] Keyboard test screen
 - [x] Gamepad test screen
@@ -279,36 +315,36 @@ Items from [docs/checklist.md](../../checklist.md) that must ship before app-sto
 |----------|-------|------|---------|-----------|
 | A. Critical Bugs | 1 | 1 | 0 | 0 |
 | B. Protocol Sync | 14 | 14 | 0 | 0 |
-| C. Advanced Settings | 15 | 7 | 0 | 8 |
+| C. Advanced Settings | 15 | 11 | 3 | 1 |
 | D. Dashboard / VM Mgmt | 10 | 4 | 3 | 3 |
 | E. Remote / Streaming | 16 | 11 | 0 | 5 |
-| F. Store / Install | 5 | 0 | 0 | 5 |
+| F. Store / Install | 6 | 0 | 1 | 5 |
 | G. Settings Pages | 10 | 5 | 1 | 4 |
 | H. Storage / Add-ons | 1 | 0 | 0 | 1 |
 | I. Onboarding | 1 | 0 | 1 | 0 |
 | J. Metrics / Diagnostics | 4 | 3 | 0 | 1 |
 | K. Payment / Subscription | 8 | 7 | 0 | 1 |
-| **L. Pre-Release Blockers** | **10** | **0** | **0** | **10** |
-| **Total** | **95** | **52** | **5** | **38** |
+| **L. Pre-Release Blockers** | **10** | **2** | **1** | **7** |
+| **Total** | **96** | **57** | **10** | **29** |
 
 ### Recommended execution order
 
 **Release gate (do first — blocks app-store ship):**
 
-1. **L-1 + L-7** — Startup perf + preload gate (fix jank, then gate splash on wave-1 data)
+1. **L-1** — Startup perf: parallel splash preload ✅; remaining isolate offload + dashboard first-frame jank — L-7 gate ✅ shipped
 2. **L-9** — AppToast (unblocks consistent feedback for items below)
 3. **L-4 + L-10** — Dashboard share link + disk resize popup
 4. **L-2** — ControlPannel audit (verify matrix after L-4/L-10 land)
 5. **L-3** — Deploy watch VNC + log WebSocket (`vnc_viewer` package)
-6. **L-8** — Advanced settings UI fixes
-7. **L-6** — Profile tab gamification parity
+6. ~~**L-8** — Advanced settings UI fixes~~ **DONE** (2026-06-09)
+7. **L-6** — Profile tab polish (Discord OAuth, ThemePicker, mission telemetry, pixel audit) — core hub shipped `[~]`
 8. **L-5** — Onboarding flow audit + first-run tours
 
 **Broader parity (post-release or parallel if capacity allows):**
 
 9. ~~**A1** — Fix mouse wheel bug~~ **DONE**
 10. ~~**B7–B8** — Clipboard and gamepad reconnect protocol fix~~ **DONE**
-11. **C1–C6** — FPS slider, bitrate range, keyboard lock, gamepad touch, client cursor, fill screen (settings that directly affect streaming UX)
+11. ~~**C1–C6** — FPS slider, bitrate range, keyboard lock, gamepad touch, client cursor, fill screen~~ **DONE** (L-8 / §C)
 12. **D6–D8** — Port forwards, error states, notifications panel
 13. **F1–F5** — Store and install flow (core product loop for new users)
 14. **E1–E3** — Side panel parity, VM log stream (streaming polish)

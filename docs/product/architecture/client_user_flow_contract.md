@@ -22,7 +22,7 @@ This document maps all user-facing flows in the Thinkmay platform, establishing 
 | Game detail / Install | `/(app)/store/[slug]` | `/game-detail-screen` | Partial |
 | Storage / Add-ons | `/(app)/storage` | Missing | Missing |
 | Settings | `/(app)/setting` | `/setting` | Partial |
-| Advanced settings | `/(app)/setting/(other)/advance` | `/advanced-settings` | Partial |
+| Advanced settings | `/(app)/setting/(other)/advance` | `/advanced-settings` | Done |
 | Profile | `/(app)/setting/(account)/profile` | `/profile` | Done |
 | Change password | `/(app)/setting/(account)/password` | `/change-password` | Done |
 | Keyboard test | `/(app)/setting/(diagnostic)/keyboard` | `/check-keyboard` | Done |
@@ -235,31 +235,34 @@ On desktop viewport, settings auto-redirects to `/setting/profile`.
 | Setting | Type | Parity |
 |---------|------|--------|
 | HQ / Stability preset | Radio | Done |
-| Disable GCC + Fixed bitrate slider | Toggle + Slider | Done (collapses to single slider like PWA) |
-| Use H.265 | Toggle | Done |
-| Always 1080p | Toggle | Done |
-| Enable microphone | Toggle | Done |
-
-**Network Settings**:
-| Setting | Type | Parity |
-|---------|------|--------|
-| VSync | Toggle | Done |
+| Dual min/max bitrate range (GCC on) | Range slider | Done (`_DualBitrateSlider`) |
+| Fixed bitrate slider (GCC off) | Toggle + Slider | Done (`_FixedBitrateSlider`) |
+| Max FPS slider (40–240 steps) | Slider | Done (`_FpsSlider`; 144+ warning) |
+| Disable GCC | Toggle | Done |
+| Use H.265 | Toggle | Done (gated by `deviceSupportsH265Decode()`) |
+| Enable microphone | Toggle | Done (4th WebRTC lane when session has `microphone` listener) |
+| VSync | Toggle | Done (`kMobileVideoVsyncEnabled`) |
 
 **Compatibility Settings**:
 | Setting | Type | Parity |
 |---------|------|--------|
 | Keyboard compatibility (scancode) | Toggle | Done |
+| Keyboard lock | Toggle | Partial — persisted; no native Keyboard API equivalent |
+| Touch while gamepad | Toggle | Done |
+| Client cursor | Toggle | Partial — gaming mode only; touch mode uses native PNG at finger |
+| Stretch video (fill) | Toggle | Done |
+| Auto relative mouse | Toggle | Partial — persisted; runtime blocked until log WebSocket (L-3) |
+| Always force 1080p | Toggle | Done (live `ChangeResolution` on connect/resize) |
 
-**Missing from mobile**:
-- FPS slider (PWA has 40/60/90/120/144/240 steps — mobile has no FPS control)
-- Bitrate min/max dual slider (mobile has single fixed-bitrate slider only when GCC disabled)
-- Keyboard lock toggle
-- Gamepad touch toggle
-- Client cursor toggle
-- Fill screen toggle
-- Auto relative mouse toggle
-- Desktop custom URL launch (not applicable on mobile)
-- Reset Default button (mobile has it but may differ in behavior)
+**Footer / navigation**:
+| Behavior | Parity |
+|----------|--------|
+| Save → persist + feedback | Done (`applyCurrentToClient()` + snackbar) |
+| Save from remote (`?remote=true`) → return to remote | Done |
+| Reset → defaults + feedback | Done (`reset()` + snackbar; `TmSwitch` sync fix L-8) |
+
+**Intentional mobile omissions**:
+- Desktop custom URL launch (desktop-only)
 
 ---
 

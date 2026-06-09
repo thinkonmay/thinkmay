@@ -12,7 +12,7 @@ Check connectivity to cluster/domain, test keyboard and gamepad outside remote s
 
 | Screen | Status | Details |
 |--------|--------|---------|
-| Network check — domain list | ✅ | `FetchDomainsUseCase` |
+| Network check — domain list | ✅ | `GlobalCubit.state.domains` from preload; RPC fallback if empty |
 | Network check — select routing server | ✅ | User selects domain → `BaseUrlProvider.updateBaseUrl('https://<domain>')`; only affects WebRTC routing |
 | Network check — ping / download / upload | 🟡 Best-effort | Client-side measurement via TCP handshake + HTTPS GET/POST to selected domain; not a standard speed test because backend has no dedicated payload endpoint |
 | Remote stream stats | ✅ | Real-time measurement from `RTCPeerConnection.getStats()` when in RemoteScreen |
@@ -29,13 +29,13 @@ Check connectivity to cluster/domain, test keyboard and gamepad outside remote s
 
 | File | `network_check_screen.dart`, `network_check_cubit.dart` |
 |------|-----------------------------------------------------------|
-| Use case/service | `FetchDomainsUseCase`, `ServerProbeService`, `SpeedTestService`, `BaseUrlProvider` |
+| Use case/service | `GlobalCubit` (preload domains), `FetchDomainsUseCase` (fallback), `ServerProbeService`, `SpeedTestService`, `BaseUrlProvider` |
 | State | Initial picker → Checking → Done/Error |
 | Route | `/network-check` |
 
 **Current flow:**
 
-1. `init()` calls `FetchDomainsUseCase` to load domain list.
+1. `init()` reads `GlobalCubit.state.domains` (PWA `worker.availableDomains` from preload); awaits preload if needed; RPC fallback only when list still empty.
 2. Cubit reads `BaseUrlProvider.getRoutingServerUrl()` to preselect domain currently used as routing server.
 3. Initial screen shows round **Check** button and **Server** card as radio list.
 4. User taps server:

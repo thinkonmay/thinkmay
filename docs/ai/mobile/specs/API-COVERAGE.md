@@ -47,7 +47,6 @@ Tracks **Cubit ↔ API** on the Flutter app — supplements the monorepo parity 
 | Transaction detail | `transaction_detail_cubit` | Fake logic, hardcoded account |
 | ~~Confirm refund~~ | `confirm_refund_*` | **Policy 2026-06-07:** refund service discontinued — task = **remove UI** (see [TASK.md](../TASK.md) #6), do not wire API |
 | Upgrade & services | `upgrade_and_services_cubit` | Mock CPU/RAM/storage/game-pass |
-| Advanced settings | `advanced_settings_cubit` | Empty `init()` |
 | Language settings | `language_settings_cubit` | Hardcoded list; locale not persisted |
 
 ---
@@ -57,11 +56,11 @@ Tracks **Cubit ↔ API** on the Flutter app — supplements the monorepo parity 
 | Screen | Has | Missing |
 |--------|-----|---------|
 | Payment tab | RPC use cases in cubit | `init()` mock; does not call `fetchWallet` on open |
-| Explore tab | `FetchStoreUseCase` → Supabase `stores` | `performAiSearch` = local filter + fake delay; no `search_stores` RPC yet |
-| Explore search | Real store fetch | Hardcoded genre list; client-side search only |
+| Explore tab | `GlobalState.games` from splash `loadAll()` | `ExploreCubit` no tab-open fetch; AI search ✅; persona genre sections (#22) not wired |
+| Explore search | Catalog from `GlobalState.games` | `FetchGenresUseCase` on search screen open; client-side filter |
 | Game detail | Catalog + `StartSessionUseCase` when param present | FC26 demo fallback when no param |
 | Dashboard | Worker/session via GlobalCubit | Hardcoded `_planSpecs` RAM/GPU; share/resize disk TODO |
-| Profile | User + domains from storage/RPC | Gamification UI 🔴 — see [gamification.md](../../../product/features/gamification.md), [TASK.md](../TASK.md) Profile parity |
+| Profile | Gamification from splash preload + `GlobalCubit` | Discord OAuth, ThemePicker, pixel audit remain |
 | Network check | `FetchDomains` RPC | Fake speed test |
 | Subscription screen | API methods in cubit | **Dev** screen — manual Fetch buttons, not production UI |
 | Error list | `FetchErrorMessageUseCase` wired | `ErrorService` **returns `[]`** |
@@ -73,15 +72,17 @@ Tracks **Cubit ↔ API** on the Flutter app — supplements the monorepo parity 
 
 | Area | Backend |
 |------|---------|
-| Splash restore + preload | PB + RPC + Supabase (table in [01-app-bootstrap](./01-app-bootstrap-global-state.md)) |
+| Splash restore + preload | PB + RPC + Supabase — **`PreloadUseCase.loadAll()`** 13 parallel calls on splash ([01-app-bootstrap](./01-app-bootstrap-global-state.md)) |
 | Dashboard VM ops | PB `/info`, `/new`, SSE, `/close`, `/restart` |
-| Explore catalog load | Supabase `stores` via `FetchStoreUseCase` |
+| Explore catalog load | Supabase `stores` preloaded → `GlobalState.games`; Explore tab reads cache |
 | Remote | PB session + WebRTC |
 | Store (`/store`) | Supabase `stores` + PB `buckets` |
 | Banner | RPC |
 | Setting (main) | PB volumes/setting + Supabase resources |
+| Advanced settings | `RemoteSettingsCubit` → SharedPreferences `thinkmay_remote_settings`; live apply via `StreamingManager` |
 | Change password / update profile | PB users |
 | Profile logout | PB clear auth |
+| Profile gamification | RPC `get_star_balance`, `get_user_missions_v2`, `get_star_leaderboard`, `get_user_heatmap`, `claim_mission_v2` |
 
 ---
 
@@ -115,4 +116,4 @@ Per [`../TASK.md`](../TASK.md) — P0→P2 checklist. Summary:
 2. **P1:** Profile tab parity ← [gamification.md](../../../product/features/gamification.md); Explore AI search; dashboard plan specs
 3. **P2:** `ErrorService.fetchErrorMessage`; language settings; gamification UI; delete `explore_cubit_fixed.dart`
 
-*Updated: 2026-06-07 — sync hierarchy thinkmay/docs; profile = gamification parity.*
+*Updated: 2026-06-09 — parallel splash preload (`loadAll`); profile + explore read global cache; L-1 obstacles tracked in mobile_sync_checklist.*

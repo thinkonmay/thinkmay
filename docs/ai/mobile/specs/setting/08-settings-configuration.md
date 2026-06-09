@@ -15,7 +15,7 @@ Website hub: `/setting` with branches `(account)`, `(diagnostic)`, `(other)`.
 | Component | Status |
 |-----------|--------|
 | Setting screen | ✅ `FetchConfiguration`, `LoadSetting`, app access, resources, CRUD setting |
-| Advanced settings | 🔴 `advanced_settings_cubit.init()` empty |
+| Advanced settings | ✅ `RemoteSettingsCubit` + `advanced_settings_screen.dart` (SharedPreferences persist, live apply from remote) |
 
 See also: [15-localization](./15-localization.md) 🔴, [16-network-domain-diagnostics](./16-network-domain-diagnostics.md) 🟡.
 
@@ -53,13 +53,15 @@ See also: [15-localization](./15-localization.md) 🔴, [16-network-domain-diagn
 
 ### Advanced settings
 
-| File | `advanced_settings_screen.dart`, `advanced_settings_cubit.dart` |
+| File | `advanced_settings_screen.dart`, `remote_settings_cubit.dart` |
 |------|---------------------------------------------------------------------|
-| State | Reuse `SettingViewModel` |
-| Init | **Stub** — `init()` empty |
-| Purpose | Bitrate, framerate, HQ, touch mode — intended parity `setting/(other)/advance` |
+| State | `RemoteSettings` (Freezed) via `RemoteSettingsCubit` |
+| Persist | `RemoteSettingsRepository` → SharedPreferences key `thinkmay_remote_settings` |
+| Purpose | Parity `setting/(other)/advance` — HQ preset, FPS/bitrate sliders, GCC/H.265/mic/vsync, compatibility toggles |
 
-Calls streaming via `StreamingManager` when user is in remote (if wired).
+Live apply via `StreamingManager` when session active; reconnect for URL-param changes (`hq`, codec, GCC range, `enableMicrophone`). Open from remote: `/advanced-settings?remote=true`.
+
+**Runtime utilization audit (2026-06-09):** mic + always 1080p wired to streaming; keyboard lock / auto relative mouse persist-only (platform / L-3); client cursor partial (gaming mode). See [advanced_settings_parity_checklist.md](../../../../product/architecture/advanced_settings_parity_checklist.md) runtime notes.
 
 ### Language settings
 

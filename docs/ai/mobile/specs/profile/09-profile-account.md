@@ -34,16 +34,18 @@
 
 | Component | Current | Target |
 |-----------|---------|--------|
-| User avatar/name | ✅ storage | ✅ + refresh PB when needed |
-| Usage / expiration | 🔴 hardcode | ✅ `subscription.total_usage`, limit, end date (`user_doc`) |
-| Join date | 🔴 hardcode | ✅ `User.created` |
-| Domain picker on profile | 🟡 RPC, not persisted | ⚪ Move to `/network-check` / Settings (`mobile_design`) |
-| Subscription card mock | 🔴 static | ⚪ Payment tab; profile only plan badge in RankBanner |
-| Quests / stars / heatmap / leaderboard | 🔴 preload does not emit UI | ✅ `GlobalCubit` + widgets |
-| `claim_mission_v2` | ❌ | ✅ |
-| Leaderboard | 🟡 `/api/leaderboard` legacy | ✅ `get_star_leaderboard` |
-| Mission telemetry | ❌ | ✅ `session_device`, `ai_search_used` (`gamification.md` §4.5) |
-| Update profile / change password | ✅ API, orphan route | ✅ link from `/setting` (phase D TASK.md) |
+| User avatar/name | ✅ RankBanner + `UserAvatarImage` | ✅ |
+| Usage / allowance | ✅ `subscription.total_usage` / `usage_limit` in RankBanner | ✅ |
+| Join date | ⚪ not on gamification hub | ⚪ account edit only |
+| Domain picker on profile | ✅ removed (C1) | ✅ `/network-check` / Settings |
+| Subscription card on profile | ✅ removed; Payment tab (web) | ✅ |
+| Quests / stars / heatmap / leaderboard | ✅ `GlobalCubit` + widgets | ✅ |
+| `claim_mission_v2` | ✅ `ClaimMissionUseCase` | ✅ |
+| Leaderboard avatars | ✅ PB resolve + DiceBear PNG fallback | ✅ |
+| Rank badges | ✅ local `assets/badges/*.png` | ✅ |
+| Discord OAuth | 🟡 UI stub | ✅ OAuth wire (B6) |
+| Mission telemetry | ❌ | ✅ `session_device`, `ai_search_used` |
+| Update profile / change password | ✅ `/setting` routes | ✅ |
 
 ---
 
@@ -60,11 +62,11 @@ Web: `website/app/[locale]/(app)/profile/page.tsx`, `website/components/profile/
 
 ---
 
-## Mobile current (needs replacement)
+## Mobile current (2026-06-09)
 
-`profile_screen.dart`: account card (mock stats) → server picker → subscription mock.
+`profile_screen.dart`: gamification hub — `RankBanner`, `RoadmapCard`, `LeaderboardCard`, `QuestsCard`.
 
-**Does not match** `gamification.md` §7 nor `user_doc.md` Profile section.
+**Remaining**: Discord OAuth, ThemePicker, mission telemetry, exchange-rate addon formatting, pixel audit vs PWA.
 
 ---
 
@@ -75,4 +77,4 @@ Web: `website/app/[locale]/(app)/profile/page.tsx`, `website/components/profile/
 - [10-subscriptions](../subscription/10-subscriptions-plans.md)
 - [08-settings-configuration](../setting/08-settings-configuration.md)
 
-*Updated: 2026-06-07 — compared with `thinkmay/docs`, fixed flow contract vs gamification conflict.*
+*Updated: 2026-06-09 — L-6 gamification hub shipped; checklist §G/L-6 marked `[~]`.*
