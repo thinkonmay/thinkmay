@@ -32,9 +32,15 @@ Actionable checklist of items the mobile app needs to synchronize with the PWA (
 
 ## C. Advanced Settings Sync
 
+### H.265 (mobile-specific)
+
+- [x] Gate H.265 toggle by `deviceSupportsH265Decode()` (RTP caps)
+- [x] Downgrade `preferredCodec` on unsupported devices at load / reset
+- [ ] **TODO:** Custom `flutter_webrtc` fork + custom `libwebrtc` build — see [mobile_h265_investigation.md](./mobile_h265_investigation.md)
+
 - [x] HQ / Stability quality preset radio
 - [x] Disable GCC toggle + fixed bitrate slider
-- [x] Use H.265 toggle
+- [x] Use H.265 toggle (disabled when `deviceSupportsH265Decode()` is false)
 - [x] Always 1080p toggle
 - [x] Enable microphone toggle
 - [x] VSync toggle

@@ -76,3 +76,11 @@ This document presents a technical audit and recommended action plan for diagnos
 * This physically removes the PCIe device from the host kernel's active PCI bus layout.
 * Because the hypervisor does not have any dynamic bus rescanning logic (like echoing `1` to `/sys/bus/pci/rescan`), and only calls `FetchGPUs` once during `NewQemuManager` initialization, any manually unbound GPU is completely lost to both the host OS and the daemon.
 * Subsequent VM boots trying to claim this GPU will fail because it does not exist in `vm.ListGPUs()`.
+
+> **Note:** Current `UnbindGPU` in `worker/proxy/qemu/manager.go` quarantines via `gpu_taint.yaml` rather than sysfs `remove`. PCI rescan is available via `RefreshGPUs()` in the same package. See [gpu_vfio_remediation_plan.md](./gpu_vfio_remediation_plan.md) for the fleet ops and engineering plan.
+
+---
+
+## See also
+
+- [gpu_vfio_remediation_plan.md](./gpu_vfio_remediation_plan.md) — fleet triage, phased remediation, monitoring, and validation (June 2026)

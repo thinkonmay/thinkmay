@@ -85,7 +85,6 @@ The website is a Next.js app. Streaming client protocol code lives under `websit
 ```powershell
 cd mobile
 flutter pub get
-./tooling/apply_flutter_webrtc_patches.sh
 flutter analyze
 dart run build_runner build --delete-conflicting-outputs
 flutter test

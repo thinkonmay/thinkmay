@@ -86,7 +86,7 @@ Reference: PWA in-session panel uses `listMobileSettings` + `statsControl` in `w
 | HQ / High stability presets | Yes | Yes | Both | Acceptable quick preset in panel; full tuning in advanced |
 | Fixed bitrate slider (GCC off) | Yes | Yes | Both | Panel = live debounced knob; advanced = persisted min/max — align semantics |
 | Disable GCC | No | Yes | Advanced only | Correct on mobile |
-| H.265 / mic / 1080p / vsync | No | Yes | Advanced only | Correct on mobile |
+| H.265 / mic / 1080p / vsync | No | Yes | Advanced only | Correct on mobile; H.265 toggle **disabled** when `deviceSupportsH265Decode()` is false |
 
 ### Mobile advanced gaps vs PWA (not in panel either)
 
@@ -141,9 +141,22 @@ Not tracked here—no meaningful UX impact or native layout constraints:
 
 ---
 
+## H.265 device gating (mobile)
+
+| Item | Status |
+|------|--------|
+| [x] Detect HEVC in `getRtpReceiverCapabilities('video')` | `deviceSupportsH265Decode()` |
+| [x] Disable advanced-settings H.265 toggle on unsupported devices | `AdvancedSettingsScreen` |
+| [x] Downgrade saved `preferredCodec` on load / reset | `RemoteSettingsCubit` |
+| [x] Remove field-trial patch + runtime H264 fallback | See [mobile_h265_investigation.md](./mobile_h265_investigation.md) |
+| [ ] **TODO:** Custom `flutter_webrtc` fork + custom `libwebrtc` build | Unblocks reliable H.265 on devices that work in Chrome |
+
+---
+
 ## Related docs
 
 - [Mobile sync checklist](./mobile_sync_checklist.md) — broader PWA parity tracker
+- [Mobile H.265 investigation](./mobile_h265_investigation.md) — capability gating + fork TODO
 - [Client user flow contract](./client_user_flow_contract.md)
 - [Client platform divergence](./client_platform_divergence.md)
 - [Input mode controls](./input_mode_controls.md)

@@ -34,10 +34,6 @@ Main screens: **Dashboard** → select Cloud PC → **RemoteScreen** (stream vid
 cd mobile
 
 flutter pub get
-
-# H.265 Android: patch flutter_webrtc field trials (re-run after pub get / version bump)
-./tooling/apply_flutter_webrtc_patches.sh
-
 dart run build_runner build --delete-conflicting-outputs
 flutter analyze
 flutter run --flavor dev   # or ./run_android.ps1 on Windows
