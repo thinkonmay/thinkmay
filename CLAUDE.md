@@ -4,12 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository overview
 
-Thinkmay CloudPC is a monorepo for a cloud gaming / remote Windows desktop platform. The main runtime path is: PocketBase/API and cluster orchestration in `worker/daemon`, VM launch and WebRTC/QUIC streaming in `worker/proxy`, guest capture/encode in `worker/sunshine`, browser client in `website`, and Flutter client work in `native/mobile`.
+Thinkmay CloudPC is a monorepo for a cloud gaming / remote Windows desktop platform. The main runtime path is: PocketBase/API and cluster orchestration in `worker/daemon`, VM launch and WebRTC/QUIC streaming in `worker/proxy`, guest capture/encode in `worker/sunshine`, browser client in `website`, and Flutter client work in `mobile/` (git submodule).
 
 Important docs to read when touching architecture-level work:
 
 - `docs/product/architecture/technical_doc.md` — backend, cluster, PocketBase schema, streaming, QEMU/KVM, and deployment architecture.
 - `docs/product/architecture/mobile_architecture.md` and `docs/product/architecture/native_app.md` — Flutter client architecture and WebRTC signaling protocol.
+- `docs/ai/mobile/CLAUDE.md` — Flutter mobile agent guide, commands, and links to implementation specs (canonical; not in the submodule).
 - `README.md` — high-level product/infrastructure summary.
 
 ## Common commands
@@ -79,17 +80,19 @@ npm run format
 
 The website is a Next.js app. Streaming client protocol code lives under `website/core/core/webrtc` and HID/input protocol code under `website/core/core/hid` and `website/core/core/models`.
 
-### Flutter mobile app (`native/mobile`)
+### Flutter mobile app (`mobile`)
 
 ```powershell
-cd native/mobile
+cd mobile
 flutter pub get
+./tooling/apply_flutter_webrtc_patches.sh
 flutter analyze
 dart run build_runner build --delete-conflicting-outputs
 flutter test
 ```
 
-There are currently no Dart tests in `native/mobile/test` or `native/mobile/integration_test`.
+Agent guide and implementation specs: `docs/ai/mobile/`.  
+There are currently no Dart tests in `mobile/test` or `mobile/integration_test`.
 
 ### Sunshine guest capture (`worker/sunshine`)
 
@@ -154,15 +157,15 @@ Cleanup functions are executed in reverse order by `qemu/vm.go`, which matters f
 
 Guest Windows runs `worker/sunshine`, which captures/encodes frames and writes them into IVSHMEM. The host proxy reads IVSHMEM, wraps frames into internal samples, forwards locally or over QUIC as needed, then emits RTP through WebRTC to the browser/mobile client. RTCP feedback and control messages flow back through the same chain into IVSHMEM so Sunshine can adjust bitrate or force IDR frames.
 
-The client protocol uses separate WebRTC connections for video, audio, HID data, and microphone. The website implementation is the reference in `website/core/core/webrtc`; Flutter mirrors it with `native/mobile/lib/core/webrtc` and HID/cursor handling in `native/mobile/lib/core`.
+The client protocol uses separate WebRTC connections for video, audio, HID data, and microphone. The website implementation is the reference in `website/core/core/webrtc`; Flutter mirrors it with `mobile/lib/core/webrtc` and HID/cursor handling in `mobile/lib/core`.
 
 ### `website`
 
 Next.js app with app-router layout under `website/app`, reusable UI under `website/components`, API wrappers under `website/core/api`, and the streaming/HID client core under `website/core/core`. Package scripts are in `website/package.json`.
 
-### `native/mobile`
+### `mobile`
 
-Flutter app using clean architecture:
+Flutter app (submodule) using clean architecture:
 
 - `presentation/` for screens, widgets, routing, and blocs.
 - `domain/` for models and use-case interfaces.

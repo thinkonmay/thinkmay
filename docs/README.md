@@ -5,11 +5,17 @@ This folder is organized by audience and purpose.
 ## Main sections
 
 - `product/` — product architecture, user guides, and feature/system docs.
+- `ai/` — Claude Code / Cursor agent config (canonical; not in submodules).
 - `employee/` — internal playbooks for support, ops, and staff.
 - `marketing/` — strategy, campaigns, SEO, analytics, and research.
 - `shared/` — shared assets, snapshots, DB artifacts, and support tools.
 
 ## Quick links
+
+### AI agent config
+- [AI docs index](./ai/README.md)
+- [Mobile Claude guide](./ai/mobile/CLAUDE.md)
+- [Mobile implementation specs](./ai/mobile/specs/)
 
 ### Product
 - [Product index](./product/README.md)

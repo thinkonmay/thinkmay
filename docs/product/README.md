@@ -2,12 +2,19 @@
 
 Use this section for product-facing and engineering-facing documentation about how Thinkmay works.
 
+## AI / mobile implementation
+
+- [Mobile Claude guide](../ai/mobile/CLAUDE.md) — agent commands and architecture (canonical)
+- [Mobile specs](../ai/mobile/specs/) — Cubit ↔ API implementation status
+
 ## Architecture
 - [Technical architecture](./architecture/technical_doc.md)
 - [Client protocol contract](./architecture/client_protocol_contract.md) — canonical binary/signaling protocol across all clients (PWA as reference, mobile, desktop/QUIC)
 - [Client platform divergence](./architecture/client_platform_divergence.md) — intentional differences, known bugs, and drift risks between PWA, mobile, and desktop clients
 - [Client user flow contract](./architecture/client_user_flow_contract.md) — user-facing flow parity map between PWA (reference) and mobile app
 - [Mobile sync checklist](./architecture/mobile_sync_checklist.md) — actionable checklist of 75 items to bring mobile app to PWA parity (25 remaining)
+- [Control panel parity checklist](./architecture/control_panel_parity_checklist.md) — PWA SettingsPanel vs mobile ControlPanel (critical/medium gaps only)
+- [Advanced settings parity checklist](./architecture/advanced_settings_parity_checklist.md) — PWA advance page vs mobile Advanced Settings screen
 - [Mobile architecture](./architecture/mobile_architecture.md)
 - [Moonlight Android HID capture](./architecture/moonlight_android_hid_capture.md) — reference analysis of how moonlight-android captures keyboard, mouse, touch, and gamepad input on Android
 - [Native app architecture](./architecture/native_app.md) — Flutter streaming client feasibility analysis (pre-build)
