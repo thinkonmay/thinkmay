@@ -208,7 +208,7 @@ Items from [docs/checklist.md](../../checklist.md) that must ship before app-sto
 - [x] **Bitrate min/max dual range slider** — `_DualBitrateSlider` when GCC enabled; `_FixedBitrateSlider` when disabled
 - [~] **Keyboard lock toggle** — UI + persist; **runtime N/A** — no `navigator.keyboard` on native (PWA locks on fullscreen)
 - [x] **Gamepad touch toggle** — `RemoteSettings.touchGamepad` + `setTouchGamepad` → `computeTouchEnabled` in `RemoteScreen`
-- [~] **Client cursor toggle** — UI + persist; **partial runtime** — applies in gaming mode (`relativeMouse`); touch mode uses `nativeCursorReplacement` (PWA mobile: `isMobile` always hides OS cursor)
+- [x] **Client cursor toggle** — UI + persist; runtime follows PWA mobile (`isMobile` always true). See [cursor_render_behavior.md](../product/architecture/cursor_render_behavior.md).
 - [x] **Fill screen / object-fit toggle** — `RemoteSettings.objectFitFill` + `setObjectFitFill`
 - [~] **Auto relative mouse toggle** — UI + persist; **runtime blocked** until deploy log WebSocket (L-3) — PWA `logCallback` on game spawn
 

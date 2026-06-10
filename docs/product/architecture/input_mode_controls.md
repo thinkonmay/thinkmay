@@ -88,7 +88,7 @@ SetClientCursor(_client_cursor);
 SetServerCursor(server_cursor);
 ```
 
-Mobile mirrors this in the control panel settings sync.
+Mobile mirrors this in `CursorRenderingSync` (native app treats `isMobile = true` always). See [Cursor render behavior](./cursor_render_behavior.md).
 
 ### 2.4 Binary Protocol (See Protocol Contract §5)
 
@@ -175,7 +175,7 @@ Encoded as `round(value × 2^32) - 1` in the HID message (32-bit unsigned, see P
 #### Mobile (Flutter)
 
 - `TouchHandler.native` flag
-- Default: `false` (trackpad mode)
+- Default: `true` (native touch mode) — matches the PWA mobile-browser auto-default; turning it OFF switches to trackpad mode and force-enables gaming mode (§4.2)
 - Auto-overridden to `true` when the virtual keyboard is shown (`setKeyboardNativeTouchOverride(true)`) — the user needs direct touch to tap text fields while the keyboard is open
 - Reverts to the saved value when the keyboard is dismissed
 - Uses `TouchIdPool` to map Flutter pointer IDs to stable touch IDs required by the `td/tm/tu` protocol (the server expects consistent IDs per finger across a touch gesture)
@@ -195,20 +195,24 @@ These three settings interact in specific ways:
 
 ### 4.1 Gaming Mode + Client Cursor
 
-Mobile coordinates cursor rendering with gaming mode to avoid double cursors:
+On **PWA mobile** (`isMobile = true`), cursor coordination does **not** depend on pointer lock — only the `client_cursor` user setting matters. The native Flutter app follows the same rule (`isMobile` always true). See [Cursor render behavior](./cursor_render_behavior.md).
 
-| Gaming mode | Client overlay (cp/cu PNG) | Server cursor (composited in video) |
-|-------------|---------------------------|-------------------------------------|
-| OFF (default) | OFF | ON — replaces the hidden OS cursor |
-| ON | ON if "Client cursor" setting enabled | OFF |
+| Client cursor setting | Client overlay (`cp`/`cu` PNG) | Server cursor (composited in video) |
+|----------------------|-------------------------------|-------------------------------------|
+| ON (default) | ON when `serverVisible` | OFF |
+| OFF | OFF | ON |
 
-When gaming mode activates (pointer lock / input lock), the native/OS cursor is hidden. The client cursor overlay becomes the user's way to see the cursor. If the user disables client cursor while in gaming mode, no client overlay is shown (server compositing stays off in gaming mode; the 5s cp/cu fallback may enable server cursor if the daemon sends no cursor packets).
+Gaming mode / input lock hides the **client OS cursor** and switches HID to relative mouse (`mmr`). It does **not** toggle the overlay vs server-cursor coordination on mobile.
+
+When the user disables client cursor while in gaming mode, no client overlay is shown; the 5 s `cp`/`cu` fallback may enable server cursor if the daemon sends no cursor packets.
 
 ### 4.2 Gaming Mode + Native Touch
 
-These are independent toggles, but they're commonly used together:
+These are commonly used together:
 - Gaming mode ON + native touch OFF → touch acts as a trackpad with relative mouse (common for non-touch PC games)
 - Gaming mode ON + native touch ON → touch acts as direct touch (common for mobile games ported to PC)
+
+**Native mobile app coupling:** turning native touch OFF (switching to trackpad mode) force-enables gaming mode (`RemoteSettingsCubit.setNativeTouch`) — trackpad input drives the remote pointer with relative deltas, so relative mouse must be active. Turning native touch back ON leaves gaming mode unchanged; gaming mode can still be toggled independently. The PWA keeps the two toggles fully independent.
 
 ### 4.3 Native Touch + Client Cursor
 
