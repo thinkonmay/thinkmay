@@ -2,11 +2,13 @@
 
 This document maps all user-facing flows in the Thinkmay platform, establishing the **browser PWA as the reference** and tracking mobile app parity. The mobile app is in development and must implement each flow to match PWA behavior unless a platform-specific divergence is documented.
 
+**Last synced:** 2026-06-10 · `mobile/develop` — see [Mobile sync checklist](./mobile_sync_checklist.md) for item-level status.
+
 ## Flow Parity Overview
 
 | Flow Category | PWA Route | Mobile Route | Parity |
 |---------------|-----------|-------------|--------|
-| Splash / boot | N/A (SSR) | `/splash` | N/A |
+| Splash / boot | N/A (SSR) | `/splash` | Done |
 | Welcome / onboarding | N/A (landing) | `/welcome` | Partial |
 | Login | `/(auth)/login` | `/login` | Done |
 | Login OTP | `/(auth)/login-otp` | `/login-otp` | Done |
@@ -15,27 +17,28 @@ This document maps all user-facing flows in the Thinkmay platform, establishing 
 | Forgot password | `/(auth)/reset-password` | `/forgot-password` | Done |
 | Reset password confirm | `/(auth)/confirm-reset-password` | `/confirm-reset-password` → `/enter-new-password` | Done |
 | Dashboard / Play | `/(app)/play` | `/dashboard` | Partial |
-| Connect / Turn on VM | (within dashboard) | (within dashboard) | Partial |
-| Deploy watch | (overlay within dashboard) | (overlay within dashboard) | Partial |
+| Connect / Turn on VM | (within dashboard) | (within dashboard) | Done |
+| Deploy watch | (overlay within dashboard) | (overlay within dashboard) | Done |
 | Remote / Streaming | `/remote` | `/remote-screen` | Partial |
-| Store / Browse games | `/(app)/store` | `/store` | Missing |
+| Store / Browse games | `/(app)/store` | `/explore` (prod); `/store` (debug) | Partial |
 | Game detail / Install | `/(app)/store/[slug]` | `/game-detail-screen` | Partial |
 | Storage / Add-ons | `/(app)/storage` | Missing | Missing |
 | Settings | `/(app)/setting` | `/setting` | Partial |
 | Advanced settings | `/(app)/setting/(other)/advance` | `/advanced-settings` | Done |
-| Profile | `/(app)/setting/(account)/profile` | `/profile` | Done |
+| Profile tab (gamification) | `/(app)/profile` | `/profile` | Done |
+| Account profile edit | `/(app)/setting/(account)/profile` | `/update-profile` | Done |
 | Change password | `/(app)/setting/(account)/password` | `/change-password` | Done |
 | Keyboard test | `/(app)/setting/(diagnostic)/keyboard` | `/check-keyboard` | Done |
 | Gamepad test | `/(app)/setting/(diagnostic)/gamepad` | `/gamepad-test` | Done |
 | Network test | `/(app)/setting/(diagnostic)/network` | `/network-check` | Done |
-| Language | `/(app)/setting/(application)/language` | `/language-settings` | Done |
+| Language | `/(app)/setting/(application)/language` | `/language-settings` | Partial |
 | Snapshots | `/(app)/setting/(other)/snapshots` | Missing | Missing |
-| Payment / Subscribe | `/(app)/payment` | `/payment` | Partial |
-| Subscription detail | `/(app)/payment/[id]` | `/subscription` | Partial |
-| Deposit | (within payment) | `/deposit` | Done |
-| Bank transfer deposit | (within payment) | `/deposit-bank-transfer` | Done |
-| Transaction history | (within payment) | `/history-transaction` | Done |
-| Transaction detail | (within payment) | `/transaction-detail` | Done |
+| Payment / Subscribe | `/(app)/payment` | web redirect (`/payment` deep link) | Done |
+| Subscription detail | `/(app)/payment/[id]` | `/subscription` (debug) / web | Partial |
+| Deposit | (within payment) | web only | N/A |
+| Bank transfer deposit | (within payment) | web only | N/A |
+| Transaction history | (within payment) | web only | N/A |
+| Transaction detail | (within payment) | web only | N/A |
 | Explore | `/(e-commerce)/discovery` | `/explore` | Partial |
 | Terms / Legal | `/(e-commerce)/legal` | `/terms` | Done |
 
@@ -409,7 +412,7 @@ On desktop viewport, settings auto-redirects to `/setting/profile`.
 - Mobile has upgrade/downgrade success screens
 - Mobile has deposit and bank transfer deposit screens
 - Mobile has transaction history and detail screens
-- Mobile has refund confirmation flow (`/confirm-refund`)
+- Mobile has refund confirmation flow (`/confirm-refund`) — **deprecated 2026-06-07**; remove UI per [`mobile/TASK.md`](../../mobile/TASK.md) #6
 - PWA payment page integrates more features in fewer screens
 
 ### 6.2 Deposit

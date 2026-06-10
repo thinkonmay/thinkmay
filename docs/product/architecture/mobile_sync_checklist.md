@@ -221,10 +221,11 @@ Items from [docs/checklist.md](../../checklist.md) that must ship before app-sto
 - [~] Deploy watch overlay with progress steps — text progress only; VNC/log/friendly mode missing. **See**: L-3.
 - [x] Restart volume action
 - [x] Close/shutdown volume action
-- [~] **Share session** — Remote side panel: ✅ `ControlPanelActions.copySessionLink` / `shareSession`. Dashboard volume card: ❌ `DashboardCubit.shareVolume` TODO. **PWA file**: `website/components/dashboard/index.tsx` → `share()`. **See**: L-4.
-- [~] **Debug / VNC window** — PWA opens debug VNC in popup (`debug()` → `constructRedirect('/debug')`). Mobile deploy overlay lacks VNC entirely. **See**: L-3.
-- [ ] **Port forwards display** — PWA volume card shows port forwards; mobile missing. **PWA component**: `ControlPannel` → `port_forward` prop
-- [ ] **Server down / Wrong server / No subscription** — verify mobile renders all three error states identically to PWA. **PWA components**: `ServerDownState`, `WrongDomainState`, `NoSubscriptionState`
+- [x] **Dashboard hero carousel** — `PlayHeroCarousel` rendered on Home tab; banners + spotlight games wired from `DashboardCubit` (parity web `/play` `#banner`)
+- [ ] **Share session** — dashboard `shareVolume()` still TODO (empty body). Remote side panel has copy-session link; dashboard volume-card share button not wired. **PWA file**: `website/components/dashboard/index.tsx` → `share()`
+- [ ] **Debug / VNC window** — PWA opens debug VNC in popup window; mobile missing (may not be applicable but should have equivalent diagnostics access)
+- [x] **Port forwards display** — volume card spec rows render `portForwards` from `VolumeStatus`. **File**: `dashboard_screen.dart`
+- [x] **Server down / Wrong server / No subscription** — `isServerDown`, `isWrongServer`, `isNoSub` states rendered on dashboard
 - [ ] **Notifications panel** — PWA dashboard has a notifications sidebar; verify mobile has equivalent. **PWA component**: `Notifications`
 
 ---
@@ -251,26 +252,31 @@ Items from [docs/checklist.md](../../checklist.md) that must ship before app-sto
 
 ## F. Store / Install from Template
 
-- [~] **Explore tab catalog** — Supabase store preloaded on splash via `PreloadUseCase.loadAll()` → `GlobalState.games`; `ExploreCubit` reads global cache (no fetch on tab switch). AI search wired (`SearchStoresUseCase`). **Remaining**: persona genre sections (#22), pixel parity vs PWA `/store`, game detail/install flow.
-- [ ] **Store catalog screen** — Replace debug placeholder (`StoreScreen` shows raw JSON) with polished game catalog matching PWA. **PWA file**: `website/app/[locale]/(app)/store/page.tsx`
-- [ ] **AI search bar** — PWA has natural language game search; mobile missing. **PWA component**: `AISearchBar`
-- [ ] **AI recommendations** — PWA has personalized game suggestions; mobile missing. **PWA component**: `AIRecommendations`
-- [ ] **Game detail page** — Verify mobile `GameDetailScreen` matches PWA's game detail with install/subscribe buttons. **PWA file**: `website/app/[locale]/(app)/store/[slug]/page.tsx`
-- [ ] **Install from template flow** — End-to-end: browse → select → install → new volume appears on dashboard. PWA wires this; mobile needs full flow.
+- [~] **Store catalog screen** — production catalog lives on **Explore tab** (`explore_screen.dart`: AI search + all-games grid). Dev route `/store` (`StoreScreen`) is still a debug JSON harness — not production UI. **PWA file**: `website/app/[locale]/(app)/store/page.tsx`
+
+- [x] **AI search bar** — `StoreAiSearchBar` + `ExploreCubit.performAiSearch` (POST `thinkmay.net/api/search/` → fallback RPC `search_stores`)
+- [ ] **AI recommendations** — persona/genre carousel sections not wired (`#22` in TASK.md). **PWA component**: `AIRecommendations`
+
+- [~] **Game detail page** — `GameDetailScreen` shipped (cover, overview, install CTA, suggestions); **Thinkmay performance** FPS still hardcoded (`#23`). **PWA file**: `website/app/[locale]/(app)/store/[slug]/page.tsx`
+
+- [ ] **Install from template flow** — End-to-end: browse → select → install → new volume appears on dashboard. Partial UI exists; full backend wiring incomplete.
 
 ---
 
 ## G. Settings Pages Sync
 
-- [~] **Profile page** — Profile **tab** gamification hub shipped (rank, quests, leaderboard, heatmap); account edit on `/update-profile` via Settings. Remaining: Discord OAuth, ThemePicker, mission telemetry, pixel audit. **See**: L-6, [09-profile-account.md](../../ai/mobile/specs/profile/09-profile-account.md).
+- [x] **Profile tab (gamification)** — Stars, missions, leaderboard, heatmap hub shipped (`RankBanner`, `QuestsCard`, …). Account edit remains at `/update-profile`. Track polish in `[mobile/TASK.md](../../mobile/TASK.md)` Profile phases B6–B8, F1–F2. **PWA file**: `website/app/[locale]/(app)/profile/page.tsx`
+- [x] **Account profile edit** — `/update-profile` from `/setting`; email marketing toggle (`disableEM`) parity
 - [x] Change password page
 - [x] Keyboard test screen
 - [x] Gamepad test screen
 - [x] Network test screen
-- [x] Language settings
+- [x] Language settings — screen exists; Indonesian (`id`) locale added on develop (persistence still TODO — `#16` TASK.md)
 - [ ] **Snapshots page** — PWA has snapshot list/restore/create at `/setting/(other)/snapshots`; mobile missing entirely. **PWA file**: `website/app/[locale]/(app)/setting/(other)/snapshots/page.tsx`. **API**: `GET /snapshots`, `POST /snapshots/restore`
-- [ ] **Community links** — PWA settings has Facebook and Discord links; mobile missing. **PWA file**: `website/app/[locale]/(app)/setting/page.tsx` → Community section
-- [ ] **Support links** — PWA has Discord support, Terms, Privacy links; mobile has Terms but missing Discord and Privacy links. **PWA file**: settings page → Support section
+- [x] **Community links** — Facebook + Discord in Settings community section. **File**: `setting_screen.dart` → `_CommunitySection`
+
+- [~] **Support links** — Terms wired (`/terms`); Discord support + Privacy links still stub/missing. **PWA file**: settings page → Support section
+
 - [ ] **Button mapping** — PWA mobile layout links to `/remote?mobile=true&dev=true` for button mapping; mobile has gamepad test but no in-remote button mapping mode
 
 ---
@@ -298,56 +304,67 @@ Items from [docs/checklist.md](../../checklist.md) that must ship before app-sto
 
 ## K. Payment / Subscription Sync
 
-- [x] Payment screen
-- [x] Deposit screen
-- [x] Bank transfer deposit
-- [x] Transaction history
-- [x] Transaction detail
-- [x] Subscription screen
-- [x] Upgrade/downgrade flows
-- [ ] Verify payment provider parity — PWA supports PayOS, Stripe, Dana, OVO, PayerMax; verify mobile supports same providers. **PWA files**: `website/app/[locale]/(app)/payment/`
+> **Policy 2026-06-08:** Tab Payment + deep link `/payment` redirect to `https://thinkmay.net/{locale}/payment/`. In-app deposit/history/refund flows removed.
+
+- [x] **Payment entry** — bottom-nav tab opens web payment URL; `/payment` route redirects externally. **File**: `home_screen.dart`, `payment_screen.dart`
+
+- [-] **Deposit screen** — removed; web only (policy 2026-06-08)
+- [-] **Bank transfer deposit** — removed; web only
+- [-] **Transaction history** — removed; web only
+- [-] **Transaction detail** — removed; web only
+- [~] **Subscription screen** — debug harness at `/subscription` remains; production subscribe/upgrade on web
+- [-] **Upgrade/downgrade flows** — web only (policy 2026-06-08)
+- [-] **Verify payment provider parity** — N/A; intentional divergence (web handles PayOS/Stripe/Dana/OVO/PayerMax)
+
+- [x] **Remove refund UI (mobile only)** — refund service discontinued (2026-06-07); `/confirm-refund` routes removed per `[mobile/TASK.md](../../mobile/TASK.md)` #6
+
+---
+
+## L. App Shell / Bootstrap Performance
+
+> Resolved on `develop` (2026-06-07 – 2026-06-10): lag/jank after login and on Home tab traced to main-isolate PBKDF2 RPC + eager gamification preload.
+
+- [x] **Phased bootstrap preload** — wave 1 awaited before Home; gamification/store deferred (`PreloadUseCaseImpl`, `GlobalCubit.preload`)
+- [x] **PBKDF2 RPC off UI thread** — full `NextjsRpcClient` encrypt/HTTP/decrypt lifecycle in `Isolate.run()` (`9225cba`)
+- [x] **Store catalog mapping off UI thread** — `Game.fromJson` batch via `compute()` in `StoreServiceImpl`
+- [x] **Deferred non-critical preload** — `scheduleDeferredNonCritical()` fires ~30s after wave 3, not at Home first paint
+- [x] **Lazy tab mounting** — `_visitedTabs` in `home_screen.dart`; tabs mount on first visit only
+- [x] **Single source preload data** — Dashboard/Explore/Profile read `GlobalCubit`; duplicate fetches removed
+- [x] **Rebuild guards** — `buildWhen` on dashboard/profile/setting/network-check/language hot paths
+- [x] **Splash → Home gate** — `await preload()` before navigating to shell; splash redirect regression fixed (`be8073c`)
 
 ---
 
 ## Summary
 
-| Category | Total | Done | Partial | Remaining |
-|----------|-------|------|---------|-----------|
-| A. Critical Bugs | 1 | 1 | 0 | 0 |
-| B. Protocol Sync | 14 | 14 | 0 | 0 |
-| C. Advanced Settings | 15 | 11 | 3 | 1 |
-| D. Dashboard / VM Mgmt | 10 | 4 | 3 | 3 |
-| E. Remote / Streaming | 16 | 11 | 0 | 5 |
-| F. Store / Install | 6 | 0 | 1 | 5 |
-| G. Settings Pages | 10 | 5 | 1 | 4 |
-| H. Storage / Add-ons | 1 | 0 | 0 | 1 |
-| I. Onboarding | 1 | 0 | 1 | 0 |
-| J. Metrics / Diagnostics | 4 | 3 | 0 | 1 |
-| K. Payment / Subscription | 8 | 7 | 0 | 1 |
-| **L. Pre-Release Blockers** | **10** | **2** | **1** | **7** |
-| **Total** | **96** | **57** | **10** | **29** |
+
+| Category                  | Total  | Done   | Remaining |
+| ------------------------- | ------ | ------ | --------- |
+| A. Critical Bugs          | 1      | 1      | 0         |
+| B. Protocol Sync          | 14     | 14     | 0         |
+| C. Advanced Settings      | 15     | 15     | 0         |
+| D. Dashboard / VM Mgmt    | 11     | 8      | 3         |
+| E. Remote / Streaming     | 16     | 13     | 3         |
+| F. Store / Install        | 5      | 1      | 4         |
+| G. Settings Pages         | 11     | 8      | 3         |
+| H. Storage / Add-ons      | 1      | 0      | 1         |
+| I. Onboarding             | 1      | 0      | 1         |
+| J. Metrics / Diagnostics  | 4      | 3      | 1         |
+| K. Payment / Subscription | 9      | 2      | 1         |
+| L. App Shell Performance  | 8      | 8      | 0         |
+| **Total**                 | **86** | **73** | **13**    |
+
+
+*Remaining counts treat `[~]` partial items as open. K category has 6 `[-]` web-redirect items excluded from Remaining.*
 
 ### Recommended execution order
 
-**Release gate (do first — blocks app-store ship):**
+1. **D6–D7** — Share session on dashboard, notifications panel (dashboard polish)
+2. **F3–F5** — AI recommendations, game-detail performance data, install-from-template E2E
+3. **E2–E3** — Side panel mic/scancode parity, VM log stream
+4. **G7–G9** — Snapshots page, support/privacy links, in-remote button mapping
+5. **H1** — Storage / add-ons page (monetization)
+6. **I1** — Onboarding tours (new user activation)
+7. **J1** — Stream health type safety (code quality)
+8. **G6** — Language locale persistence (`#16` TASK.md)
 
-1. **L-1** — Startup perf: parallel splash preload ✅; remaining isolate offload + dashboard first-frame jank — L-7 gate ✅ shipped
-2. **L-9** — AppToast (unblocks consistent feedback for items below)
-3. **L-4 + L-10** — Dashboard share link + disk resize popup
-4. **L-2** — ControlPannel audit (verify matrix after L-4/L-10 land)
-5. **L-3** — Deploy watch VNC + log WebSocket (`vnc_viewer` package)
-6. ~~**L-8** — Advanced settings UI fixes~~ **DONE** (2026-06-09)
-7. **L-6** — Profile tab polish (Discord OAuth, ThemePicker, mission telemetry, pixel audit) — core hub shipped `[~]`
-8. **L-5** — Onboarding flow audit + first-run tours
-
-**Broader parity (post-release or parallel if capacity allows):**
-
-9. ~~**A1** — Fix mouse wheel bug~~ **DONE**
-10. ~~**B7–B8** — Clipboard and gamepad reconnect protocol fix~~ **DONE**
-11. ~~**C1–C6** — FPS slider, bitrate range, keyboard lock, gamepad touch, client cursor, fill screen~~ **DONE** (L-8 / §C)
-12. **D6–D8** — Port forwards, error states, notifications panel
-13. **F1–F5** — Store and install flow (core product loop for new users)
-14. **E1–E3** — Side panel parity, VM log stream (streaming polish)
-15. **G1** — Snapshots page (data protection)
-16. **H1** — Storage / add-ons page (monetization)
-17. **J1** — Stream health type safety (code quality)

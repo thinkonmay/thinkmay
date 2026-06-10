@@ -32,3 +32,16 @@ Use this section for product-facing and engineering-facing documentation about h
 ## Features
 - [Gamification](./features/gamification.md)
 - [Reward mission](./features/reward_mission.md)
+
+## Flutter mobile app (`mobile/`)
+
+Implementation docs live beside the Flutter repo — **product truth stays in this `docs/product/` tree**:
+
+| Doc | Role |
+|-----|------|
+| [`mobile/TASK.md`](../mobile/TASK.md) | Active tasks, mock→real API checklist, Profile parity phases |
+| [`mobile/specs/00-docs-hierarchy.md`](../mobile/specs/00-docs-hierarchy.md) | How mobile specs map to `docs/product/` |
+| [`mobile/specs/API-COVERAGE.md`](../mobile/specs/API-COVERAGE.md) | Cubit ↔ API status |
+| [`mobile/specs/README.md`](../mobile/specs/README.md) | Per-screen implementation specs |
+
+**Route note:** PWA bottom-nav `/profile` = gamification ([gamification.md](./features/gamification.md)). PWA `/setting/profile` = account edit → mobile `/update-profile`, not the Profile tab.
