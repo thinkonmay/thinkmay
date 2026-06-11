@@ -30,5 +30,7 @@
 | Kokoro fails on Python 3.9 | Use Python ≥3.10 or edge-tts |
 | Kokoro/onnxruntime install conflict | Use edge-tts or macOS `say` + ffmpeg fallback |
 | TTS poor quality | Switch voice or use ElevenLabs/OpenAI |
+| ElevenLabs HTTP 402 `paid_plan_required` | Free tier: set `ELEVEN_LABS_VOICE_ID=CwhRBWXzGAHq8TQ4Fs17` (Roger) or upgrade plan; Rachel/default premade voices blocked on free API |
+| ElevenLabs HTTP 401 `missing_permissions` | Key is restricted; TTS may still work — test `/v1/text-to-speech/{voice_id}` directly |
 
 See [lessons-learned.md](./lessons-learned.md) for root-cause narratives.

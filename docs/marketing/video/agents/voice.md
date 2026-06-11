@@ -32,10 +32,35 @@ Set `<audio data-duration="...">` to **≥ ffprobe value**. Never shorten to fix
 | Option | When |
 |--------|------|
 | edge-tts | Default free path; use `python3 -m edge_tts` if CLI not on PATH |
-| ElevenLabs | Premium quality; needs `ELEVEN_LABS_API_KEY` |
+| ElevenLabs | Premium quality; needs `ELEVEN_LABS_API_KEY` in `marketing/video/.env`. **Free API tier cannot use default library voices (Rachel, etc.) — returns HTTP 402.** Use `ELEVEN_LABS_VOICE_ID=CwhRBWXzGAHq8TQ4Fs17` (Roger) or another voice your plan allows. Script: `marketing/video/scripts/generate-narration.mjs` |
 | OpenAI TTS | `OPENAI_API_KEY` |
 | Kokoro | Offline; requires Python ≥3.10 and working `kokoro-onnx` |
 | macOS `say` | Fallback when Kokoro/edge-tts unavailable — `say -o clip.aiff` then ffmpeg to MP3; verify with `ffprobe` |
+
+## ElevenLabs (project script)
+
+From the video project root (after `sync-timing.json` exists):
+
+```bash
+node ../scripts/generate-narration.mjs en
+node ../scripts/generate-narration.mjs vi
+# fallback if API fails:
+node ../scripts/generate-narration.mjs en --provider=edge
+```
+
+Optional in `marketing/video/.env`:
+
+```env
+ELEVEN_LABS_API_KEY="..."
+ELEVEN_LABS_VOICE_ID="CwhRBWXzGAHq8TQ4Fs17"
+```
+
+Then refresh durations and HTML:
+
+```bash
+node editing/scripts/build-sync-timing.mjs en
+node editing/scripts/apply-sync-to-html.mjs en
+```
 
 ## Transcription
 
