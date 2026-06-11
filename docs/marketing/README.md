@@ -31,6 +31,9 @@ Apply: **huyhoangdo@contact.thinkmay.net** (see each JD for subject line and mat
 - [Google Search analysis](./analytics/google_search/)
 - [Rybbit analysis](./analytics/rybbit/)
 
+## Video production
+- [Marketing video pipeline index](./video/README.md) — agent guides, sync timing, QA audit (`docs/marketing/video/`)
+
 ## Research
 - [Brand research](./research/thinkmay_cloudpc_brand_research.md)
 - [Deep research](./research/thinkmay_cloudpc_deep_research.md)
