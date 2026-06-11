@@ -12,7 +12,7 @@ Every stage passes validation before the next. Final rendered MP4s require a **s
 
 ### Visual & automation
 
-- [ ] 1920×1080, `deviceScaleFactor: 2`
+- [ ] FullHD 1920×1080 at 90fps, `deviceScaleFactor: 2`, lossless visual quality
 - [ ] No Next.js dev overlay, infobar, or "Chrome is being controlled"
 - [ ] 2s padding at start and end of raw recording
 - [ ] No stuck spinners or obvious glitches

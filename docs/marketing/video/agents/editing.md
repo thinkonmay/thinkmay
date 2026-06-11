@@ -34,30 +34,67 @@
 - When scene N narration starts, scene N−1 caption must have exited
 - Hero toggle caption: longest window (4–6s)
 
-## Intro → A-roll transition
+## Premium transitions (no jump cuts or flat slides)
 
-**Failure (`windows-desktop-pwa-60s_v1`):** at ~4s a white/blank frame appeared during intro slide-off.
+Always use **Depth Scale Transitions** at scene boundaries (e.g. Intro → A-roll, A-roll → Outro) to create parallax camera weight.
 
-Rules:
+```javascript
+// Depth Transition: Intro -> A-Roll (at 4.0s)
+tl.to("#scene-intro", { scale: 0.85, opacity: 0, duration: 0.6, ease: "power3.in" }, 3.8);
+tl.fromTo("#video-wrap", 
+  { scale: 1.15, opacity: 0 }, 
+  { scale: 1.0, opacity: 1, duration: 0.6, ease: "power3.out" }, 
+  4.0
+);
 
-1. `#video-wrap` stays **`opacity: 1`** during the push-slide — do not fade video wrap to white
-2. A-roll `data-media-start` must point at the **first frame where landing is visible in the MP4** — not the script metadata timestamp. White/loading frames often precede landing by 1–3s in the file.
-3. GSAP: slide intro off (`x: -1920`) while sliding video wrap in (`x: 300 → 0`) on the **same timeline position**
-4. **Audit:** extract frame at `videoDataStart + 0.1s` — fail if >90% white/blank
+// Depth Transition: A-Roll -> Outro
+tl.to("#video-wrap", { scale: 0.85, opacity: 0, duration: 0.6, ease: "power3.in" }, outroStart - 0.23);
+tl.set("#video-wrap", { opacity: 0 }, outroStart + 0.55);
+tl.to("#caption-contrast", { opacity: 0, duration: 0.3, ease: "power2.in" }, outroStart - 0.23);
+tl.set("#caption-contrast", { opacity: 0 }, outroStart);
 
-```js
-// Good: simultaneous handoff at intro end
-tl.to("#scene-intro", { x: -1920, duration: 0.4, ease: "power3.inOut" }, 4.0);
-tl.fromTo("#video-wrap", { x: 300, opacity: 1 }, { x: 0, duration: 0.4, ease: "power3.inOut" }, 4.0);
-// Bad: fading video-wrap or leaving A-roll at opacity 0 until after intro exits
+tl.fromTo("#scene-outro", 
+  { scale: 1.15, opacity: 0 }, 
+  { scale: 1.0, opacity: 1, duration: 0.6, ease: "power3.out" }, 
+  outroStart
+);
 ```
 
-## A-roll → outro transition
+## A-roll camera zooms & panning
 
-- Derive `outroStart` from A-roll end: `≈ videoDataStart + aRollDuration - 0.5`
-- Crossfade A-roll out while fading outro in on overlapping timeline (~0.5–0.6s)
-- Avoid: A-roll `opacity: 0` → black gap → outro fade in
-- **Audit:** frames at `outroStart - 0.2`, `outroStart`, `outroStart + 0.3`
+Walkthroughs must not remain statically scaled at 100%. At key instruction beats, zoom and pan the `#video-wrap` container inside the GSAP timeline to focus the viewer's attention on mouse clicks and sidebar changes.
+
+*   **Zoom in**: Scale to `1.3x - 1.6x` and shift `x` and `y` coordinates to center the focused element (e.g. `x: -250, y: 120` to show settings panel clicks).
+*   **Transition duration**: Use `0.6s - 0.8s` with `power2.out` or `power3.out` eases.
+*   **Reset**: Zoom back out to `scale: 1.0, x: 0, y: 0` using `power2.inOut` when actions are complete or the narrator introduces the ending/Connect dashboard.
+
+## Title cards: grid & glow atmospheres + kinetic type
+
+Intros and outros must feel alive:
+1.  **Backgrounds**: Layer a CSS digital grid (`.scene-grid-bg`) and slow-moving breathing glowing blobs (`.scene-glow-orb`) behind the content.
+2.  **Kinetic Type**: Split headings into `<span class="line">` tags. Animate lines sequentially using `gsap.from` with an overshoot ease like `back.out(1.4)` and a stagger delay.
+
+## Interactive captions: karaoke & marker sweeps
+
+Avoid static caption updates. Animate them interactively:
+1.  **Word-by-word Karaoke**: Programmatically split subtitle sentences into `<span class="word">` elements. Stagger active states (`tl.set(word, { className: "word active" })`) sequentially over the group duration.
+2.  **Brand Highlighter Sweeps**: Style brand terms (`.brand`) with an absolute pseudo-element background (`.brand::after`) scaled to `scaleX(0)`. Enable automatically sweeping the highlight in when any word inside becomes active using the CSS `:has()` pseudo-selector:
+    ```css
+    .caption-pill .brand::after {
+      content: '';
+      position: absolute;
+      inset: 4px -6px 0 -6px;
+      background: rgba(0, 232, 168, 0.22);
+      border-radius: 6px;
+      transform: scaleX(0);
+      transform-origin: left center;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: -1;
+    }
+    .caption-pill .brand:has(.active)::after {
+      transform: scaleX(1);
+    }
+    ```
 
 ## Multi-language compositions
 

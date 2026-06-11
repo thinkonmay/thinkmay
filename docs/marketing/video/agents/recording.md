@@ -7,8 +7,8 @@
 
 ## Setup
 
-- Viewport 1920×1080, `deviceScaleFactor: 2`
-- `recordVideo` size matches viewport
+- **Resolution & Frame Rate**: Viewport FullHD 1920×1080, `deviceScaleFactor: 2`. Always record Playwright browser walkthroughs at **lossless visual quality at 90fps** to guarantee perfectly crisp UI details and ultra-smooth cursor movement.
+- `recordVideo` size matches viewport (1920×1080)
 - Locale per language (`en-US` / `vi-VN`, `/en` / `/vi` paths)
 - **Chrome user-agent** for headless capture (avoids Browser Incompatible modal)
 - Init script: `localStorage.setItem('browser_warning_last_seen', …)` before first navigation

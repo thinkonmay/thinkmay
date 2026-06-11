@@ -24,3 +24,6 @@
 4. **PII** — no emails, real names, or account labels in public renders. See [agents/recording.md](./agents/recording.md#pii-masking-public-marketing).
 5. **Final audit** — extract keyframes from rendered `final_<lang>.mp4` before shipping. Lint passing ≠ shippable. See [agents/qa.md](./agents/qa.md).
 6. **Multi-language** — one native pipeline per language; non-primary compositions live under `editing/compositions/`. See [agents/editing.md](./agents/editing.md#multi-language-compositions).
+7. **ElevenLabs Model** — always use the most powerful multilingual model (`eleven_multilingual_v2`) for lifelike voiceovers, and configure Pronunciation Dictionaries for brand consistency. See [agents/voice.md](./agents/voice.md).
+8. **Premium Visual Editing** — avoid bland slides/fades; always implement grid/glow backgrounds, kinetic title cards, dynamic camera pans/zooms on key actions, word karaoke, and marker sweeps. See [agents/editing.md](./agents/editing.md).
+9. **Lossless Recording** — always record Playwright browser walkthroughs at FullHD resolution (1920×1080) at 90fps with lossless visual quality to ensure ultra-smooth cursor and transition renders. See [agents/recording.md](./agents/recording.md).
