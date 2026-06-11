@@ -19,3 +19,6 @@
 [submodule "mobile"]
 	path = mobile
 	url = https://github.com/thinkonmay/think_may_mobile.git
+[submodule "marketing/video"]
+	path = marketing/video
+	url = https://github.com/thinkonmay/video-content

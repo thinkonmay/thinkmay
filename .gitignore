@@ -66,3 +66,5 @@ docs/shared/tools/key/
 plugins/rybbit/
 db/
 docs/marketing/campaigns/facebook_giveaway_assets/
+*.mp4
+.DS_Store
