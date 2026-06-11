@@ -19,6 +19,10 @@ Each target language gets an **independent native pipeline**:
 ```
 marketing/video/
 ├── .env                              # Shared secrets (never commit)
+├── _template-60s_v1/                 # Copy-and-customize scaffold (do not edit for production)
+├── scripts/
+│   ├── scaffold-project.mjs          # node scripts/scaffold-project.mjs <slug> --flow …
+│   └── generate-narration.mjs        # TTS from sync-timing.json
 │
 └── <project_name>_v<version>/
     ├── final_en.mp4                  # Primary deliverables at project root
@@ -52,7 +56,15 @@ marketing/video/
     │
     ├── voice/artifacts/output/<lang>/
     ├── assembly/artifacts/output/
-    ├── scripts/finalize-output.mjs
+    ├── scripts/
+    │   ├── finalize-output.mjs
+    │   ├── verify-raw-footage.mjs    # Raw MP4 landing/ending gate
+    │   └── run-pipeline.mjs          # encode → sync → TTS → render
+    ├── references/                   # Frozen battle-tested scripts per flow
+    │   ├── record_shared.game-install.mjs
+    │   ├── record_shared.pwa-desktop.mjs
+    │   ├── build-sync-timing.game-install.mjs
+    │   └── build-sync-timing.pwa-desktop.mjs
     └── assets/
 ```
 

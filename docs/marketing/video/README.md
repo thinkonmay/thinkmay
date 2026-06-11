@@ -37,7 +37,21 @@ Each pipeline stage has a dedicated agent guide under [agents/](./agents/):
 | Path | Purpose |
 |------|---------|
 | `marketing/video/.env` | Shared secrets (`TM_USERNAME`, API keys) — never commit |
+| `marketing/video/_template-60s_v1/` | **Scaffold template** — battle-tested recording/sync/render scripts |
+| `marketing/video/scripts/scaffold-project.mjs` | Create a new project from the template |
+| `marketing/video/scripts/generate-narration.mjs` | ElevenLabs TTS from `sync-timing.json` |
 | `marketing/video/<project>_v<N>/` | Versioned video projects and `final_*.mp4` outputs |
+
+## New project (quick start)
+
+```bash
+node marketing/video/scripts/scaffold-project.mjs my-feature-60s_v1 --flow game-install
+# Edit goal.md, record_shared.mjs, build-sync-timing.mjs, index.html
+cd marketing/video/my-feature-60s_v1/recording && npm install && npm run record:en
+cd .. && node scripts/run-pipeline.mjs en
+```
+
+See `_template-60s_v1/README.md` for full customization table and flow options.
 
 ## Reference projects
 
