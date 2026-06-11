@@ -49,9 +49,10 @@ ffmpeg -y -fflags +genpts -i recording/artifacts/output/en/raw_recording.webm \
   -c:v libx264 -preset fast -r 30 -g 30 -keyint_min 30 -pix_fmt yuv420p \
   -movflags +faststart editing/raw_recording.mp4
 ffprobe -v error -show_entries format=duration -of csv=p=0 editing/raw_recording.mp4
+# Confirm duration ≈ last metadata timestamp before sync
 # Repeat for vi → raw_recording_vi.mp4
 
-# Sync timing (calibrates script clock → video time)
+# Sync timing (only after encode completes — calibrates script clock → video time)
 cd editing
 node scripts/build-sync-timing.mjs en
 node scripts/build-sync-timing.mjs vi

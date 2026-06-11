@@ -19,7 +19,7 @@
 
 1. **Sync ground truth** — caption and narration times come from `recording_metadata.md` **calibrated to the re-encoded MP4**, not script timestamps directly, uniform blocks, or prior projects. Use `build-sync-timing.mjs`. See [sync-timing.md](./sync-timing.md).
 2. **Verify raw footage** — before sync, confirm landing and dashboard ending frames in `raw_recording.mp4`. Metadata can lie (SPA nav). See [agents/recording.md](./agents/recording.md#post-recording).
-3. **Required scenes** — desktop-install tutorials must show Download → Settings → Advanced → toggle → Save → Connect on screen at caption time. See [quality-gates.md](./quality-gates.md#required-scenes-gate).
+3. **Required scenes** — verify the UI matches the tutorial type at each caption time. Desktop/PWA install: Download → Settings → Advanced → toggle → Save → Connect. Game install: landing → login → Store → game page → confirm → `/play` with game on VM card. See [quality-gates.md](./quality-gates.md#required-scenes-gate).
 4. **PII** — no emails, real names, or account labels in public renders. See [agents/recording.md](./agents/recording.md#pii-masking-public-marketing).
 5. **Final audit** — extract keyframes from rendered `final_<lang>.mp4` before shipping. Lint passing ≠ shippable. See [agents/qa.md](./agents/qa.md).
 6. **Multi-language** — one native pipeline per language; non-primary compositions live under `editing/compositions/`. See [agents/editing.md](./agents/editing.md#multi-language-compositions).

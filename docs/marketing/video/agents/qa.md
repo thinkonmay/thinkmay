@@ -63,6 +63,7 @@ Compare keyframe to expected content (VLM or human):
 | 13.5s | Download page | Windows card section | Login form |
 | 38s | Advanced + toggle | Toggle label on screen | Personal info only |
 | 50s | Dashboard Connect | Connect button highlighted | Settings page (metadata passed but capture missed nav) |
+| 50s | Game install dashboard | Witcher on VM card + Power on | Confirm dialog or store page (false-positive metadata) |
 | 33s | Dashboard before Settings | Sidebar + dashboard | OK if caption is lead-in |
 
 ### 4. Hard fail criteria (public marketing)
@@ -112,7 +113,7 @@ Document results in `taskchecklist.md` and optionally `editing/temp/audit-<lang>
 - Download ✅  Settings ✅  Advanced ✅  Toggle ✅  Save ✅  Connect ✅
 ```
 
-Reference audit: `windows-desktop-pwa-60s_v1` (2026-06-11).
+Reference audits: `windows-desktop-pwa-60s_v1`, `game-install-witcher3-60s_v1` (2026-06-11).
 
 ## Recording & editing QA (summary)
 

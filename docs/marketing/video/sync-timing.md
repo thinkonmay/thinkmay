@@ -39,11 +39,14 @@ Where:
 
 **Do not** assume `T_video = T_script - constantOffset` — drift between early and late events breaks Connect timing.
 
-Reference implementation: `marketing/video/windows-desktop-pwa-60s_v1/editing/scripts/build-sync-timing.mjs`
+Reference implementations:
+
+- `marketing/video/windows-desktop-pwa-60s_v1/editing/scripts/build-sync-timing.mjs`
+- `marketing/video/game-install-witcher3-60s_v1/editing/scripts/build-sync-timing.mjs`
 
 ## Automated sync workflow
 
-After re-encode, per language:
+After re-encode **completes** (verify with `ffprobe`), per language:
 
 ```bash
 cd editing
@@ -90,7 +93,9 @@ When narration for scene N starts at time `T`, the caption for scene N should al
 
 ## Required scenes gate
 
-For desktop-app / PWA install tutorials, verify at each caption `start` (extract keyframe):
+Verify at each caption `start` (extract keyframe). Checklist depends on tutorial type.
+
+### Desktop / PWA app install
 
 | Checkpoint | Must show | Fail if |
 |------------|-----------|---------|
@@ -101,7 +106,18 @@ For desktop-app / PWA install tutorials, verify at each caption `start` (extract
 | Save | Save click or success toast | — |
 | Connect | `/play` dashboard, Connect button | Settings page |
 
-If any fail → rebuild `sync-timing.json`, lower `playbackRate`, extend duration, or jump-cut login — do not ship.
+### Game install (store → template)
+
+| Checkpoint | Must show | Fail if |
+|------------|-----------|---------|
+| Landing | thinkmay.net hero | Blank/white |
+| Login | Email/password form | Landing only |
+| Store | Explore / store browse | Login only |
+| Game page | Game header art + install CTA | Store grid only |
+| Confirm | Confirm dialog with volume warning | Game page without modal |
+| Dashboard | `/play`, game on VM card, Connect/Power on | Store page, confirm dialog, or `change_template/pending` spinner |
+
+If any fail → rebuild `sync-timing.json`, lower `playbackRate`, extend duration, or re-record — do not ship.
 
 ## Optional: jump-cut login
 
@@ -149,6 +165,8 @@ Note: `recordingEvent` preserves script timestamps for debugging; composition ti
 |---------|-------|-----|
 | White flash at intro handoff | `mediaStart` before landing paints in MP4 | Frame-scan MP4; raise `mediaStart` |
 | Black / Settings during Connect caption | Script timestamps used without calibration; SPA nav not in capture | Calibrate sync; verify raw MP4 ending; re-record with `page.goto(/play)` |
+| Confirm dialog during "Connect" caption | False-positive dashboard detection (game name on store page) | Require `/play` URL + dashboard title + h3 VM card; re-record |
+| `moov atom not found` during sync build | `build-sync-timing` ran before ffmpeg finished | Wait for encode; re-run sync |
 | HyperFrames `overlapping_clips_same_track` | Narration scene-01 overlaps scene-02 | Normalize narration starts in build script |
 | "Open Settings" while login visible | Uniform 4s blocks or copied timings | Rebuild from metadata + calibration |
 | Settings flash <1s | `playbackRate` >1.2× or 30–40s cap | Extend to ~48–60s at ~1.08× |

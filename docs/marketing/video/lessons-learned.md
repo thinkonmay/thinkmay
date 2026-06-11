@@ -42,6 +42,20 @@ Update this file after each completed video. Reference by project name and date.
 
 13. **Pre-flight dashboard health.** Abort or switch accounts if `/play` shows "System Issue Detected" cards instead of Connect/Power on VMs (`windows-desktop-pwa-60s_v1` at ~33s).
 
+14. **Metadata can pass while footage fails** (`game-install-witcher3-60s_v1`, 2026-06-11). Playwright logged "Witcher visible on dashboard" while the MP4 still showed the store page or `change_template/pending` spinner — because `getByText(/Witcher/i)` matched the **game detail page**, not the VM card on `/play`. **Fix:** require `page.url()` includes `/play`, dashboard title visible ("Cloud PC Dashboard"), and game name on `h3` VM card. Always verify ending frame in raw MP4.
+
+15. **Script events after video end are useless for sync** (`game-install-witcher3-60s_v1`). Wall clock ran ~63s while WebM/MP4 was ~49s — dashboard metadata at script 53s was off-video. Compare `ffprobe` duration to last metadata timestamp; hold 3–5s on `/play` before end padding so ending pixels are captured.
+
+16. **Headless Chromium triggers Browser Incompatible modal** (`game-install-witcher3-60s_v1`). Set Chrome user-agent, seed `localStorage.browser_warning_last_seen`, dismiss Confirm on load — or overlay blocks the tutorial.
+
+17. **Store search is fragile for automation** (`game-install-witcher3-60s_v1`). Search → click result often loads before `#subscribe-button` hydrates. Prefer direct `page.goto(…/store/<appId>/…)` + `waitFor({ state: "attached" })` on install CTA + `scrollIntoViewIfNeeded()`.
+
+18. **Shut down VM before game template install** (`game-install-witcher3-60s_v1`). Backend rejects install when volume is in use. After login, visit `/play`; if Shut down is visible, click it and wait before opening Store.
+
+19. **Install polling: reload sparingly** (`game-install-witcher3-60s_v1`). `page.goto(/play)` every 5s can leave blank SPA frames in capture. Reload at most every ~20s; wait for `networkidle` and `#desktop-store` before checking game card.
+
+20. **Finish MP4 encode before sync** (`game-install-witcher3-60s_v1`). Running `build-sync-timing.mjs` while ffmpeg is still writing produced `moov atom not found` and wrong calibration.
+
 ## Editing (HyperFrames)
 
 11. **Nested `<video data-start>` freezes** — video must be direct child of root composition.
@@ -76,39 +90,41 @@ Update this file after each completed video. Reference by project name and date.
 
 ## Voice (TTS)
 
-23. **Kokoro requires Python ≥3.10.**
+26. **Kokoro requires Python ≥3.10** and `kokoro-onnx` + `soundfile`; onnxruntime conflicts can block install on some environments (`game-install-witcher3-60s_v1`).
 
-24. **edge-tts on macOS:** use `python3 -m edge_tts`.
+27. **edge-tts on macOS:** use `python3 -m edge_tts`.
 
-25. **Walkthrough sync ground truth is `recording_metadata.md`**, not skeleton or uniform 4s blocks (`pwa-desktop-60s`, `windows-desktop-pwa-30s_v1`).
+28. **macOS `say` + ffmpeg** is an acceptable fallback when Kokoro/edge-tts unavailable — verify each MP3 with `ffprobe` (first scene often fails silently if `say` output is empty).
+
+29. **Walkthrough sync ground truth is `recording_metadata.md`**, calibrated to MP4 — not skeleton or uniform 4s blocks (`pwa-desktop-60s`, `windows-desktop-pwa-30s_v1`).
 
 ## General pipeline
 
-26. **QA keyframe extraction** — `ffmpeg -ss T -i final.mp4 -vframes 1 -q:v 2 frame.png`; PNG size hints at scene complexity.
+30. **QA keyframe extraction** — `ffmpeg -ss T -i final.mp4 -vframes 1 -q:v 2 frame.png`; PNG size hints at scene complexity.
 
-27. **Separate `data-track-index`** for intro, A-roll, audio tracks, outro.
+31. **Separate `data-track-index`** for intro, A-roll, audio tracks, outro.
 
-28. **Halt on failed login** — never teleport to authenticated UI.
+32. **Halt on failed login** — never teleport to authenticated UI.
 
-29. **Per-project folders** under `marketing/video/<name>_v<N>/`.
+33. **Per-project folders** under `marketing/video/<name>_v<N>/`.
 
-30. **Final MP4 at project root** via `finalize-output.mjs`.
+34. **Final MP4 at project root** via `finalize-output.mjs`.
 
-31. **Login/typing runs longer than skeleton** — extend caption/voice windows to metadata span.
+35. **Login/typing runs longer than skeleton** — extend caption/voice windows to metadata span.
 
-32. **Never copy composition times across playback rates** (`windows-desktop-pwa-30s_v1`: 1.65× + copied 60s timings → settings invisible during voice).
+36. **Never copy composition times across playback rates** (`windows-desktop-pwa-30s_v1`: 1.65× + copied 60s timings → settings invisible during voice).
 
-33. **Target duration is output, not cap** — extend to 48–60s rather than `playbackRate` >1.2×.
+37. **Target duration is output, not cap** — extend to 48–60s rather than `playbackRate` >1.2×.
 
-34. **Never truncate `data-duration` below MP3 length.**
+38. **Never truncate `data-duration` below MP3 length.**
 
-35. **Login jump-cut optional** for install tutorials — remap sync after splice.
+39. **Login jump-cut optional** for install tutorials — remap sync after splice.
 
-36. **Required scenes gate mandatory** before render.
+40. **Required scenes gate mandatory** before render — checklist varies by tutorial type (PWA vs game install).
 
-37. **Final video audit on rendered MP4** — lint passing ≠ shippable; audit PII, intro flash, caption overlap (`windows-desktop-pwa-60s_v1`, 2026-06-11).
+41. **Final video audit on rendered MP4** — lint passing ≠ shippable; audit PII, intro flash, caption overlap (`windows-desktop-pwa-60s_v1`, `game-install-witcher3-60s_v1`, 2026-06-11).
 
-38. **Docs split** — spec lives in `docs/marketing/video/`; see [README.md](./README.md).
+42. **Docs split** — spec lives in `docs/marketing/video/`; see [README.md](./README.md).
 
 ## Project reference table
 
@@ -117,4 +133,5 @@ Update this file after each completed video. Reference by project name and date.
 | `pwa-desktop-60s` | Uniform caption blocks → sync drift |
 | `windows-desktop-pwa-30s_v1` | 1.65× playback + copied timings → dropped settings |
 | `windows-desktop-pwa-60s_v1` | Sync tooling + 1.08× baseline; script≠video clock; verify raw MP4 ending; intro flash fixed via `mediaStart`; Connect ending still capture-sensitive |
+| `game-install-witcher3-60s_v1` | Strict `/play` dashboard detection (URL + h3 card); direct store URL vs search; Browser Incompatible modal; false-positive "installed" on store page; encode-before-sync; 5s end hold on dashboard |
 | `desktop_install_v3` | Solid 60s composition baseline |

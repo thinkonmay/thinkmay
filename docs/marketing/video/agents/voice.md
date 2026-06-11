@@ -34,7 +34,8 @@ Set `<audio data-duration="...">` to **≥ ffprobe value**. Never shorten to fix
 | edge-tts | Default free path; use `python3 -m edge_tts` if CLI not on PATH |
 | ElevenLabs | Premium quality; needs `ELEVEN_LABS_API_KEY` |
 | OpenAI TTS | `OPENAI_API_KEY` |
-| Kokoro | Offline; requires Python ≥3.10 |
+| Kokoro | Offline; requires Python ≥3.10 and working `kokoro-onnx` |
+| macOS `say` | Fallback when Kokoro/edge-tts unavailable — `say -o clip.aiff` then ffmpeg to MP3; verify with `ffprobe` |
 
 ## Transcription
 

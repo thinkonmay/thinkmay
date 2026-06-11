@@ -42,5 +42,6 @@ Each pipeline stage has a dedicated agent guide under [agents/](./agents/):
 ## Reference projects
 
 - `marketing/video/windows-desktop-pwa-60s_v1` — 60s desktop/PWA tutorial; **reference for sync tooling** (`build-sync-timing.mjs`, `apply-sync-to-html.mjs`) and script→video calibration
+- `marketing/video/game-install-witcher3-60s_v1` — 60s game-install tutorial; **reference for store flow**, strict dashboard ending verification, and `record_shared.mjs` install patterns
 - `marketing/video/desktop_install_v3` — 60s composition reference
 - `marketing/video/windows-desktop-pwa-30s_v1` — **anti-pattern:** 1.65× playback, copied timings

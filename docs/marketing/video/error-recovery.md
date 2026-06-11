@@ -6,7 +6,11 @@
 | Login fails | **Halt.** Check `.env`, site access, re-record. Never continue to authenticated pages |
 | Dashboard shows errors | Use healthy demo account or fix backend; re-record `/play` segments |
 | Metadata says Connect but MP4 shows Settings | SPA nav not captured — use `page.goto(/play)` + raw ending frame check; re-record |
-| MP4 duration << metadata end time | Re-encode with `-fflags +genpts`; if still short, recording ended early — re-record |
+| Metadata says game installed but MP4 shows store/spinner | `getByText(gameName)` matched store page — use strict `/play` + h3 card check; re-record |
+| No install button on game page | Account lacks installable volume or page not hydrated — direct URL + wait for `#subscribe-button`; fix account |
+| Browser Incompatible overlay in footage | Set Chrome UA + dismiss modal in script; re-record |
+| MP4 duration << metadata end time | Re-encode with `-fflags +genpts`; if still short, recording ended early — re-record; hold longer on `/play` |
+| `moov atom not found` when building sync | ffmpeg still writing — wait for encode to finish; re-run `build-sync-timing.mjs` |
 | Script vs video timing drift | Rebuild sync with landing+end calibration — [sync-timing.md](./sync-timing.md#script-clock-to-video-time-calibration) |
 | PII visible in final audit | Add CSS masking in record script; re-record authenticated segments |
 | White flash at intro handoff | Raise `mediaStart` to first visible landing frame in MP4; keep `#video-wrap` opacity 1 — [editing agent](./agents/editing.md#intro-to-a-roll-transition) |
@@ -24,6 +28,7 @@
 | HyperFrames validate 404 | Add `caption-overrides.json` (`{}`) |
 | WebM seek freeze in render | Re-encode to MP4 with `-g 30 -fflags +genpts` |
 | Kokoro fails on Python 3.9 | Use Python ≥3.10 or edge-tts |
+| Kokoro/onnxruntime install conflict | Use edge-tts or macOS `say` + ffmpeg fallback |
 | TTS poor quality | Switch voice or use ElevenLabs/OpenAI |
 
 See [lessons-learned.md](./lessons-learned.md) for root-cause narratives.

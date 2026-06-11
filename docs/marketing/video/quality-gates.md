@@ -32,7 +32,8 @@ Every stage passes validation before the next. Final rendered MP4s require a **s
 
 - [ ] Re-encoded MP4 duration within ~2s of last metadata event ("End padding")
 - [ ] Frame at ~3–4s in MP4 shows **landing hero** (not solid white)
-- [ ] Frame at `duration - 3s` shows **`/play` dashboard** with Connect/Power on — **not** Advanced Settings
+- [ ] Frame at `duration - 3s` shows **`/play` dashboard** with Connect/Power on — **not** Advanced Settings, confirm dialog, or install spinner
+- [ ] **Game install:** ending frame shows **game name on VM card** (e.g. h3 title), not store detail page
 - [ ] If ending check fails → re-record; do not build sync from metadata alone
 
 See [agents/recording.md](./agents/recording.md#post-recording).

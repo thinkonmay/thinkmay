@@ -10,6 +10,8 @@
 - Viewport 1920×1080, `deviceScaleFactor: 2`
 - `recordVideo` size matches viewport
 - Locale per language (`en-US` / `vi-VN`, `/en` / `/vi` paths)
+- **Chrome user-agent** for headless capture (avoids Browser Incompatible modal)
+- Init script: `localStorage.setItem('browser_warning_last_seen', …)` before first navigation
 - Custom pointer injection (inline SVG or PNG) — re-inject after every navigation
 - Hide Next.js dev overlay via init script
 
@@ -85,7 +87,7 @@ mark("Login verified — dashboard visible");
      -movflags +faststart raw_recording.mp4
    ffprobe -v error -show_entries format=duration -of csv=p=0 raw_recording.mp4
    ```
-   Compare MP4 duration to the last metadata timestamp ("End padding"). Gap >2s → investigate before sync.
+   Compare MP4 duration to the last metadata timestamp ("End padding"). Gap >2s → investigate before sync. **Do not run `build-sync-timing.mjs` until ffmpeg has finished** (incomplete MP4 → `moov atom not found`).
 
 2. **Raw footage gate** — metadata alone is not sufficient:
    ```bash
@@ -96,27 +98,74 @@ mark("Login verified — dashboard visible");
    DUR=$(ffprobe -v error -show_entries format=duration -of csv=p=0 raw_recording.mp4)
    ffmpeg -y -ss $(echo "$DUR - 3" | bc) -i raw_recording.mp4 -vframes 1 -q:v 2 /tmp/check-end.png
    ```
-   Fail the recording gate if ending frame is still Advanced Settings or login.
+   Fail the recording gate if ending frame is still Advanced Settings, login, store confirm dialog, or install spinner — **must show `/play` dashboard with game/template on VM card** for game-install tutorials.
 
 3. QA gate: extract keyframes at **video-calibrated** times → audit vs descriptions
 
-## Ending scene (dashboard Connect)
+## Ending scene (dashboard)
 
-After Save, return to `/play` with **hard navigation** — SPA sidebar clicks may not repaint in capture:
+Return to `/play` with **hard navigation** — SPA sidebar clicks may not repaint in capture:
 
 ```js
 await page.goto(`${TARGET_URL}${config.pathPrefix}/play`, {
   waitUntil: "domcontentloaded",
 });
 await page.waitForLoadState("networkidle");
+await dismissBrowserWarning(page);
 await page.waitForTimeout(3000);
 await maskPii(page);
 // verify Connect or Power on visible before mark("Connect button highlighted")
 ```
 
-Hold 3s on Connect hover before end padding so the frame appears in the WebM.
+Hold **3–5s** on dashboard (Connect/Power on hover) before end padding so the frame appears in the WebM.
+
+**PWA/desktop install:** after Save on Advanced Settings, use the same hard `/play` navigation (do not rely on sidebar Home).
+
+### Dashboard detection (game install tutorials)
+
+Do **not** use `getByText(/Game Name/i)` alone — it matches the store detail page and causes false "installed" marks while the MP4 still shows the store or `change_template/pending`.
+
+```js
+const onPlay = page.url().includes("/play");
+const onDashboard = await page.getByText(/Cloud PC Dashboard/i).isVisible();
+const gameOnCard = await page
+  .locator("h3")
+  .filter({ hasText: /Witcher 3/i })
+  .first()
+  .isVisible();
+// all three must be true before mark("Game installed — … on dashboard")
+```
+
+## Game install tutorials
+
+Additional rules for store → template install flows (reference: `game-install-witcher3-60s_v1`):
+
+| Step | Rule |
+|------|------|
+| Pre-install | After login, visit `/play`; if **Shut down** visible, shut down VM and wait ~8s |
+| Store navigation | Open Explore sidebar, then **direct `page.goto` to game URL** — search is fragile |
+| Install CTA | Wait for `#subscribe-button` or `#set-template-button` **attached**; scroll into view |
+| Confirm | Click Confirm in modal; wait for install (poll `/play` every ~20s, not every 5s) |
+| Ending | `/play` with game name on VM card + Connect or Power on; 5s end padding |
+
+Account must have an **installable volume** for the template. If install button missing → fix account/subscription before recording.
+
+## Browser Incompatible modal
+
+Headless Chromium may show a full-screen "Browser Incompatible" dialog. Dismiss before continuing:
+
+```js
+async function dismissBrowserWarning(page) {
+  if (await page.getByText(/Browser Incompatible/i).isVisible().catch(() => false)) {
+    await page.getByRole("button", { name: /Confirm/i }).first().click();
+  }
+}
+```
+
+Call after landing, login, and each `/play` navigation.
 
 ## Canonical references
 
-- `marketing/video/windows-desktop-pwa-60s_v1/recording/scripts/record_shared.mjs`
+- `marketing/video/windows-desktop-pwa-60s_v1/recording/scripts/record_shared.mjs` — PWA/desktop install
+- `marketing/video/game-install-witcher3-60s_v1/recording/scripts/record_shared.mjs` — game template install
 - `marketing/video/records/demo/record.spec.js` (if present)
