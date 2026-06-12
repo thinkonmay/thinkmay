@@ -38,6 +38,17 @@ Every stage passes validation before the next. Final rendered MP4s require a **s
 
 See [agents/recording.md](./agents/recording.md#post-recording).
 
+## Frame review gate (between recording and editing)
+
+See [agents/review.md](./agents/review.md).
+
+- [ ] Keyframe extracted and evaluated for **every** metadata event (video-calibrated) + 2s grid
+- [ ] `## Frame review` section appended to `recording_metadata.md` with verdict per event
+- [ ] Every zoom/caption beat has target `(tx, ty)` + bbox (recorded or measured)
+- [ ] Corrected times noted wherever observed pixels ≠ metadata mark
+- [ ] `DEAD_AIR` spans ≥4s flagged for the editor
+- [ ] No PII / error cards / wrong-flow frames — else re-record before editing starts
+
 ## Editing gate
 
 ### Timing & content
@@ -50,6 +61,13 @@ See [agents/recording.md](./agents/recording.md#post-recording).
 - [ ] Each narration `data-start` aligns with its caption window (±0.1s)
 - [ ] Each narration `data-duration` ≥ `ffprobe` MP3 length
 - [ ] `outroStart` derived from A-roll end (crossfade), not a stale fixed timestamp
+- [ ] **Intro 3.0–4.5s; outro 5–7s (max 8s)**; `data-duration ≈ outroStart + outro budget` — no static tail ([brand-design.md](./brand-design.md#intro--outro-scene-standards-60s-tutorials))
+- [ ] Caption `start` values anchored to **frame-review observed times**, not raw script marks
+
+### Camera zooms ([camera-zoom.md](./camera-zoom.md))
+
+- [ ] Every zoom's `scale/x/y` computed from a measured target + clamp math, documented in a code comment
+- [ ] Verification frame per zoom hold: target in center third, no text cut mid-glyph, no background exposed, caption pill not covering target or sibling options
 
 ### Transitions (no blank frames)
 
@@ -105,6 +123,9 @@ Run on **`final_<lang>.mp4` at project root** after assembly. See [agents/qa.md]
 | Dashboard errors | Error cards visible during instructional segments |
 | Outro gap | Black frame >0.5s between A-roll and outro |
 | Caption lags narration | Narration topic changed; caption text has not |
+| Outro overrun | Static outro >8s (check frames at outroStart+5 vs end — identical = overrun) |
+| Zoom framing | UI text cut mid-glyph at frame edge, or target outside center third during hold |
+| Dead air | ≥5s span with no caption, narration, or camera motion during A-roll |
 
 ### Verdict levels
 

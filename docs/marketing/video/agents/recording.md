@@ -62,6 +62,27 @@ Reference: `marketing/video/windows-desktop-pwa-60s_v1` audit — `thinkmay@dev.
 - Per-action timestamps in `recording_metadata.md`
 - Stable selectors: `#desktop-setting`, `#advance`, exact toggle label text per locale
 
+### Capture target bounding boxes at mark time
+
+Every `mark()` for an element the editor will zoom to or caption against **must include the element's bounding box**. Viewport CSS px equal raw-video px (1920×1080 viewport), so these coordinates feed directly into the zoom math in [camera-zoom.md](../camera-zoom.md) without frame measurement:
+
+```js
+async function markTarget(label, locator) {
+  const box = await locator.boundingBox();   // { x, y, width, height }
+  mark(box
+    ? `${label} | bbox=${Math.round(box.x)},${Math.round(box.y)},${Math.round(box.width)},${Math.round(box.height)} center=${Math.round(box.x + box.width / 2)},${Math.round(box.y + box.height / 2)}`
+    : `${label} | bbox=unavailable`);
+}
+// usage:
+await markTarget("Disk button visible", page.getByRole("button", { name: /Disk/i }));
+```
+
+If a bbox is unavailable (element detached), the frame-review agent measures it from the extracted keyframe instead — but recorded boxes are preferred.
+
+## Frame review handoff
+
+After the raw footage gate passes, the **frame review round** ([agents/review.md](./review.md)) runs on the re-encoded MP4 and appends a `## Frame review` section to `recording_metadata.md` — pixel-verified event times, target coordinates, dead-air spans, anomalies. Recording is not complete until that section exists; the editor agent refuses to sync without it.
+
 ## Login verification gate
 
 After login, assert dashboard/post-login UI is visible. On failure:

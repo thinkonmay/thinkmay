@@ -98,6 +98,20 @@ Update this file after each completed video. Reference by project name and date.
 
 29. **Walkthrough sync ground truth is `recording_metadata.md`**, calibrated to MP4 — not skeleton or uniform 4s blocks (`pwa-desktop-60s`, `windows-desktop-pwa-30s_v1`).
 
+## Editing — captions & framing (`disk-upgrade-60s_v1`, 2026-06-12)
+
+43. **GSAP `className` tweens break in seek-based render.** Word-karaoke via `tl.set(word, { className: "+=active" })` left caption text **black/unstyled** in the rendered MP4 (worked in live preview). Fix: critical styles (`color: #fff`) on the pill base class; animate only GSAP properties (`y`, `opacity`, `scale`); no CSS `transition`/`:has(.active)` gating. See [agents/editing.md](./agents/editing.md#caption-styling-render-safe-patterns-only).
+
+44. **Eyeballed zoom coordinates miss the target.** First zoom pass landed "nowhere" (user-visible defect at 0:21); corrected pass still clipped the VM card's text mid-glyph at the left edge. Zooms must be **computed** from measured target coords with clamp math + verification frames — [camera-zoom.md](./camera-zoom.md).
+
+45. **Caption anchored to a script mark ≠ pixels.** "Your Cloud PC Dashboard is ready" displayed ~1.5s over the login form because the metadata mark fired before the dashboard painted. Anchor captions to **frame-review observed times** ([agents/review.md](./agents/review.md)).
+
+46. **Unbudgeted outro absorbs the timeline.** Composition `data-duration` left the outro running 18.8s static (34% of runtime). Budget: intro 3.0–4.5s, outro 5–7s, `data-duration ≈ outroStart + outro budget` — [brand-design.md](./brand-design.md#intro--outro-scene-standards-60s-tutorials).
+
+47. **Typing segments create dead air.** ~6s of email/password typing had no caption, narration, or motion. Frame review flags `DEAD_AIR` spans; editor bridges with zoom-to-form or per-span playback-rate bump.
+
+48. **Capture `boundingBox()` at `mark()` time.** Post-hoc frame measurement for zoom targets is slow and error-prone; viewport CSS px = raw-video px at 1920×1080, so recorded boxes feed the zoom math directly — [agents/recording.md](./agents/recording.md#capture-target-bounding-boxes-at-mark-time).
+
 ## General pipeline
 
 30. **QA keyframe extraction** — `ffmpeg -ss T -i final.mp4 -vframes 1 -q:v 2 frame.png`; PNG size hints at scene complexity.
@@ -135,3 +149,4 @@ Update this file after each completed video. Reference by project name and date.
 | `windows-desktop-pwa-60s_v1` | Sync tooling + 1.08× baseline; script≠video clock; verify raw MP4 ending; intro flash fixed via `mediaStart`; Connect ending still capture-sensitive |
 | `game-install-witcher3-60s_v1` | Strict `/play` dashboard detection (URL + h3 card); direct store URL vs search; Browser Incompatible modal; false-positive "installed" on store page; encode-before-sync; 5s end hold on dashboard |
 | `desktop_install_v3` | Solid 60s composition baseline |
+| `disk-upgrade-60s_v1` | className-tween karaoke → black captions in seek render; eyeballed zooms miss/clip targets; caption ahead of pixels (login vs dashboard); 18.8s static outro; dead air during typing → motivated frame-review round + camera-zoom.md + intro/outro budgets |

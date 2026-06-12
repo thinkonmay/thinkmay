@@ -1,6 +1,6 @@
 # Editor Agent
 
-**Input:** Raw recording, `recording_metadata.md`, `video_skeleton_<lang>.md`, brand assets  
+**Input:** Raw recording, `recording_metadata.md` **including its `## Frame review` section** ([agents/review.md](./review.md)), `video_skeleton_<lang>.md`, brand assets  
 **Output:** HyperFrames composition, `sync-timing.json`, `editing_metadata.md`
 
 **Skills:** `hyperframes`, `hyperframes-cli`
@@ -10,22 +10,29 @@
 1. Copy raw recording + metadata into `editing/`
 2. Re-encode WebM → MP4 with `-fflags +genpts`; verify duration — [recording agent](./recording.md#post-recording)
 3. **Raw footage gate** — landing + ending frames visible in MP4 before sync
-4. Build sync timing (automated):
+4. **Read the `## Frame review` section** of `recording_metadata.md`. It is the pixel-verified ground truth:
+   - `mediaStart` = "first clean landing frame" from the review — never the metadata mark
+   - Caption/narration anchors = **corrected (observed) times**, not raw script marks
+   - Zoom targets = recorded `(tx, ty)` + bbox per event
+   - `DEAD_AIR` spans = bridge with a zoom-to-target or a playback-rate bump on that span
+   - If the section is missing, run the frame review first — do not sync blind
+5. Build sync timing (automated):
    ```bash
    node scripts/build-sync-timing.mjs en
    node scripts/apply-sync-to-html.mjs en
    ```
    See [sync-timing.md](../sync-timing.md#automated-sync-workflow)
-5. Compose or patch `index.html`: intro, A-roll, captions, per-scene audio, outro
-6. Set narration `data-duration` from `ffprobe` (or from `sync-timing.json` if build script embeds it)
-7. Run HyperFrames check (`npm run check`) — `duplicate_audio_track` warnings for multi-lang are expected
-8. Required scenes gate on **raw MP4** and **final MP4** → render
+6. Compose or patch `index.html`: intro, A-roll, captions, per-scene audio, outro
+7. Set narration `data-duration` from `ffprobe` (or from `sync-timing.json` if build script embeds it)
+8. Run HyperFrames check (`npm run check`) — `duplicate_audio_track` warnings for multi-lang are expected
+9. Required scenes gate on **raw MP4** and **final MP4** → render
 
 ## Playback & duration
 
 - Default `playbackRate`: **1.08×** for 60s walkthroughs
 - Never exceed **1.2×** unless every required-scene keyframe passes
 - Extend `data-duration` on root composition rather than dropping steps
+- **Intro 3.0–4.5s, outro 5–7s (hard max 8s)** — see [brand-design.md](../brand-design.md#intro--outro-scene-standards-60s-tutorials). Set `data-duration ≈ outroStart + outro budget`; never let leftover padding stretch a static outro (`disk-upgrade-60s_v1`: 18.8s frozen outro)
 
 ## Caption & narration wiring
 
@@ -33,6 +40,8 @@
 - **No overlapping caption windows** for adjacent steps
 - When scene N narration starts, scene N−1 caption must have exited
 - Hero toggle caption: longest window (4–6s)
+- **Caption must describe pixels on screen, not the script mark.** Anchor each caption `start` to the *observed* time in the frame review — a "Dashboard is ready" caption over a login form is a CAPTION_DRIFT hard fail (`disk-upgrade-60s_v1` at 19s)
+- **Caption pill must not occlude interactive targets.** When the caption references an option list or button group, verify no sibling option sits under the pill at zoomed framing (see safe area in [camera-zoom.md](../camera-zoom.md))
 
 ## Premium transitions (no jump cuts or flat slides)
 
@@ -62,11 +71,11 @@ tl.fromTo("#scene-outro",
 
 ## A-roll camera zooms & panning
 
-Walkthroughs must not remain statically scaled at 100%. At key instruction beats, zoom and pan the `#video-wrap` container inside the GSAP timeline to focus the viewer's attention on mouse clicks and sidebar changes.
+Walkthroughs must not remain statically scaled at 100%. At key instruction beats, zoom and pan the `#video-wrap` container to focus on the action target.
 
-*   **Zoom in**: Scale to `1.3x - 1.6x` and shift `x` and `y` coordinates to center the focused element (e.g. `x: -250, y: 120` to show settings panel clicks).
-*   **Transition duration**: Use `0.6s - 0.8s` with `power2.out` or `power3.out` eases.
-*   **Reset**: Zoom back out to `scale: 1.0, x: 0, y: 0` using `power2.inOut` when actions are complete or the narrator introduces the ending/Connect dashboard.
+**Zoom coordinates are computed, never eyeballed** — follow [camera-zoom.md](../camera-zoom.md) for the centering/clamp math, target-selection rules (no text cut mid-glyph, target in center third, caption safe area), and the mandatory measure → compute → verify loop. Targets come from the `## Frame review` bounding boxes.
+
+Summary: scale `1.15–1.6×`, transitions `0.6–0.8s` with `power2.out`/`power3.out`, hold ≥2s, reset to `scale: 1.0, x: 0, y: 0` (`power2.inOut`) before scene changes, `overwrite: "auto"` on all `#video-wrap` tweens.
 
 ## Title cards: grid & glow atmospheres + kinetic type
 
@@ -74,27 +83,16 @@ Intros and outros must feel alive:
 1.  **Backgrounds**: Layer a CSS digital grid (`.scene-grid-bg`) and slow-moving breathing glowing blobs (`.scene-glow-orb`) behind the content.
 2.  **Kinetic Type**: Split headings into `<span class="line">` tags. Animate lines sequentially using `gsap.from` with an overshoot ease like `back.out(1.4)` and a stagger delay.
 
-## Interactive captions: karaoke & marker sweeps
+## Caption styling: render-safe patterns only
 
-Avoid static caption updates. Animate them interactively:
-1.  **Word-by-word Karaoke**: Programmatically split subtitle sentences into `<span class="word">` elements. Stagger active states (`tl.set(word, { className: "word active" })`) sequentially over the group duration.
-2.  **Brand Highlighter Sweeps**: Style brand terms (`.brand`) with an absolute pseudo-element background (`.brand::after`) scaled to `scaleX(0)`. Enable automatically sweeping the highlight in when any word inside becomes active using the CSS `:has()` pseudo-selector:
-    ```css
-    .caption-pill .brand::after {
-      content: '';
-      position: absolute;
-      inset: 4px -6px 0 -6px;
-      background: rgba(0, 232, 168, 0.22);
-      border-radius: 6px;
-      transform: scaleX(0);
-      transform-origin: left center;
-      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      z-index: -1;
-    }
-    .caption-pill .brand:has(.active)::after {
-      transform: scaleX(1);
-    }
-    ```
+**Do not use GSAP `className` tweens or CSS `transition`-driven word karaoke.** In HyperFrames' seek-based renderer, `tl.set(word, { className: "+=active" })` state and `transition` interpolation are not reliably applied at arbitrary seek times — `disk-upgrade-60s_v1` shipped black (unstyled) caption text because word colors depended on the `.active` class being applied (2026-06-12).
+
+Render-safe rules:
+
+1. **Base styles carry all critical properties.** `color: #fff` (and shadow/weight) live directly on `.caption-pill`, never only on dynamically-toggled child classes.
+2. **Insert caption text as plain `innerHTML`** with pre-styled `<span class="brand">` accents. Brand highlight `::after` backgrounds are statically visible (`transform: scaleX(1)`) — no `:has(.active)` gating, no `transition`.
+3. **Animate only the pill container** with GSAP property tweens (`y`, `opacity`, `scale`) — these seek deterministically.
+4. If word-level emphasis is required, drive it with **per-word GSAP property tweens** (e.g. `tl.fromTo(word, { opacity: 0.55 }, { opacity: 1 })`) on the timeline — never class toggles or CSS transitions.
 
 ## Multi-language compositions
 

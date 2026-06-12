@@ -52,9 +52,10 @@ Optional in `marketing/video/.env`:
 
 ```env
 ELEVEN_LABS_API_KEY="..."
-ELEVEN_LABS_VOICE_ID="CwhRBWXzGAHq8TQ4Fs17"
-ELEVEN_LABS_PRONUNCIATION_DICTIONARY_ID="your_dictionary_id"
-ELEVEN_LABS_PRONUNCIATION_DICTIONARY_VERSION_ID="version_id"
+ELEVEN_LABS_VOICE_ID="CwhRBWXzGAHq8TQ4Fs17"       # Default English voice (Roger)
+ELEVEN_LABS_VOICE_ID_VI="aN7cv9yXNrfIR87bDmyD"    # Default Vietnamese voice
+ELEVEN_LABS_PRONUNCIATION_DICTIONARY_ID="your_id" # Optional dict
+ELEVEN_LABS_PRONUNCIATION_DICTIONARY_VERSION_ID="ver_id"
 ```
 
 Then refresh durations and HTML:

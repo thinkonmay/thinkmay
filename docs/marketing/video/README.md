@@ -1,6 +1,6 @@
 # Marketing Video Pipeline
 
-Autonomous pipeline for product walkthrough and tutorial videos: idea → research → planning → recording → editing → voice → assembly → QA.
+Autonomous pipeline for product walkthrough and tutorial videos: idea → research → planning → recording → **frame review (VLM)** → editing → voice → assembly → QA.
 
 **Start here:** read [overview.md](./overview.md) for the pipeline diagram, then follow [execution-protocol.md](./execution-protocol.md) step by step.
 
@@ -12,6 +12,7 @@ Autonomous pipeline for product walkthrough and tutorial videos: idea → resear
 | [workspace.md](./workspace.md) | Project naming, directory tree, multi-language rules |
 | [execution-protocol.md](./execution-protocol.md) | Step-by-step commands for each stage |
 | [sync-timing.md](./sync-timing.md) | Caption/narration timing from recording metadata |
+| [camera-zoom.md](./camera-zoom.md) | **Zoom math + framing rules** — compute, clamp, verify every A-roll zoom |
 | [quality-gates.md](./quality-gates.md) | Recording, editing, audio, and **final video audit** checklists |
 | [artifact-formats.md](./artifact-formats.md) | Templates for research brief, skeleton, script, metadata |
 | [error-recovery.md](./error-recovery.md) | Failure → fix lookup table |
@@ -27,6 +28,7 @@ Each pipeline stage has a dedicated agent guide under [agents/](./agents/):
 | Research | [agents/research.md](./agents/research.md) |
 | Planning | [agents/planning.md](./agents/planning.md) |
 | Recording | [agents/recording.md](./agents/recording.md) |
+| Frame review (VLM) | [agents/review.md](./agents/review.md) |
 | Editing | [agents/editing.md](./agents/editing.md) |
 | Voice | [agents/voice.md](./agents/voice.md) |
 | Assembly | [agents/assembly.md](./agents/assembly.md) |

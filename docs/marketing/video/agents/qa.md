@@ -75,6 +75,7 @@ Compare keyframe to expected content (VLM or human):
 | SCENE_DRIFT | Required checkpoint shows wrong UI |
 | AUDIO_CLIP | Audible mid-sentence cut (verify against ffprobe durations) |
 | CAPTION_DRIFT | Caption text describes action not on screen (>1s) |
+| CAPTION_STYLE | Caption text unreadable: black/unstyled font, contrast failure against pill (`disk-upgrade-60s_v1` — className-tween karaoke broke in seek render) |
 
 ### 5. Warning criteria
 
@@ -84,6 +85,9 @@ Compare keyframe to expected content (VLM or human):
 | DASHBOARD_ERROR | "System Issue Detected" or similar during walkthrough |
 | OUTRO_GAP | >0.5s black between A-roll and outro |
 | CAPTION_LAG | Narration topic changed; old caption still showing |
+| OUTRO_OVERRUN | Static outro >8s — compare frame at `outroStart + 5` vs final frame; identical = overrun |
+| ZOOM_FRAMING | UI text cut mid-glyph at frame edge during a zoom hold, or zoom target outside center third |
+| DEAD_AIR | ≥5s of A-roll with no caption, narration, or camera motion |
 
 ### 6. Verdict
 

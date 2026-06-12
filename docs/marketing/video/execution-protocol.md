@@ -41,6 +41,16 @@ cd recording && npm install && npm run record
 
 Per language: `record:en`, `record:vi`. **Raw footage gate** (landing + dashboard ending in MP4) before editing.
 
+## Step 4.5: Frame review (VLM round)
+
+Follow [agents/review.md](./agents/review.md) on the re-encoded MP4. Extract keyframes at every metadata event (video-calibrated) plus a 2s grid, evaluate each frame, and append the `## Frame review` section to `recording_metadata.md`:
+
+- Verify/correct every event time against actual pixels
+- Record target `(tx, ty)` + bbox for every zoom/caption beat
+- Flag `DEAD_AIR` spans and anomalies (PII, error cards)
+
+PII or wrong-flow findings here → **re-record now** (cheapest failure point). Editing must not start without this section.
+
 ## Step 5: Editing
 
 ```bash
