@@ -17,7 +17,7 @@
 
 ## Non-negotiable rules (summary)
 
-0. **New projects** — scaffold from `marketing/video/_template-60s_v1` via `node marketing/video/scripts/scaffold-project.mjs <slug> --flow game-install|pwa-desktop`. Customize `record_shared.mjs` and `build-sync-timing.mjs`; do not start from scratch.
+0. **New projects** — scaffold from `marketing/video/_template-60s_v1` via `node marketing/video/scripts/scaffold-project.mjs <slug> --flow game-install|pwa-desktop|disk-upgrade`. Customize `record_shared.mjs` and `build-sync-timing.mjs`; do not start from scratch. Run `node scripts/run-pipeline.mjs <lang>` **from the project root** — see `_template-60s_v1/PIPELINE-NOTES.md`.
 1. **Sync ground truth** — caption and narration times come from `recording_metadata.md` **calibrated to the re-encoded MP4**, not script timestamps directly, uniform blocks, or prior projects. Use `build-sync-timing.mjs`. See [sync-timing.md](./sync-timing.md).
 2. **Verify raw footage** — before sync, confirm landing and dashboard ending frames in `raw_recording.mp4`. Metadata can lie (SPA nav). See [agents/recording.md](./agents/recording.md#post-recording).
 3. **Required scenes** — verify the UI matches the tutorial type at each caption time. Desktop/PWA install: Download → Settings → Advanced → toggle → Save → Connect. Game install: landing → login → Store → game page → confirm → `/play` with game on VM card. See [quality-gates.md](./quality-gates.md#required-scenes-gate).

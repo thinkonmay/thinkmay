@@ -26,6 +26,7 @@ Every stage passes validation before the next. Final rendered MP4s require a **s
 ### Metadata
 
 - [ ] `recording_metadata.md` with per-action timestamps
+- [ ] Every `Clicked:` row includes `center=x,y` (automated: `node scripts/gate-metadata.mjs <lang>`)
 - [ ] Login verification assertion passed (or recording halted)
 
 ### Raw footage verification (before editing)
@@ -54,6 +55,8 @@ See [agents/review.md](./agents/review.md).
 ### Timing & content
 
 - [ ] `sync-timing.json` built via `build-sync-timing.mjs` from **this** recording + calibrated MP4 duration
+- [ ] `clicks[]` every entry has `x` and `y` (automated: `node scripts/gate-sync.mjs <lang>`)
+- [ ] After TTS: A-roll narration ends before `outroStart` (automated: `node scripts/gate-sync.mjs <lang> --after-tts`)
 - [ ] `mediaStart` verified against visible landing frame in MP4
 - [ ] `playbackRate` ≤ 1.2× unless all required scenes verified at caption times
 - [ ] Caption `GROUPS` match `sync-timing.json` (via `apply-sync-to-html.mjs` or manual); **no overlapping adjacent captions**
@@ -74,7 +77,7 @@ See [agents/review.md](./agents/review.md).
 
 ### Motion polish & soundscape
 
-- [ ] Caption pills animate in/out (slide+fade) — no popping
+- [ ] Caption pills animate in/out (slide+fade) — no popping; **every caption hard-hidden at `group.end`** (no intro/outro leak)
 - [ ] Click ripple at every `clicks[]` timestamp (yellow ring inside `#video-wrap`)
 - [ ] Music bed present, `data-volume ≤ 0.15`, spans full composition, fades with outro
 - [ ] Click SFX + popup whoosh tags generated between `<!-- sfx:start/end -->` markers

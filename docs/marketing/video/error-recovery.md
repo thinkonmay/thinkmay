@@ -19,6 +19,11 @@
 | QA rejects recording | Adjust Playwright script → re-record; verify raw MP4 keyframes |
 | QA rejects editing | Fix composition / sync-timing → re-render |
 | Voice/caption drift | Rebuild `sync-timing.json` from metadata + calibration; fix caption overlap; regenerate audio |
+| `gate-metadata` fails (missing center=) | Re-record or fix `record_shared.mjs` click marks; ensure `parseMetadata` reads full table cell |
+| `gate-sync` fails (missing x/y) | Re-run build-sync after metadata fix; verify `Clicked:` rows are not truncated by parser |
+| `gate-sync --after-tts` fails (VO past outro) | Shorten narration lines in `build-sync-timing.mjs`; re-TTS; do not raise `playbackRate` first |
+| Caption visible on intro/outro | Ensure GSAP sets `visibility: hidden` at every `group.end` in composition HTML |
+| Ran pipeline from `editing/` cwd | Always run `node scripts/run-pipeline.mjs` from project root |
 | HyperFrames `overlapping_clips_same_track` | Stagger narration starts (scene-02 after scene-01 ends) in build script |
 | Settings flashed too briefly | Lower `playbackRate` (≤1.2×), extend duration |
 | Voice clipped | Set `data-duration` from `ffprobe`; separate `data-track-index` |

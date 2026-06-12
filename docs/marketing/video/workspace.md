@@ -58,13 +58,19 @@ marketing/video/
     ├── assembly/artifacts/output/
     ├── scripts/
     │   ├── finalize-output.mjs
-    │   ├── verify-raw-footage.mjs    # Raw MP4 landing/ending gate
-    │   └── run-pipeline.mjs          # encode → sync → TTS → render
+    │   ├── verify-raw-footage.mjs    # Raw MP4 landing/ending gate (flow-aware via project.config.mjs)
+    │   ├── gate-metadata.mjs         # Fail if Clicked: rows lack center= or ending markers missing
+    │   ├── gate-sync.mjs             # Fail if clicks[] missing x/y; --after-tts checks VO budget
+    │   └── run-pipeline.mjs          # encode → verify → gates → sync → TTS → render
+    ├── PIPELINE-NOTES.md             # One-pass runbook (gates, QA frames, cwd rules)
+    ├── project.config.mjs            # Flow + ending metadataNeedles for automated gates
     ├── references/                   # Frozen battle-tested scripts per flow
     │   ├── record_shared.game-install.mjs
     │   ├── record_shared.pwa-desktop.mjs
+    │   ├── record_shared.disk-upgrade.mjs
     │   ├── build-sync-timing.game-install.mjs
-    │   └── build-sync-timing.pwa-desktop.mjs
+    │   ├── build-sync-timing.pwa-desktop.mjs
+    │   └── build-sync-timing.disk-upgrade.mjs
     └── assets/
 ```
 

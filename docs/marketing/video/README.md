@@ -48,16 +48,18 @@ Each pipeline stage has a dedicated agent guide under [agents/](./agents/):
 
 ```bash
 node marketing/video/scripts/scaffold-project.mjs my-feature-60s_v1 --flow game-install
-# Edit goal.md, record_shared.mjs, build-sync-timing.mjs, index.html
+# or --flow pwa-desktop | disk-upgrade
+# Edit goal.md, record_shared.mjs, build-sync-timing.mjs
 cd marketing/video/my-feature-60s_v1/recording && npm install && npm run record:en
-cd .. && node scripts/run-pipeline.mjs en
+cd .. && node scripts/run-pipeline.mjs en   # from project root — includes automated gates
 ```
 
-See `_template-60s_v1/README.md` for full customization table and flow options.
+See `_template-60s_v1/README.md` and `_template-60s_v1/PIPELINE-NOTES.md` for customization and one-pass runbook.
 
 ## Reference projects
 
 - `marketing/video/windows-desktop-pwa-60s_v1` — 60s desktop/PWA tutorial; **reference for sync tooling** (`build-sync-timing.mjs`, `apply-sync-to-html.mjs`) and script→video calibration
 - `marketing/video/game-install-witcher3-60s_v1` — 60s game-install tutorial; **reference for store flow**, strict dashboard ending verification, and `record_shared.mjs` install patterns
+- `marketing/video/disk-upgrade-60s_v3` — VI disk resize tutorial; **reference for disk-upgrade flow**, short-footage sync (`PLAYBACK_RATE 1.0`), pricing narration, and automated pipeline gates
 - `marketing/video/desktop_install_v3` — 60s composition reference
 - `marketing/video/windows-desktop-pwa-30s_v1` — **anti-pattern:** 1.65× playback, copied timings

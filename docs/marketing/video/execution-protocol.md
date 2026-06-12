@@ -53,22 +53,29 @@ PII or wrong-flow findings here → **re-record now** (cheapest failure point). 
 
 ## Step 5: Editing
 
+**Run from the project root** (`marketing/video/<slug>/`), not from `editing/`.
+
+Preferred — full pipeline with automated gates:
+
 ```bash
-# Re-encode (genpts — WebM duration is often N/A). Near-lossless: crf 14 @ 60fps —
-# the final render is `--quality high --fps 60` and finalize copies without transcoding.
+node scripts/run-pipeline.mjs en
+# VI: node scripts/run-pipeline.mjs vi
+```
+
+Or step-by-step:
+
+```bash
+# Re-encode (genpts — WebM duration is often N/A). Near-lossless: crf 14 @ 60fps
 ffmpeg -y -fflags +genpts -i recording/artifacts/output/en/raw_recording.webm \
   -c:v libx264 -preset medium -crf 14 -r 60 -g 60 -keyint_min 60 -pix_fmt yuv420p \
   -movflags +faststart editing/raw_recording.mp4
 ffprobe -v error -show_entries format=duration -of csv=p=0 editing/raw_recording.mp4
-# Confirm duration ≈ last metadata timestamp before sync
-# Repeat for vi → raw_recording_vi.mp4
 
-# Sync timing (only after encode completes — calibrates script clock → video time)
-cd editing
-node scripts/build-sync-timing.mjs en
-node scripts/build-sync-timing.mjs vi
-node scripts/apply-sync-to-html.mjs en
-node scripts/apply-sync-to-html.mjs vi
+node scripts/verify-raw-footage.mjs en      # manual: inspect check-end.png
+node scripts/gate-metadata.mjs en           # fail if Clicked: rows lack center=
+node editing/scripts/build-sync-timing.mjs en
+node scripts/gate-sync.mjs en               # fail if clicks[] missing x/y
+node editing/scripts/apply-sync-to-html.mjs en
 ```
 
 Compose or patch `index.html` (+ `compositions/index-vi.html`). See [agents/editing.md](./agents/editing.md) and [sync-timing.md](./sync-timing.md).
@@ -80,12 +87,13 @@ Required scenes gate on raw MP4 and pre-render checkpoints before render.
 Per-scene TTS from `sync-timing.json` narration entries. See [agents/voice.md](./agents/voice.md).
 
 ```bash
-python3 -m edge_tts --voice "en-US-AriaNeural" --text "..." \
-  --write-media editing/assets/narration-scenes/scene-02.mp3
-ffprobe -v error -show_entries format=duration -of csv=p=0 editing/assets/narration-scenes/scene-02.mp3
+node ../scripts/generate-narration.mjs en   # from project root
+node editing/scripts/build-sync-timing.mjs en   # re-run after MP3 durations known
+node scripts/gate-sync.mjs en --after-tts       # fail if VO exceeds outroStart
+node editing/scripts/apply-sync-to-html.mjs en
 ```
 
-Wire `data-duration` in HTML from ffprobe output.
+Keep narration lines short for footage under ~40s — `gate-sync --after-tts` catches VO that runs past the outro.
 
 ## Step 7: Assembly
 

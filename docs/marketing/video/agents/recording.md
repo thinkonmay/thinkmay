@@ -123,6 +123,13 @@ mark("Login verified — dashboard visible");
    ```
    Fail the recording gate if ending frame is still Advanced Settings, login, store confirm dialog, or install spinner — **must show `/play` dashboard with game/template on VM card** for game-install tutorials.
 
+   From the project root, prefer the scripted gate (flow-aware via `project.config.mjs`):
+   ```bash
+   node scripts/verify-raw-footage.mjs en   # writes recording/temp/verify/<lang>/check-*.png
+   node scripts/gate-metadata.mjs en        # fail if any Clicked: row lacks center=x,y
+   ```
+   Every click mark must log `center=x,y` for zoom/SFX/ripples. Disk-upgrade ending: confirm dialog or post-confirm dashboard (see `PIPELINE-NOTES.md`).
+
 3. QA gate: extract keyframes at **video-calibrated** times → audit vs descriptions
 
 ## Ending scene (dashboard)

@@ -122,6 +122,20 @@ Update this file after each completed video. Reference by project name and date.
 
 52. **Voice-only mixes read as amateur.** Every shipped video needs a low-volume music bed (track 5, vol ≤0.15), click SFX at every `Clicked:` mark (track 6), and popup whooshes (track 7). `Clicked: … | center=x,y` marks also drive yellow click-ripple overlays. Automated via `clicks`/`popups` in `sync-timing.json`.
 
+## Pipeline automation (`disk-upgrade-60s_v3`, 2026-06-12)
+
+53. **Metadata parser truncated click coordinates** (`disk-upgrade-60s_v3`). Regex `[^|]+` stopped at the first `|` in `Clicked: Disk | bbox=… center=1406,786`, dropping `center=` from events. **Fix:** parse the full table cell per line in `build-sync-timing.mjs` (now in `_template-60s_v1`).
+
+54. **Caption leak on intro/outro** (`disk-upgrade-60s_v3`). Last caption group stayed visible because GSAP only hid captions when `index < GROUPS.length - 1`. **Fix:** `tl.set(el, { visibility: "hidden" }, group.end)` for **every** caption group.
+
+55. **Dialog wait on hidden mobile title** (`disk-upgrade-60s_v3` record attempt #1). Playwright waited for a hidden `400GB` heading instead of the visible option button. **Fix:** wait for visible `getByRole('button', { name: '400GB' })` or equivalent.
+
+56. **Narration longer than short footage** (`disk-upgrade-60s_v3`). Long pricing VO pushed scene-07 past video end. **Fix:** short one-line narration; `PLAYBACK_RATE = 1.0` for ~35s raw; `gate-sync.mjs --after-tts` catches regressions.
+
+57. **Wrong cwd doubled paths** (`disk-upgrade-60s_v3`). Running from `editing/` produced `editing/editing/scripts/…`. **Fix:** always run `run-pipeline.mjs` from project root; documented in `PIPELINE-NOTES.md`.
+
+58. **Automated gates prevent multi-render loops** (`disk-upgrade-60s_v3` → template). `gate-metadata.mjs` (click `center=`), `gate-sync.mjs` (clicks x/y + VO budget), wired into `run-pipeline.mjs`. Scaffold adds `disk-upgrade` flow with reference scripts from v3.
+
 ## General pipeline
 
 30. **QA keyframe extraction** — `ffmpeg -ss T -i final.mp4 -vframes 1 -q:v 2 frame.png`; PNG size hints at scene complexity.
@@ -160,3 +174,4 @@ Update this file after each completed video. Reference by project name and date.
 | `game-install-witcher3-60s_v1` | Strict `/play` dashboard detection (URL + h3 card); direct store URL vs search; Browser Incompatible modal; false-positive "installed" on store page; encode-before-sync; 5s end hold on dashboard |
 | `desktop_install_v3` | Solid 60s composition baseline |
 | `disk-upgrade-60s_v1` | className-tween karaoke → black captions in seek render; eyeballed zooms miss/clip targets; caption ahead of pixels (login vs dashboard); 18.8s static outro; dead air during typing → motivated frame-review round + camera-zoom.md + intro/outro budgets |
+| `disk-upgrade-60s_v3` | Metadata parser `[^|]+` bug; caption intro/outro leak; dialog wait on hidden title; short-footage VO budget; pipeline gates + `disk-upgrade` scaffold flow |
