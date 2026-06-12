@@ -58,19 +58,20 @@ Items from [docs/checklist.md](../../checklist.md) that must ship before app-sto
     | Expired → `/payment` | ⚠️ verify `isExpired` UX matches PWA `ShareWF` / `Connect` guards |
   - **Acceptance**: Side-by-side screenshot + behavior matrix for `ready`, `started`, `headless`, `unknown`, expired subscription states.
 
-- [ ] **L-3: Deploy watch — VNC preview + log WebSocket (PWA `deployWatch.tsx`)**
+- [~] **L-3: Deploy watch — VNC preview + log WebSocket (PWA `deployWatch.tsx`)**
   - **PWA reference**: `website/components/dashboard/deployWatch.tsx`
     - **Friendly mode**: YouTube tutorial iframe keyed by game `code_name`.
     - **Technical mode**: live VNC (`VncScreen` from `components/popup/internal`) when `DeployWatch.vnc` path is set; `QueueModal` when waiting in queue; WebSocket log stream on `DeployWatch.log` path (`wss://{host}:444{log}`); progress step list; elapsed boot timer; cancel → `CancelDeployment`.
-  - **Mobile current**: `DeployWatchOverlay` shows title, progress text list, boot timer, cancel only — no VNC, no log WS, no friendly/technical toggle (`mobile/lib/presentation/screen/dashboard/widgets/deploy_watch_overlay.dart`).
-  - **Data model**: `DeployState` already has `vnc`, `log`, `progress` fields (`mobile/lib/domain/models/worker/worker_state_models.dart`) but `DashboardCubit.powerOnCloudPC` only appends `onStatus` strings to `progress`; does not capture `vnc`/`log` URLs from session response.
-  - **Implementation plan**:
-    1. Extend `StartSessionUseCase` / session callback to populate `DeployState.vnc` and `.log` from daemon deploy payload (same fields PWA Redux `state.popup.deployWatch` receives).
-    2. Add `[vnc_viewer](https://pub.dev/packages/vnc_viewer)` widget in technical mode — follow package example for `VncViewer` + `scaleViewport` to mirror PWA `scaleViewport`.
-    3. Open `WebSocketChannel` on `log` URL; prepend incoming lines to progress list (PWA prepends newest first).
-    4. Add friendly/technical segmented control; persist mode in `SharedPreferences` (PWA: `state.remote.watchMode` + `cache_setting`).
-    5. Queue detection: if first log line contains `"you are in"`, show queue UI with upgrade CTA (PWA `QueueModal`).
-  - **Related**: §D *Debug / VNC window*.
+  - **Mobile shipped (2026-06-10 — `feature/vnc-viewer`, `feature/deploy-watch-log-ws`)**:
+    - `DeployWatchOverlay` — Friendly/Technical segmented control + `SharedPreferences` persist (`deployWatchModeKey`).
+    - Friendly: YouTube embed WebView + per-template `videoMap` (PWA parity).
+    - Technical: VNC preview via WebView → `thinkmay.net/{locale}/debug?vnc=` when session emits `broadcasters/vnc`; log WebSocket prepends lines to progress list; queue position UI when status contains `"you are in"`.
+    - `DashboardCubit.connectCloudPC` captures `vnc`/`log` URLs from deploy status callbacks; `_connectDeployLogStream()` drives live log feed.
+  - **Remaining gaps**:
+    - Dashboard volume-card **Debug** button still missing (opens VNC outside deploy watch) — see L-2 `debug` row.
+    - `powerOnCloudPC` path may not surface deploy-watch URLs on all connect entry points — verify parity with PWA `connect()`.
+    - Native `vnc_viewer` package not used; WebView debug page is acceptable substitute but differs from original plan.
+  - **Related**: §D *Deploy watch overlay*, §D *Debug / VNC window*.
 
 - [ ] **L-4: Share link logic — dashboard volume card**
   - **PWA reference**: `website/components/dashboard/index.tsx` → `share(volume_id)`:
@@ -123,7 +124,7 @@ Items from [docs/checklist.md](../../checklist.md) that must ship before app-sto
     - `AppRouter` redirect + `refreshListenable` gates authenticated routes until `isBootstrapReady`.
     - `LoginCubit` blocks `LoginSuccessState` until `isBootstrapReady`; `DashboardCubit` loading until bootstrap ready.
     - Splash progress bar during bootstrap — `EasyLoading` not shown on login screen open (auth submit only).
-    - Fire-and-forget after preload: recommendations + mails (`_scheduleDeferredNonCritical`, 5 s delay) — does not block shell.
+    - Fire-and-forget after preload: mails only (`scheduleDeferredNonCritical`, ~30 s delay). **Persona recommendations** load into `GlobalState.recommendations` immediately after store catalog (wave 3) — does not block shell.
   - **Related**: L-1 (perf — splash may take longer but tabs are instant; isolate offload still open).
 
 - [x] **L-8: Advanced settings screen — UI polish / bug fixes**
@@ -210,7 +211,7 @@ Items from [docs/checklist.md](../../checklist.md) that must ship before app-sto
 - [x] **Gamepad touch toggle** — `RemoteSettings.touchGamepad` + `setTouchGamepad` → `computeTouchEnabled` in `RemoteScreen`
 - [x] **Client cursor toggle** — UI + persist; runtime follows PWA mobile (`isMobile` always true). See [cursor_render_behavior.md](../product/architecture/cursor_render_behavior.md).
 - [x] **Fill screen / object-fit toggle** — `RemoteSettings.objectFitFill` + `setObjectFitFill`
-- [~] **Auto relative mouse toggle** — UI + persist; **runtime blocked** until deploy log WebSocket (L-3) — PWA `logCallback` on game spawn
+- [~] **Auto relative mouse toggle** — UI + persist; **runtime** may still need deploy-log `logCallback` parity for game-spawn auto-enable (verify against PWA after L-3 log WS ship)
 
 ---
 
@@ -218,7 +219,7 @@ Items from [docs/checklist.md](../../checklist.md) that must ship before app-sto
 
 - [x] Volume card rendering with availability states
 - [x] Connect flow (claim → deploy → watch → navigate to remote)
-- [~] Deploy watch overlay with progress steps — text progress only; VNC/log/friendly mode missing. **See**: L-3.
+- [x] Deploy watch overlay with progress steps — Friendly/Technical tabs, YouTube tutorial, VNC WebView preview, log WebSocket, queue UI (`deploy_watch_overlay.dart`, `DashboardCubit.connectCloudPC`). **See**: L-3 for volume-card debug + edge cases.
 - [x] Restart volume action
 - [x] Close/shutdown volume action
 - [x] **Dashboard hero carousel** — `PlayHeroCarousel` rendered on Home tab; banners + spotlight games wired from `DashboardCubit` (parity web `/play` `#banner`)
@@ -252,14 +253,14 @@ Items from [docs/checklist.md](../../checklist.md) that must ship before app-sto
 
 ## F. Store / Install from Template
 
-- [~] **Store catalog screen** — production catalog lives on **Explore tab** (`explore_screen.dart`: AI search + all-games grid). Dev route `/store` (`StoreScreen`) is still a debug JSON harness — not production UI. **PWA file**: `website/app/[locale]/(app)/store/page.tsx`
+- [~] **Store catalog screen** — production catalog on **Explore tab** (`explore_screen.dart`: AI search + persona carousels + all-games grid). Dev route `/store` (`StoreScreen`) remains debug JSON harness. **PWA file**: `website/app/[locale]/(app)/store/page.tsx`
 
 - [x] **AI search bar** — `StoreAiSearchBar` + `ExploreCubit.performAiSearch` (POST `thinkmay.net/api/search/` → fallback RPC `search_stores`)
-- [ ] **AI recommendations** — persona/genre carousel sections not wired (`#22` in TASK.md). **PWA component**: `AIRecommendations`
+- [x] **AI recommendations** — `StoreAiRecommendationsSection` + `GlobalState.recommendations` (PocketBase persona → `search_stores` enrich). **Shipped 2026-06-12** (`feature/store-persona-recommendations`). **PWA component**: `AIRecommendations`
 
-- [~] **Game detail page** — `GameDetailScreen` shipped (cover, overview, install CTA, suggestions); **Thinkmay performance** FPS still hardcoded (`#23`). **PWA file**: `website/app/[locale]/(app)/store/[slug]/page.tsx`
+- [~] **Game detail page** — `GameDetailScreen`: cover, overview, Khởi tạo/Launch/Preorder/Subscribe CTAs, install progress overlay, suggestions. **Remaining:** Thinkmay performance FPS hardcoded (`#23`). **PWA file**: `website/app/[locale]/(app)/store/[slug]/page.tsx`
 
-- [ ] **Install from template flow** — End-to-end: browse → select → install → new volume appears on dashboard. Partial UI exists; full backend wiring incomplete.
+- [~] **Install from template flow** — Browse → game detail → volume pick → `ReallocateVolumeUseCase` → `refreshConfiguration()` + dashboard template update. Preorder + subscribe-without-sub CTA shipped. **Remaining:** side-by-side audit vs PWA edge cases; performance section data. **Shipped 2026-06** (`feature/install-template`).
 
 ---
 
@@ -343,16 +344,16 @@ Items from [docs/checklist.md](../../checklist.md) that must ship before app-sto
 | A. Critical Bugs          | 1      | 1      | 0         |
 | B. Protocol Sync          | 14     | 14     | 0         |
 | C. Advanced Settings      | 15     | 15     | 0         |
-| D. Dashboard / VM Mgmt    | 11     | 8      | 3         |
+| D. Dashboard / VM Mgmt    | 11     | 9      | 2         |
 | E. Remote / Streaming     | 16     | 13     | 3         |
-| F. Store / Install        | 5      | 1      | 4         |
+| F. Store / Install        | 5      | 2      | 3         |
 | G. Settings Pages         | 11     | 8      | 3         |
 | H. Storage / Add-ons      | 1      | 0      | 1         |
 | I. Onboarding             | 1      | 0      | 1         |
 | J. Metrics / Diagnostics  | 4      | 3      | 1         |
 | K. Payment / Subscription | 9      | 2      | 1         |
 | L. App Shell Performance  | 8      | 8      | 0         |
-| **Total**                 | **86** | **73** | **13**    |
+| **Total**                 | **86** | **75** | **11**    |
 
 
 *Remaining counts treat `[~]` partial items as open. K category has 6 `[-]` web-redirect items excluded from Remaining.*
@@ -360,7 +361,7 @@ Items from [docs/checklist.md](../../checklist.md) that must ship before app-sto
 ### Recommended execution order
 
 1. **D6–D7** — Share session on dashboard, notifications panel (dashboard polish)
-2. **F3–F5** — AI recommendations, game-detail performance data, install-from-template E2E
+2. **F4–F5** — Game-detail performance data (#23), install-from-template edge-case audit
 3. **E2–E3** — Side panel mic/scancode parity, VM log stream
 4. **G7–G9** — Snapshots page, support/privacy links, in-remote button mapping
 5. **H1** — Storage / add-ons page (monetization)

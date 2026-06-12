@@ -2,7 +2,7 @@
 
 This document maps all user-facing flows in the Thinkmay platform, establishing the **browser PWA as the reference** and tracking mobile app parity. The mobile app is in development and must implement each flow to match PWA behavior unless a platform-specific divergence is documented.
 
-**Last synced:** 2026-06-10 · `mobile/develop` — see [Mobile sync checklist](./mobile_sync_checklist.md) for item-level status.
+**Last synced:** 2026-06-12 · `mobile/develop` — see [Mobile sync checklist](./mobile_sync_checklist.md) for item-level status.
 
 ## Flow Parity Overview
 
@@ -152,12 +152,14 @@ Users can browse a store of pre-configured game/software templates and install t
 
 **Components**: `StoreScreen`, `GameDetailScreen`
 
-**Parity gaps**:
-- **Store screen is a debug/placeholder** — shows raw bucket data and store JSON, not a polished game catalog
-- No AI search bar
-- No AI recommendations
-- Game detail page exists (`GameDetailScreen`) but parity with PWA's detail page needs verification
-- No install-from-template flow wired up end-to-end
+**Parity gaps** (updated 2026-06-12):
+- **Explore tab** — production store UI: AI search, persona recommendation carousels (`StoreAiRecommendationsSection`), all-games carousel. Dev route `/store` remains debug harness.
+- **Game detail** — install/preorder/subscribe CTAs wired (`ReallocateVolumeUseCase`, volume pick, config refresh after install). **Remaining:** Thinkmay performance FPS hardcoded (`#23`).
+- **Install from template** — core `change_template` parity on existing volumes shipped; verify edge cases (in-use volume, no sub, preorder-only games).
+
+**Shipped (2026-06)**:
+- `feature/install-template` — Khởi tạo flow, preorder, preinstalled badge, subscribe-without-sub CTA, post-install `refreshConfiguration()`
+- `feature/store-persona-recommendations` — persona `recommendations` → Explore carousels (PWA `AIRecommendations.tsx`)
 
 ---
 
