@@ -14,9 +14,11 @@ npm run render:vi      # → final_vi.mp4
 ```
 
 ```bash
-npx hyperframes render --quality high --output renders/final_en.mp4
+npx hyperframes render --quality high --fps 60 --output renders/final_en.mp4
 node ../scripts/finalize-output.mjs final_en.mp4
 ```
+
+**Fidelity is non-negotiable:** finals render at `--quality high --fps 60` (the maximum HyperFrames offers); `finalize-output.mjs` copies the render byte-for-byte — never re-encode `final_<lang>.mp4` afterward.
 
 ## Pre-render checklist
 
@@ -25,6 +27,9 @@ node ../scripts/finalize-output.mjs final_en.mp4
 - [ ] Required scenes gate passed (keyframes at caption starts)
 - [ ] All narration `data-duration` values from `ffprobe`; no overlapping clips on same track
 - [ ] Intro and outro transition frames audited (no white flash / black gap)
+- [ ] Root `data-duration` = `outroStart + outro budget` (≤4.5s) — no black tail after outro fade
+- [ ] Soundscape wired: music bed (vol ≤0.15) spans composition; click/whoosh SFX present between `<!-- sfx:start/end -->`
+- [ ] Click ripples present (`CLICKS` array populated from sync-timing `clicks`)
 
 ## Post-render
 

@@ -54,9 +54,10 @@ PII or wrong-flow findings here → **re-record now** (cheapest failure point). 
 ## Step 5: Editing
 
 ```bash
-# Re-encode (genpts — WebM duration is often N/A)
+# Re-encode (genpts — WebM duration is often N/A). Near-lossless: crf 14 @ 60fps —
+# the final render is `--quality high --fps 60` and finalize copies without transcoding.
 ffmpeg -y -fflags +genpts -i recording/artifacts/output/en/raw_recording.webm \
-  -c:v libx264 -preset fast -r 30 -g 30 -keyint_min 30 -pix_fmt yuv420p \
+  -c:v libx264 -preset medium -crf 14 -r 60 -g 60 -keyint_min 60 -pix_fmt yuv420p \
   -movflags +faststart editing/raw_recording.mp4
 ffprobe -v error -show_entries format=duration -of csv=p=0 editing/raw_recording.mp4
 # Confirm duration ≈ last metadata timestamp before sync
@@ -92,6 +93,10 @@ Wire `data-duration` in HTML from ffprobe output.
 cd editing && npm run check && npm run render
 npm run check:vi && npm run render:vi   # if Vietnamese
 ```
+
+Render scripts are pinned to `--quality high --fps 60` (maximum fidelity HyperFrames offers). `finalize-output.mjs` **copies** the render to `final_<lang>.mp4` — never re-encode/transcode the rendered file in any later step.
+
+Before render, confirm the soundscape is wired: music bed (`data-volume ≤ 0.15`) spanning the composition, click SFX + popup whooshes generated between the `<!-- sfx:start/end -->` markers ([brand-design.md](./brand-design.md#soundscape-mandatory-for-shipped-tutorials)).
 
 ## Step 8: Final QA
 

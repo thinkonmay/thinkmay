@@ -17,12 +17,26 @@ Static logo cards burn runtime. `disk-upgrade-60s_v1` shipped an 18.8s outro —
 | Scene | Duration | Content beats |
 |-------|----------|---------------|
 | **Intro** | **3.0–4.5s** | Logo visible ≤0.5s; "TUTORIAL" kicker + title by ~1.5s; depth-scale handoff to A-roll at 3.0–4.5s |
-| **Outro** | **5.0–7.0s** (hard max 8s) | Logo + value line + CTA URL pill, all entered within 1.2s; hold with ambient motion (breathing glow orbs — never fully static); end |
+| **Outro** | **3.0–4.5s on screen** | Logo + value line + CTA URL pill, all entered within ~1s; brief hold with ambient motion (breathing glow orbs — never fully static); fade ends **at** composition end |
 
 Rules:
 
-- **Total duration = outroStart + outro budget.** Set the composition `data-duration` from this — do not let the outro absorb leftover music or padding. Video must end ≤1s after the outro hold completes.
+- **Total duration = outroStart + outro budget.** Derive the composition `data-duration` from the A-roll end (`build-sync-timing.mjs` does this) — never use a fixed 55/60s floor. A fixed floor leaves a **black tail** after the outro, which is a QA hard fail (`disk-upgrade-60s_v1` VI: ~9s of black at 51–60s).
+- The outro CTA voice line starts at `outroStart + ~0.7s` — never anchored to `DURATION − 5` or any fixed timestamp.
 - `outroStart ≈ (videoDataStart + aRollDuration) − 0.5` (crossfade), per [agents/editing.md](./agents/editing.md).
 - Outro must always carry a CTA (URL pill or "Start now"); a logo alone is wasted runtime.
 - Intro never exceeds 4.5s — viewers click away; the product UI is the hook.
-- For 30s cuts, halve both budgets (intro 2s, outro 3–4s).
+- For 30s cuts, halve the intro budget (2s); outro stays 3s minimum.
+
+## Soundscape (mandatory for shipped tutorials)
+
+Voice-only mixes read as amateur. Every final video carries three audio layers:
+
+| Layer | Asset | Track | Volume |
+|-------|-------|-------|--------|
+| Narration | per-scene MP3s | 2 (+3 outro CTA) | 1.0 |
+| Music bed | `assets/audio/music-bed.mp3` — low-volume upbeat tech/corporate; template ships a synthesized placeholder, replace with a licensed track when available | 5 | ≤ 0.15 |
+| Click SFX | `assets/audio/sfx-click.mp3` at every recorded click | 6 | ~0.5 |
+| Popup whoosh | `assets/audio/sfx-whoosh.mp3` when popups/dialogs open | 7 | ~0.35 |
+
+SFX placement is automated: `build-sync-timing.mjs` emits `clicks`/`popups` arrays from recording marks and `apply-sync-to-html.mjs` writes the `<audio>` tags. The music bed spans `0 → data-duration` and fades with the outro.

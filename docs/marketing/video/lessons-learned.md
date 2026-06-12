@@ -11,7 +11,7 @@ Update this file after each completed video. Reference by project name and date.
 3. **Re-encode WebM before HyperFrames import** — Playwright WebM often reports `Duration: N/A`. Always verify output length matches metadata:
    ```bash
    ffmpeg -y -fflags +genpts -i raw_recording.webm \
-     -c:v libx264 -preset fast -r 30 -g 30 -keyint_min 30 -pix_fmt yuv420p \
+     -c:v libx264 -preset medium -crf 14 -r 60 -g 60 -keyint_min 60 -pix_fmt yuv420p \
      -movflags +faststart raw_recording.mp4
    ffprobe -v error -show_entries format=duration -of csv=p=0 raw_recording.mp4
    ```
@@ -98,6 +98,8 @@ Update this file after each completed video. Reference by project name and date.
 
 29. **Walkthrough sync ground truth is `recording_metadata.md`**, calibrated to MP4 — not skeleton or uniform 4s blocks (`pwa-desktop-60s`, `windows-desktop-pwa-30s_v1`).
 
+30. **ElevenLabs `eleven_multilingual_v2` is broken for Vietnamese** (`disk-upgrade-60s_v1`, 2026-06-12). Use `eleven_v3` via `ELEVEN_LABS_MODEL_VI` in `generate-narration.mjs`. English can stay on `eleven_multilingual_v2`.
+
 ## Editing — captions & framing (`disk-upgrade-60s_v1`, 2026-06-12)
 
 43. **GSAP `className` tweens break in seek-based render.** Word-karaoke via `tl.set(word, { className: "+=active" })` left caption text **black/unstyled** in the rendered MP4 (worked in live preview). Fix: critical styles (`color: #fff`) on the pill base class; animate only GSAP properties (`y`, `opacity`, `scale`); no CSS `transition`/`:has(.active)` gating. See [agents/editing.md](./agents/editing.md#caption-styling-render-safe-patterns-only).
@@ -106,11 +108,19 @@ Update this file after each completed video. Reference by project name and date.
 
 45. **Caption anchored to a script mark ≠ pixels.** "Your Cloud PC Dashboard is ready" displayed ~1.5s over the login form because the metadata mark fired before the dashboard painted. Anchor captions to **frame-review observed times** ([agents/review.md](./agents/review.md)).
 
-46. **Unbudgeted outro absorbs the timeline.** Composition `data-duration` left the outro running 18.8s static (34% of runtime). Budget: intro 3.0–4.5s, outro 5–7s, `data-duration ≈ outroStart + outro budget` — [brand-design.md](./brand-design.md#intro--outro-scene-standards-60s-tutorials).
+46. **Unbudgeted outro absorbs the timeline.** Composition `data-duration` left the outro running 18.8s static (34% of runtime). Budget: intro 3.0–4.5s, outro 3.0–4.5s, `data-duration = outroStart + outro budget` — [brand-design.md](./brand-design.md#intro--outro-scene-standards-60s-tutorials).
 
 47. **Typing segments create dead air.** ~6s of email/password typing had no caption, narration, or motion. Frame review flags `DEAD_AIR` spans; editor bridges with zoom-to-form or per-span playback-rate bump.
 
 48. **Capture `boundingBox()` at `mark()` time.** Post-hoc frame measurement for zoom targets is slow and error-prone; viewport CSS px = raw-video px at 1920×1080, so recorded boxes feed the zoom math directly — [agents/recording.md](./agents/recording.md#capture-target-bounding-boxes-at-mark-time).
+
+49. **Fixed-duration floors create black tails** (`disk-upgrade-60s_v1` VI, 2026-06-12). `DURATION = Math.max(60, …)` plus a 55s sync produced ~9s of black after the outro, and an outro CTA voice anchored at `DURATION − 5` played 9s into a silent card. Derive `DURATION = outroStart + outro budget (≤4.5s)` from the A-roll end; anchor the CTA at `outroStart + 0.7`.
+
+50. **Zoom presence ≠ zoom coverage** (`disk-upgrade-60s_v1`, user review). Two zooms in a 60s video still left 0:04–0:40 at full-browser 1.0× — unreadable text, split-screen distraction. Coverage rule: ≤6s consecutive at 1.0× during instruction, ≥50% of A-roll at ≥1.2× — [camera-zoom.md](./camera-zoom.md#coverage-rule-when-to-zoom).
+
+51. **Char-by-char typing is dead air at the source.** `keyboard.type(text, { delay: 80 })` burned ~10s on login. Fix in the recorder, not the editor: click the field, then `locator.fill()` instantly — template `humanType` updated.
+
+52. **Voice-only mixes read as amateur.** Every shipped video needs a low-volume music bed (track 5, vol ≤0.15), click SFX at every `Clicked:` mark (track 6), and popup whooshes (track 7). `Clicked: … | center=x,y` marks also drive yellow click-ripple overlays. Automated via `clicks`/`popups` in `sync-timing.json`.
 
 ## General pipeline
 

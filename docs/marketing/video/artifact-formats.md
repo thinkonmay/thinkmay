@@ -112,7 +112,10 @@ One beat per planned narration clip; final `data-start` values live in `sync-tim
 | Timestamp | Description | Expected (skeleton) |
 |-----------|-------------|---------------------|
 | 7.67s | Landing page loaded | Scene 2 |
-| 33.58s | Clicked: Settings sidebar | Scene 4 |
+| 33.58s | Clicked: Settings sidebar \| center=1406,786 | Scene 4 |
+| 35.12s | Disk popup opened | Scene 4 |
 ```
 
 Ground truth for QA — every row should be auditable via keyframe extraction.
+
+`Clicked:` rows carry `center=x,y` (viewport px = raw-video px at 1920×1080) — these drive the editor's click ripples and click SFX; "popup/dialog opened/visible" rows drive whoosh SFX. See [sync-timing.md](./sync-timing.md#sync-timingjson-shape).

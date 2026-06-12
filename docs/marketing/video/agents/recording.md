@@ -61,6 +61,8 @@ Reference: `marketing/video/windows-desktop-pwa-60s_v1` audit — `thinkmay@dev.
 - Human-like Bezier cursor (≥25 steps); hover download buttons — **do not click** (triggers real download)
 - Per-action timestamps in `recording_metadata.md`
 - Stable selectors: `#desktop-setting`, `#advance`, exact toggle label text per locale
+- **No character-by-character typing on camera.** Credentials/forms: cursor clicks the field, then `locator.fill()` sets the value instantly (masked fields show asterisks at once). Char-by-char typing creates 5–10s of dead air the editor must cut (`disk-upgrade-60s_v1`). The template `humanType` already does this.
+- **`Clicked:` marks must include click coordinates** — `mark(\`Clicked: ${description} | center=${x},${y}\`)`. The editor's click ripples and click SFX are generated from these (template `humanClick` already does this).
 
 ### Capture target bounding boxes at mark time
 
@@ -104,7 +106,7 @@ mark("Login verified — dashboard visible");
 1. Re-encode WebM before editing (Playwright WebM often has no duration metadata):
    ```bash
    ffmpeg -y -fflags +genpts -i raw_recording.webm \
-     -c:v libx264 -preset fast -r 30 -g 30 -keyint_min 30 -pix_fmt yuv420p \
+     -c:v libx264 -preset medium -crf 14 -r 60 -g 60 -keyint_min 60 -pix_fmt yuv420p \
      -movflags +faststart raw_recording.mp4
    ffprobe -v error -show_entries format=duration -of csv=p=0 raw_recording.mp4
    ```

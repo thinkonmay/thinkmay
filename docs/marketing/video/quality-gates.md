@@ -61,13 +61,23 @@ See [agents/review.md](./agents/review.md).
 - [ ] Each narration `data-start` aligns with its caption window (±0.1s)
 - [ ] Each narration `data-duration` ≥ `ffprobe` MP3 length
 - [ ] `outroStart` derived from A-roll end (crossfade), not a stale fixed timestamp
-- [ ] **Intro 3.0–4.5s; outro 5–7s (max 8s)**; `data-duration ≈ outroStart + outro budget` — no static tail ([brand-design.md](./brand-design.md#intro--outro-scene-standards-60s-tutorials))
+- [ ] **Intro 3.0–4.5s; outro 3.0–4.5s**; `data-duration = outroStart + outro budget` derived from A-roll end — **no fixed 55/60s floor, zero black frames after the outro fade** ([brand-design.md](./brand-design.md#intro--outro-scene-standards-60s-tutorials))
+- [ ] Outro CTA narration starts at `outroStart + ~0.7s` (not `DURATION − 5`)
 - [ ] Caption `start` values anchored to **frame-review observed times**, not raw script marks
+- [ ] Typing occupies ≤2s of timeline (instant `fill()` at record time, or jump-cut legacy footage)
 
 ### Camera zooms ([camera-zoom.md](./camera-zoom.md))
 
+- [ ] **Coverage:** no >6s consecutive span of full-browser 1.0× during instruction; ≥50% of A-roll at ≥1.2×; every "click X" beat zoomed to X + its container; split-screen pages cropped to the relevant column
 - [ ] Every zoom's `scale/x/y` computed from a measured target + clamp math, documented in a code comment
 - [ ] Verification frame per zoom hold: target in center third, no text cut mid-glyph, no background exposed, caption pill not covering target or sibling options
+
+### Motion polish & soundscape
+
+- [ ] Caption pills animate in/out (slide+fade) — no popping
+- [ ] Click ripple at every `clicks[]` timestamp (yellow ring inside `#video-wrap`)
+- [ ] Music bed present, `data-volume ≤ 0.15`, spans full composition, fades with outro
+- [ ] Click SFX + popup whoosh tags generated between `<!-- sfx:start/end -->` markers
 
 ### Transitions (no blank frames)
 
@@ -123,9 +133,13 @@ Run on **`final_<lang>.mp4` at project root** after assembly. See [agents/qa.md]
 | Dashboard errors | Error cards visible during instructional segments |
 | Outro gap | Black frame >0.5s between A-roll and outro |
 | Caption lags narration | Narration topic changed; caption text has not |
-| Outro overrun | Static outro >8s (check frames at outroStart+5 vs end — identical = overrun) |
+| Outro overrun | Outro on screen >5s (check frames at outroStart+4.5 vs end — identical = overrun) |
+| Black tail | Any black frame after the outro fade completes (**hard fail**) |
 | Zoom framing | UI text cut mid-glyph at frame edge, or target outside center third during hold |
+| Zoom coverage | >6s consecutive full-browser 1.0× during instructional beats |
 | Dead air | ≥5s span with no caption, narration, or camera motion during A-roll |
+| No soundscape | Voice-only mix — missing music bed or SFX layers |
+| Typing on camera | Char-by-char credential typing >2s |
 
 ### Verdict levels
 

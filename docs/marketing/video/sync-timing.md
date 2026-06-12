@@ -119,9 +119,11 @@ Verify at each caption `start` (extract keyframe). Checklist depends on tutorial
 
 If any fail → rebuild `sync-timing.json`, lower `playbackRate`, extend duration, or re-record — do not ship.
 
-## Optional: jump-cut login
+## Login pacing (mandatory)
 
-When auth is not the teaching goal, omit login from the composition (ffmpeg splice or two A-roll clips). Remove sign-in narration/captions; remap times with splice offset. Recording may still perform login for authenticated pages.
+Typing must occupy **≤2s** of the final timeline. The primary fix is at record time — `humanType` clicks the field then `fill()`s the value instantly (see [agents/recording.md](./agents/recording.md#execution-rules)). For legacy footage with char-by-char typing, jump-cut: click on field → hard cut to filled (masked) fields → submit, then remap sync times with the splice offset.
+
+When auth is not the teaching goal at all, omit login entirely from the composition (ffmpeg splice or two A-roll clips); remove sign-in narration/captions and remap times.
 
 ## `sync-timing.json` shape
 
@@ -153,11 +155,19 @@ When auth is not the teaching goal, omit login from the composition (ffmpeg spli
       "duration": 4.2,
       "text": "Start at thinkmay.net and open the Download page."
     }
+  ],
+  "clicks": [
+    { "t": 12.4, "label": "Clicked: Disk button", "x": 1406, "y": 786 }
+  ],
+  "popups": [
+    { "t": 14.1, "label": "Disk popup opened" }
   ]
 }
 ```
 
 Note: `recordingEvent` preserves script timestamps for debugging; composition times use calibrated video times.
+
+`clicks` (from `Clicked: … | center=x,y` marks) drive the yellow click-ripple overlays and click SFX; `popups` (from "popup/dialog opened" marks) drive whoosh SFX. `duration` is derived from the A-roll end + outro budget (≤4.5s) — never a fixed 55/60s floor (black-tail hard fail).
 
 ## Known failure modes
 

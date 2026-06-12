@@ -32,7 +32,7 @@ Set `<audio data-duration="...">` to **≥ ffprobe value**. Never shorten to fix
 | Option | When |
 |--------|------|
 | edge-tts | Default free path; use `python3 -m edge_tts` if CLI not on PATH |
-| ElevenLabs | Premium quality; needs `ELEVEN_LABS_API_KEY` in `marketing/video/.env`. **Always use the most powerful model (`eleven_multilingual_v2`) for rich lifelike voices.** Supports pronunciation dictionaries. Use `ELEVEN_LABS_VOICE_ID=CwhRBWXzGAHq8TQ4Fs17` (Roger) or another voice your plan allows. Script: `marketing/video/scripts/generate-narration.mjs` |
+| ElevenLabs | Premium quality; needs `ELEVEN_LABS_API_KEY` in `marketing/video/.env`. **Vietnamese must use `eleven_v3`** (`eleven_multilingual_v2` is broken for Vietnamese). English defaults to `eleven_multilingual_v2`; override via env. Supports pronunciation dictionaries. Use `ELEVEN_LABS_VOICE_ID=CwhRBWXzGAHq8TQ4Fs17` (Roger) or another voice your plan allows. Script: `marketing/video/scripts/generate-narration.mjs` |
 | OpenAI TTS | `OPENAI_API_KEY` |
 | Kokoro | Offline; requires Python ≥3.10 and working `kokoro-onnx` |
 | macOS `say` | Fallback when Kokoro/edge-tts unavailable — `say -o clip.aiff` then ffmpeg to MP3; verify with `ffprobe` |
@@ -53,7 +53,9 @@ Optional in `marketing/video/.env`:
 ```env
 ELEVEN_LABS_API_KEY="..."
 ELEVEN_LABS_VOICE_ID="CwhRBWXzGAHq8TQ4Fs17"       # Default English voice (Roger)
-ELEVEN_LABS_VOICE_ID_VI="aN7cv9yXNrfIR87bDmyD"    # Default Vietnamese voice
+ELEVEN_LABS_VOICE_ID_VI="aN7cv9yXNrfIR87bDmyD"    # Default Vietnamese voice (Ninh Đôn)
+ELEVEN_LABS_MODEL_EN="eleven_multilingual_v2"     # English TTS model
+ELEVEN_LABS_MODEL_VI="eleven_v3"                  # Vietnamese — do not use v2
 ELEVEN_LABS_PRONUNCIATION_DICTIONARY_ID="your_id" # Optional dict
 ELEVEN_LABS_PRONUNCIATION_DICTIONARY_VERSION_ID="ver_id"
 ```

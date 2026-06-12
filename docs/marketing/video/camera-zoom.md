@@ -4,6 +4,20 @@ How to zoom/pan the A-roll (`#video-wrap`) so the camera lands **exactly on the 
 
 **Never guess zoom coordinates.** Every zoom must be derived from a measured target position in the raw MP4 (or, better, a bounding box captured at record time — see [agents/review.md](./agents/review.md)).
 
+## Coverage rule (when to zoom)
+
+The full uncropped browser at 1.0× is allowed for at most **~6 consecutive seconds** during instruction — a brief establishing shot after each page change. Everything else is zoomed:
+
+| Beat | Required framing |
+|------|------------------|
+| Page just loaded | 1.0× establishing, ≤6s |
+| Form interaction (login, settings) | Zoom to the form column — crop out split-screen marketing panels entirely |
+| "Click X" caption | Zoom to X + its containing card/panel |
+| Pricing/spec callout | Zoom so the row is comfortably readable (text ≥ ~28px on-screen equivalent) |
+| Result confirmation | Hold the zoom on the changed element, then reset |
+
+Target: **≥50% of A-roll time at ≥1.2×** for a 60s walkthrough. If browser text is too small to read on a phone, the shot is wrong.
+
 ## The math (memorize this)
 
 The A-roll video fills the 1920×1080 frame. GSAP transforms use `transformOrigin: "50% 50%"` (default), i.e. center `c = (960, 540)`.
