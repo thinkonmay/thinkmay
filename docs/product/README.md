@@ -25,6 +25,9 @@ Use this section for product-facing and engineering-facing documentation about h
 - [Design doc](./architecture/design_doc.md)
 - [Windows bundle](./architecture/windows_bundle.md)
 - [Windows display & capture](./architecture/windows_display_capture.md) — passthrough GPU capture, EDID dongle migration (replacing Parsec VDD), VNC debug path
+- [VDD requirements](./architecture/vdd.md) — virtual display fallback product requirements
+- [Thinkmay VDD fork spec](./architecture/thinkmay_vdd_fork_spec.md) — Virtual-Display-Driver fork: stability, modes, daemon integration
+- [Thinkmay VDD implementation plan](../worker/vdd/docs/THINKMAY_CUSTOMIZATION_PLAN.md) — phased customization of `worker/vdd`
 
 ## Guides
 - [User guide](./guides/user_doc.md)

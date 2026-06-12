@@ -22,3 +22,6 @@
 [submodule "marketing/video"]
 	path = marketing/video
 	url = https://github.com/thinkonmay/video-content
+[submodule "worker/vdd"]
+	path = worker/vdd
+	url = https://github.com/thinkonmay/vdd

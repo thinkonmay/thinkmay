@@ -97,7 +97,7 @@ Today `shmsunshine.exe` enumerates **all** `AttachedToDesktop` outputs and maps 
 | EDID | Match tier: 1080p/1440p/4K — fixes desktop render resolution only (see below) |
 | Validation | Passthrough output active within 90s; no Parsec VDD; stream non-black |
 
-**Resolution note:** the dongle EDID does **not** limit the user-facing stream resolution. The client `ChangeResolution` control reaches Sunshine via IVSHMEM and only re-creates the encoder at the new size ([`video.cpp`](../../../worker/sunshine/src/video.cpp) resolution event handler) — `ChangeDisplaySettings` is never called. Capture stays at the dongle's desktop resolution; the encoder scales output.
+**Resolution note:** On the **hardware (dongle) path**, dongle EDID sets the baseline desktop mode; daemon may still call `ChangeDisplaySettingsEx` on the passthrough display when the client requests a new size ([fork spec §6.5](./thinkmay_vdd_fork_spec.md)). Sunshine also rescales the encoder via IVSHMEM `ChangeResolution`. On the **VDD fallback path**, daemon **must** apply desktop mode changes (not encoder-only scaling) so mobile portrait and touch coordinates stay aligned — see [thinkmay_vdd_fork_spec.md §6.5](./thinkmay_vdd_fork_spec.md).
 
 ### Failure triage
 
@@ -132,7 +132,7 @@ HasPassthroughGPUPresent() && WaitForPassthroughOutput(30s) succeeds → hardwar
 | Path | Display source | Sunshine args | DisplaySwitch |
 |------|---------------|---------------|---------------|
 | Hardware (dongle) | Passthrough GPU `\\.\DISPLAYn` | `--capture-display <name>` | Not used |
-| VDD fallback | Parsec virtual monitor | (enumerate all displays) | `/external` or `/extend` from IVSHMEM metadata |
+| VDD fallback | Thinkmay VDD (fork of MttVDD; today: Parsec) | (enumerate all displays) | `/external` or `/extend` from IVSHMEM metadata |
 
 Hardware path also calls `DisableVirtioGPU()` (`VEN_1AF4&DEV_1050` only). VDD cleanup on session close runs only when this session called `Vdd.Activate()` (`iws.vddActive`).
 
@@ -140,14 +140,16 @@ Hardware path also calls `DisableVirtioGPU()` (`VEN_1AF4&DEV_1050` only). VDD cl
 
 1. **P0** — Install dongles on canary nodes; manual validation
 2. **P1** — Guest-side autodetect with VDD fallback (**done** — `routing.go`, `tools_windows.go`, `main.cpp`)
-3. **P2** — Remove VDD assets from NSIS bundle; write ops runbook updates
-4. **P3** — Delete Parsec VDD code paths
+3. **P2** — Ship Thinkmay VDD fork; wire `ActivateIddVDD()`; remove Parsec `vdd.exe` from NSIS ([fork spec](./thinkmay_vdd_fork_spec.md))
+4. **P3** — Delete Parsec VDD CGO and legacy assets
 
 Nodes without dongles keep working unchanged via the VDD fallback. No volume flag or DB change required.
 
 ## Related docs
 
 - [Technical architecture](./technical_doc.md) — end-to-end streaming pipeline
+- [VDD requirements](./vdd.md) — fallback product requirements
+- [Thinkmay VDD fork spec](./thinkmay_vdd_fork_spec.md) — Virtual-Display-Driver fork implementation spec
 - [Windows bundle](./windows_bundle.md) — guest installer layout
 - [QEMU VM thread reference](./qemu_vm_threads.md) — VNC thread (`vnc_worker`)
 - [GPU passthrough analysis](../../gpu_passthrough_analysis.md) — VFIO/GPU driver failures (separate from VDD)
