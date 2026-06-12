@@ -24,6 +24,7 @@ Use this section for product-facing and engineering-facing documentation about h
 - [Desktop client architecture](../../desktop_client_architecture.md) — Go native client: QUIC transport, FFmpeg decode, SDL presentation, reconnect
 - [Design doc](./architecture/design_doc.md)
 - [Windows bundle](./architecture/windows_bundle.md)
+- [Windows display & capture](./architecture/windows_display_capture.md) — passthrough GPU capture, EDID dongle migration (replacing Parsec VDD), VNC debug path
 
 ## Guides
 - [User guide](./guides/user_doc.md)
