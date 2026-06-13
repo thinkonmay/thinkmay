@@ -56,7 +56,7 @@ See also [`docs/product/architecture/technical_doc.md`](product/architecture/tec
 | [`client/connectui`](../worker/proxy/client/connectui) | Local HTTP progress page + browser open during connect |
 | [`client/config`](../worker/proxy/client/config) | CLI flags and `thinkmay://` URL parsing |
 | [`client/perf`](../worker/proxy/client/perf) | Metrics tracker + optional HTTP stats dashboard |
-| [`client/update`](../worker/proxy/client/update) | Windows auto-update check (PocketBase binaries collection) |
+| [`client/update`](../worker/proxy/client/update) | Cross-platform auto-update (Windows/macOS/Linux) via the PocketBase binaries collection |
 | [`client/usb`](../worker/proxy/client/usb) | Optional USB device forwarding over HID data channel |
 | [`client/bootlog`](../worker/proxy/client/bootlog) | Structured startup step logging |
 
@@ -107,7 +107,7 @@ The app implements `pipeline.Host` in [`client/app/pipeline_host.go`](../worker/
 ### `main`
 
 1. Parse config (`config.Parse`) from flags or `thinkmay://host/path?vmid=…&video=…`.
-2. Optional Windows update check (`update.Start`).
+2. Optional auto-update check (`update.Start`) — Windows, macOS, and Linux.
 3. Optional connect UI HTTP server + browser open (`connectui.Start`).
 4. `app.NewApp(cfg)` — blocking initialization.
 5. `app.Run()` — SDL event loop until quit.
@@ -348,6 +348,30 @@ Hotkeys: double-Esc toggles fullscreen; focus loss releases stuck keys/buttons.
 
 **Stats** (`-stats`): terminal metrics via `perf.Tracker` plus optional HTTP dashboard (`-stats-addr`, default `127.0.0.1:8765`) with decode/present FPS, jitter, bandwidth, and zero-copy counters.
 
+## Auto-update
+
+[`client/update`](../worker/proxy/client/update) implements **cross-platform** self-update for all three desktop OSes (not Windows-only). It runs at startup via `update.Start(cfg)` (enabled by default; disable with `-update-check=false`) and gates streaming through `update.WaitBeforeStream` / `BlocksStreaming` so the connect UI stays visible while an update is checked, downloaded, or applied.
+
+### Release source
+
+`update.Start` queries the PocketBase **binaries** collection (`-update-base-url`, default `https://saigon2.thinkmay.net`) for the latest record matching a per-platform name and compares its `md5sum` against local state (`state.json` in the OS cache/`%LOCALAPPDATA%`). There is no semantic version ordering — the most recently created `*_verified` record is treated as the newest. The artifact is downloaded, MD5-verified, then applied.
+
+The updater reads a curated **`*_verified` channel**, which is **promoted manually** from the raw builds that CI (`.github/workflows/client-package.yml`) publishes. CI uploads `thinkmay_client_window`, `thinkmay_client_linux_{deb,tar}_{amd64,arm64}`, and `thinkmay_client_macos_{zip,dmg}`; a human gate copies a vetted build to the matching `*_verified` name. The website download page (`website/backend/ssr/downloads.ts`) consumes the same `*_verified` channel.
+
+### Per-platform apply
+
+| OS | Binary name(s) read | Artifact | Apply behavior |
+|----|---------------------|----------|----------------|
+| Windows (`run_windows.go`) | `thinkmay_client_window_verified` | NSIS `.exe` | Prompt, launch installer, exit so it can replace the binary |
+| macOS (`run_darwin.go`) | `thinkmay_client_macos_zip_verified`, `thinkmay_client_macos_dmg_verified` | `.zip` / `.dmg` | Extract/mount, replace the running `.app` bundle (`ditto`), relaunch via `open` |
+| Linux (`run_linux.go`, `install_linux.go`) | `thinkmay_client_linux_deb_{amd64,arm64}_verified`, `..._tar_..._verified` | `.deb` / `.tar.gz` | `.deb` via `pkexec`/`sudo dpkg -i` for package installs; tarball replaces files in the portable install dir |
+
+Linux detects its install mode (deb vs portable tarball vs Homebrew). **Homebrew installs disable auto-update** and direct the user to `brew upgrade thinkmay-client`.
+
+### Out of scope
+
+Mobile (Android/iOS) is store-driven and has no in-app updater. Worker host nodes (daemon/sunshine) have no self-update path.
+
 ## Configuration reference
 
 | Flag | Purpose |
@@ -364,7 +388,7 @@ Hotkeys: double-Esc toggles fullscreen; focus loss releases stuck keys/buttons.
 | `-frame-pacing` | Moonlight pacer (requires `-vsync`) |
 | `-fps`, `-bitrate` | Initial IVSHMEM controls sent after connect |
 | `-connect-ui`, `-connect-ui-addr` | Browser progress page |
-| `-update-check`, `-update-base-url` | Windows update check |
+| `-update-check`, `-update-base-url` | Auto-update check (Windows/macOS/Linux) |
 | `-stats`, `-stats-addr` | Metrics dashboard |
 | `-usb`, `-usb-all`, `-usb-vidpid` | USB forwarding over data channel |
 

@@ -169,7 +169,7 @@ See [Desktop client URL handler](./desktop_client_url_handler.md) for registrati
 1. `runtime.LockOSThread()` — SDL main thread ownership.
 2. macOS: poll for URL via AppleEvent if no CLI args.
 3. **`config.Parse(args)`** — merge CLI flags + `thinkmay:` URL search params (CLI overrides URL).
-4. Optional Windows update check (`update.Start`).
+4. Optional auto-update check (`update.Start`) — Windows, macOS, and Linux.
 5. Optional connect UI HTTP server at `127.0.0.1:8766` (default on).
 6. Wait for update gate if applicable.
 7. **`app.NewApp(cfg)`** — blocking initialization.

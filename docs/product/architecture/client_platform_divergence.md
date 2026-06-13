@@ -292,7 +292,7 @@ These features exist only in the desktop client:
 | Feature | Description |
 |---------|-------------|
 | USB forwarding | `-usb` flag forwards local USB devices over the data QUIC stream |
-| Auto-update | Windows: checks PocketBase binaries collection for new versions |
+| Auto-update | All desktop OSes: checks the PocketBase binaries collection (`*_verified` channel) and self-installs — Windows installer, macOS `.zip`/`.dmg`, Linux `.deb`/tarball (Homebrew installs are skipped) |
 | Connect UI | Local HTTP page showing dial/decode/present progress with abort button |
 | Bootlog | Structured startup step logging for packaged builds |
 | Decoder fallback | Automatic HW decoder swap on 8 consecutive decode errors |
@@ -332,7 +332,7 @@ These features exist only in the desktop client:
 | Snapshot                  | ✅  | ❌     | ❌      | Canvas-based, not applicable elsewhere |
 | VM log stream             | ✅  | ❌     | ❌      | Not yet implemented on mobile/desktop |
 | Inactivity timer          | ❌  | ✅     | ❌      | Mobile closes session after 8min idle |
-| Auto-update               | ❌  | ❌     | ✅      | Windows-only |
+| Auto-update               | ❌  | ❌     | ✅      | Desktop only; Windows/macOS/Linux self-install (mobile is store-driven) |
 | Connect UI                | ❌  | ❌     | ✅      | Local HTTP progress page |
 
 ---
@@ -367,3 +367,4 @@ These features exist only in the desktop client:
 |------------|--------------------------------------------------------------|
 | 2026-06-07 | Initial registry created from codebase audit                 |
 | 2026-06-07 | Added desktop/QUIC client divergence, framed PWA as reference, marked mobile as in-development |
+| 2026-06-13 | Corrected auto-update: it is cross-platform (Windows/macOS/Linux), not Windows-only; consumes a manually promoted `*_verified` channel |
